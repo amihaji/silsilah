@@ -1,0 +1,101 @@
+<!-- ========================================== -->
+<!-- NAMA FILE: Style.html (CSS Styling)        -->
+<!-- ========================================== -->
+<style>
+  :root {
+    --dark-blue: #1A365D;
+    --light-blue: #63B3ED;
+    --light-gray: #EDF2F7;
+    --white: #FFFFFF;
+    --black: #1A202C;
+  }
+
+  body {
+    background-color: var(--light-gray);
+    color: var(--black);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .navbar {
+    background-color: var(--dark-blue) !important;
+  }
+
+  .card-header {
+    background-color: var(--dark-blue);
+    color: var(--white);
+  }
+
+  .btn-primary {
+    background-color: var(--light-blue);
+    border-color: var(--light-blue);
+    color: var(--dark-blue);
+    font-weight: 600;
+  }
+  .btn-primary:hover {
+    background-color: var(--dark-blue);
+    color: var(--white);
+  }
+
+  .table-dark {
+    background-color: var(--dark-blue) !important;
+  }
+
+  .foto-thumb {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid var(--light-blue);
+  }
+
+  .tree-container {
+    overflow-x: auto;
+    padding: 20px;
+    min-height: 500px;
+  }
+
+  /* Custom styling for Google OrgChart */
+  .google-visualization-orgchart-node {
+    border: 2px solid var(--light-blue) !important;
+    border-radius: 8px !important;
+    background-color: var(--white) !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 10px !important;
+    font-family: inherit !important;
+  }
+  .google-visualization-orgchart-node-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 5px;
+  }
+  .org-name {
+    font-weight: bold;
+    color: var(--dark-blue);
+    font-size: 14px;
+  }
+  .org-status {
+    font-size: 11px;
+    color: gray;
+  }
+
+  /* Print Specific CSS */
+  @media print {
+    .no-print, .nav-tabs, .navbar, .btn {
+      display: none !important;
+    }
+    body {
+      background-color: white;
+    }
+    .print-area {
+      display: block !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    .tree-container {
+      box-shadow: none;
+      border: none;
+    }
+  }
+</style>

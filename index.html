@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<!-- ========================================== -->
+<!-- NAMA FILE: Index.html (Kerangka UI HTML)   -->
+<!-- ========================================== -->
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Aplikasi Silsilah Keluarga</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Visualization API untuk Tree/OrgChart -->
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  
+  <!-- Memuat file style.html -->
+  <?!= include('style'); ?>
+</head>
+<body>
+
+  <!-- AREA LOGIN -->
+  <div id="loginArea" class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-5">
+        <div class="card shadow">
+          <div class="card-header text-center">
+            <h4>Login Sistem Silsilah</h4>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label>Username</label>
+              <input type="text" id="loginUsername" class="form-control" placeholder="Masukkan username">
+            </div>
+            <div class="mb-3">
+              <label>Password</label>
+              <input type="password" id="loginPassword" class="form-control" placeholder="Masukkan password">
+            </div>
+            <button class="btn btn-primary w-100" onclick="prosesLogin()">Login</button>
+            <div id="loginMsg" class="text-danger mt-2 text-center"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AREA APLIKASI (Disembunyikan sebelum login) -->
+  <div id="appArea" class="d-none">
+    
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark no-print">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Pohon Silsilah Keluarga</a>
+        <div class="d-flex">
+          <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mt-4">
+      
+      <!-- Nav Tabs -->
+      <ul class="nav nav-tabs no-print" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="data-tab" data-bs-toggle="tab" data-bs-target="#data" type="button" role="tab">Data Keluarga</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="pohon-tab" data-bs-toggle="tab" data-bs-target="#pohon" type="button" role="tab">Pohon Silsilah</button>
+        </li>
+      </ul>
+      
+      <!-- Tab Content -->
+      <div class="tab-content mt-3" id="myTabContent">
+        
+        <!-- TAB 1: DATA KELUARGA -->
+        <div class="tab-pane fade show active no-print" id="data" role="tabpanel">
+          <div class="d-flex justify-content-between mb-3">
+            <h4>Daftar Anggota Keluarga</h4>
+            <button class="btn btn-success" onclick="openForm('add')">+ Tambah Anggota</button>
+          </div>
+          
+          <div class="table-responsive bg-white p-3 rounded shadow-sm">
+            <table class="table table-hover table-bordered align-middle">
+              <thead class="table-dark">
+                <tr>
+                  <th>Foto</th>
+                  <th>Nama</th>
+                  <th>Status</th>
+                  <th>Ayah</th>
+                  <th>Ibu</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <tr><td colspan="6" class="text-center">Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 2: POHON SILSILAH -->
+        <div class="tab-pane fade print-area" id="pohon" role="tabpanel">
+          <div class="d-flex justify-content-between mb-3 no-print">
+            <h4>Bagan Silsilah</h4>
+            <button class="btn btn-primary" onclick="downloadPDF()">Download PDF / Print</button>
+          </div>
+          <div class="tree-container bg-white rounded shadow-sm">
+            <div id="chart_div"></div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FORM INPUT -->
+  <div class="modal fade" id="formModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitle">Tambah Data</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formKeluarga">
+            <input type="hidden" id="formId">
+            <input type="hidden" id="formAction" value="add">
+            <input type="hidden" id="fotoLama">
+
+            <div class="row">
+              <div class="col-md-6 mb-2">
+                <label>Nama Lengkap</label>
+                <input type="text" id="nama" class="form-control" required>
+              </div>
+              <div class="col-md-6 mb-2">
+                <label>Jenis Kelamin</label>
+                <select id="jk" class="form-select" required>
+                  <option value="Laki-laki">Laki-laki</option>
+                  <option value="Perempuan">Perempuan</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-2">
+                <label>Tanggal Lahir</label>
+                <input type="date" id="tglLahir" class="form-control" required>
+              </div>
+              <div class="col-md-6 mb-2">
+                <label>Status Perkawinan</label>
+                <select id="statusKawin" class="form-select" required>
+                  <option value="Single">Single</option>
+                  <option value="Kawin">Kawin</option>
+                  <option value="Duda">Duda</option>
+                  <option value="Janda">Janda</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-2">
+                <label>Status Keluarga</label>
+                <select id="statusKeluarga" class="form-select" required>
+                  <option value="Suami">Suami</option>
+                  <option value="Istri">Istri</option>
+                  <option value="Anak">Anak</option>
+                  <option value="Cucu">Cucu</option>
+                  <option value="Cicit">Cicit</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-2">
+                <label>Kota</label>
+                <input type="text" id="kota" class="form-control">
+              </div>
+              <div class="col-md-12 mb-2">
+                <label>Alamat</label>
+                <textarea id="alamat" class="form-control" rows="2"></textarea>
+              </div>
+              <div class="col-md-6 mb-2">
+                <label>Nama Ayah</label>
+                <input type="text" id="ayah" class="form-control" placeholder="Kosongkan jika leluhur pertama">
+              </div>
+              <div class="col-md-6 mb-2">
+                <label>Nama Ibu</label>
+                <input type="text" id="ibu" class="form-control" placeholder="Kosongkan jika leluhur pertama">
+              </div>
+              <div class="col-md-12 mb-2">
+                <label>Upload Foto Anda</label>
+                <input type="file" id="fotoFile" class="form-control" accept="image/*">
+                <small class="text-muted">Pilih foto baru untuk mengganti foto lama.</small>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" onclick="simpanData()" id="btnSimpan">Simpan Data</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Memuat file script.html -->
+  <?!= include('script'); ?>
+</body>
+</html>
