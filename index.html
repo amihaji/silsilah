@@ -1,117 +1,82 @@
 <!DOCTYPE html>
-<!-- ========================================== -->
-<!-- NAMA FILE: Index.html (Kerangka UI HTML)   -->
-<!-- ========================================== -->
 <html lang="id">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Aplikasi Silsilah Keluarga</title>
+  
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Google Visualization API untuk Tree/OrgChart -->
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   
   <style>
-  :root {
-    --dark-blue: #1A365D;
-    --light-blue: #63B3ED;
-    --light-gray: #EDF2F7;
-    --white: #FFFFFF;
-    --black: #1A202C;
-  }
-
-  body {
-    background-color: var(--light-gray);
-    color: var(--black);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-
-  .navbar {
-    background-color: var(--dark-blue) !important;
-  }
-
-  .card-header {
-    background-color: var(--dark-blue);
-    color: var(--white);
-  }
-
-  .btn-primary {
-    background-color: var(--light-blue);
-    border-color: var(--light-blue);
-    color: var(--dark-blue);
-    font-weight: 600;
-  }
-  .btn-primary:hover {
-    background-color: var(--dark-blue);
-    color: var(--white);
-  }
-
-  .table-dark {
-    background-color: var(--dark-blue) !important;
-  }
-
-  .foto-thumb {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 2px solid var(--light-blue);
-  }
-
-  .tree-container {
-    overflow-x: auto;
-    padding: 20px;
-    min-height: 500px;
-  }
-
-  /* Custom styling for Google OrgChart */
-  .google-visualization-orgchart-node {
-    border: 2px solid var(--light-blue) !important;
-    border-radius: 8px !important;
-    background-color: var(--white) !important;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    padding: 10px !important;
-    font-family: inherit !important;
-  }
-  .google-visualization-orgchart-node-img {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 50%;
-    margin-bottom: 5px;
-  }
-  .org-name {
-    font-weight: bold;
-    color: var(--dark-blue);
-    font-size: 14px;
-  }
-  .org-status {
-    font-size: 11px;
-    color: gray;
-  }
-
-  /* Print Specific CSS */
-  @media print {
-    .no-print, .nav-tabs, .navbar, .btn {
-      display: none !important;
+    :root {
+      --dark-blue: #1A365D;
+      --light-blue: #63B3ED;
+      --light-gray: #EDF2F7;
+      --white: #FFFFFF;
+      --black: #1A202C;
     }
     body {
-      background-color: white;
+      background-color: var(--light-gray);
+      color: var(--black);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    .print-area {
-      display: block !important;
-      opacity: 1 !important;
-      visibility: visible !important;
+    .navbar { background-color: var(--dark-blue) !important; }
+    .card-header { background-color: var(--dark-blue); color: var(--white); }
+    .btn-primary {
+      background-color: var(--light-blue);
+      border-color: var(--light-blue);
+      color: var(--dark-blue);
+      font-weight: 600;
     }
-    .tree-container {
-      box-shadow: none;
-      border: none;
+    .btn-primary:hover { background-color: var(--dark-blue); color: var(--white); }
+    .table-dark { background-color: var(--dark-blue) !important; }
+    .foto-thumb {
+      width: 50px; height: 50px; object-fit: cover;
+      border-radius: 50%; border: 2px solid var(--light-blue);
     }
-  }
-</style>
-  
+    .tree-container { overflow-x: auto; padding: 20px; min-height: 500px; }
+    
+    /* Custom OrgChart Styling */
+    .google-visualization-orgchart-node {
+      border: 2px solid var(--light-blue) !important;
+      border-radius: 8px !important;
+      background-color: var(--white) !important;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 10px !important; font-family: inherit !important;
+    }
+    .google-visualization-orgchart-node-img {
+      width: 60px; height: 60px; object-fit: cover;
+      border-radius: 50%; margin-bottom: 5px;
+    }
+    .org-name { font-weight: bold; color: var(--dark-blue); font-size: 14px; }
+    .org-status { font-size: 11px; color: gray; }
+
+    @media print {
+      .no-print, .nav-tabs, .navbar, .btn { display: none !important; }
+      body { background-color: white; }
+      .print-area { display: block !important; }
+      .tree-container { box-shadow: none; border: none; }
+    }
+    
+    /* Overlay Loading */
+    #loadingOverlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255,255,255,0.8); z-index: 9999;
+      display: flex; justify-content: center; align-items: center;
+      flex-direction: column; display: none;
+    }
+  </style>
 </head>
 <body>
+
+  <!-- Loading Indicator -->
+  <div id="loadingOverlay">
+    <div class="spinner-border text-primary" role="status"></div>
+    <div class="mt-2 fw-bold" id="loadingText">Memproses...</div>
+  </div>
 
   <!-- AREA LOGIN -->
   <div id="loginArea" class="container mt-5">
@@ -124,11 +89,11 @@
           <div class="card-body">
             <div class="mb-3">
               <label>Username</label>
-              <input type="text" id="loginUsername" class="form-control" placeholder="Masukkan username">
+              <input type="text" id="loginUsername" class="form-control" placeholder="admin">
             </div>
             <div class="mb-3">
               <label>Password</label>
-              <input type="password" id="loginPassword" class="form-control" placeholder="Masukkan password">
+              <input type="password" id="loginPassword" class="form-control" placeholder="admin123">
             </div>
             <button class="btn btn-primary w-100" onclick="prosesLogin()">Login</button>
             <div id="loginMsg" class="text-danger mt-2 text-center"></div>
@@ -138,62 +103,44 @@
     </div>
   </div>
 
-  <!-- AREA APLIKASI (Disembunyikan sebelum login) -->
+  <!-- AREA APLIKASI -->
   <div id="appArea" class="d-none">
-    
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark no-print">
       <div class="container-fluid">
         <a class="navbar-brand" href="#">Pohon Silsilah Keluarga</a>
-        <div class="d-flex">
-          <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
-        </div>
+        <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
       </div>
     </nav>
 
     <div class="container mt-4">
-      
-      <!-- Nav Tabs -->
       <ul class="nav nav-tabs no-print" id="myTab" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="data-tab" data-bs-toggle="tab" data-bs-target="#data" type="button" role="tab">Data Keluarga</button>
+        <li class="nav-item">
+          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#data" type="button">Data Keluarga</button>
         </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="pohon-tab" data-bs-toggle="tab" data-bs-target="#pohon" type="button" role="tab">Pohon Silsilah</button>
+        <li class="nav-item">
+          <button class="nav-link" id="pohon-tab" data-bs-toggle="tab" data-bs-target="#pohon" type="button" onclick="renderTree()">Pohon Silsilah</button>
         </li>
       </ul>
       
-      <!-- Tab Content -->
-      <div class="tab-content mt-3" id="myTabContent">
-        
-        <!-- TAB 1: DATA KELUARGA -->
-        <div class="tab-pane fade show active no-print" id="data" role="tabpanel">
+      <div class="tab-content mt-3">
+        <!-- TAB DATA -->
+        <div class="tab-pane fade show active no-print" id="data">
           <div class="d-flex justify-content-between mb-3">
-            <h4>Daftar Anggota Keluarga</h4>
+            <h4>Daftar Anggota</h4>
             <button class="btn btn-success" onclick="openForm('add')">+ Tambah Anggota</button>
           </div>
-          
           <div class="table-responsive bg-white p-3 rounded shadow-sm">
             <table class="table table-hover table-bordered align-middle">
               <thead class="table-dark">
-                <tr>
-                  <th>Foto</th>
-                  <th>Nama</th>
-                  <th>Status</th>
-                  <th>Ayah</th>
-                  <th>Ibu</th>
-                  <th>Aksi</th>
-                </tr>
+                <tr><th>Foto</th><th>Nama</th><th>Status</th><th>Ayah</th><th>Ibu</th><th>Aksi</th></tr>
               </thead>
-              <tbody id="tableBody">
-                <tr><td colspan="6" class="text-center">Memuat data...</td></tr>
-              </tbody>
+              <tbody id="tableBody"></tbody>
             </table>
           </div>
         </div>
 
-        <!-- TAB 2: POHON SILSILAH -->
-        <div class="tab-pane fade print-area" id="pohon" role="tabpanel">
+        <!-- TAB POHON -->
+        <div class="tab-pane fade print-area" id="pohon">
           <div class="d-flex justify-content-between mb-3 no-print">
             <h4>Bagan Silsilah</h4>
             <button class="btn btn-primary" onclick="downloadPDF()">Download PDF / Print</button>
@@ -202,308 +149,253 @@
             <div id="chart_div"></div>
           </div>
         </div>
-        
       </div>
     </div>
   </div>
 
-  <!-- MODAL FORM INPUT -->
+  <!-- MODAL FORM -->
   <div class="modal fade" id="formModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="modalTitle">Tambah Data</h5>
+          <h5 class="modal-title" id="modalTitle">Form Data</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <form id="formKeluarga">
-            <input type="hidden" id="formId">
-            <input type="hidden" id="formAction" value="add">
-            <input type="hidden" id="fotoLama">
-
+            <input type="hidden" id="formId"><input type="hidden" id="formAction" value="add"><input type="hidden" id="fotoLama">
             <div class="row">
-              <div class="col-md-6 mb-2">
-                <label>Nama Lengkap</label>
-                <input type="text" id="nama" class="form-control" required>
-              </div>
+              <div class="col-md-6 mb-2"><label>Nama Lengkap</label><input type="text" id="nama" class="form-control" required></div>
               <div class="col-md-6 mb-2">
                 <label>Jenis Kelamin</label>
-                <select id="jk" class="form-select" required>
-                  <option value="Laki-laki">Laki-laki</option>
-                  <option value="Perempuan">Perempuan</option>
-                </select>
+                <select id="jk" class="form-select"><option>Laki-laki</option><option>Perempuan</option></select>
               </div>
-              <div class="col-md-6 mb-2">
-                <label>Tanggal Lahir</label>
-                <input type="date" id="tglLahir" class="form-control" required>
-              </div>
+              <div class="col-md-6 mb-2"><label>Tanggal Lahir</label><input type="date" id="tglLahir" class="form-control" required></div>
               <div class="col-md-6 mb-2">
                 <label>Status Perkawinan</label>
-                <select id="statusKawin" class="form-select" required>
-                  <option value="Single">Single</option>
-                  <option value="Kawin">Kawin</option>
-                  <option value="Duda">Duda</option>
-                  <option value="Janda">Janda</option>
-                </select>
+                <select id="statusKawin" class="form-select"><option>Single</option><option>Kawin</option><option>Duda</option><option>Janda</option></select>
               </div>
               <div class="col-md-6 mb-2">
                 <label>Status Keluarga</label>
-                <select id="statusKeluarga" class="form-select" required>
-                  <option value="Suami">Suami</option>
-                  <option value="Istri">Istri</option>
-                  <option value="Anak">Anak</option>
-                  <option value="Cucu">Cucu</option>
-                  <option value="Cicit">Cicit</option>
-                </select>
+                <select id="statusKeluarga" class="form-select"><option>Suami</option><option>Istri</option><option>Anak</option><option>Cucu</option><option>Cicit</option></select>
               </div>
-              <div class="col-md-6 mb-2">
-                <label>Kota</label>
-                <input type="text" id="kota" class="form-control">
-              </div>
-              <div class="col-md-12 mb-2">
-                <label>Alamat</label>
-                <textarea id="alamat" class="form-control" rows="2"></textarea>
-              </div>
-              <div class="col-md-6 mb-2">
-                <label>Nama Ayah</label>
-                <input type="text" id="ayah" class="form-control" placeholder="Kosongkan jika leluhur pertama">
-              </div>
-              <div class="col-md-6 mb-2">
-                <label>Nama Ibu</label>
-                <input type="text" id="ibu" class="form-control" placeholder="Kosongkan jika leluhur pertama">
-              </div>
-              <div class="col-md-12 mb-2">
-                <label>Upload Foto Anda</label>
-                <input type="file" id="fotoFile" class="form-control" accept="image/*">
-                <small class="text-muted">Pilih foto baru untuk mengganti foto lama.</small>
-              </div>
+              <div class="col-md-6 mb-2"><label>Kota</label><input type="text" id="kota" class="form-control"></div>
+              <div class="col-md-12 mb-2"><label>Alamat</label><textarea id="alamat" class="form-control" rows="2"></textarea></div>
+              <div class="col-md-6 mb-2"><label>Nama Ayah (Tulis Persis)</label><input type="text" id="ayah" class="form-control" placeholder="Kosongkan jika root/leluhur"></div>
+              <div class="col-md-6 mb-2"><label>Nama Ibu</label><input type="text" id="ibu" class="form-control"></div>
+              <div class="col-md-12 mb-2"><label>Upload Foto</label><input type="file" id="fotoFile" class="form-control" accept="image/*"></div>
             </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="button" class="btn btn-primary" onclick="simpanData()" id="btnSimpan">Simpan Data</button>
+          <button type="button" class="btn btn-primary" onclick="simpanData()">Simpan Data</button>
         </div>
       </div>
     </div>
   </div>
 
-<!-- Bootstrap 5 JS Bundle -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- ========================================== -->
-<!-- NAMA FILE: Script.html (JavaScript)        -->
-<!-- ========================================== -->
-<script>
-  let globalData = [];
-  let formModal;
-  
-  // Inisialisasi Chart & Modal saat halaman dimuat
-  document.addEventListener("DOMContentLoaded", function() {
-    formModal = new bootstrap.Modal(document.getElementById('formModal'));
-    google.charts.load('current', {packages:["orgchart"]});
-  });
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // =========================================================
+    // WAJIB UBAH: Masukkan URL Deploy Web App GAS Anda di bawah ini
+    // =========================================================
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyIRVj0l_KZnnEJdpcUjZzOyysm2aNP7ILjM21hrvvq3v-yCTfC65YBmFij1Xp4BCRT/exec"; 
+    let globalData = [];
+    let formModal;
+    
+    document.addEventListener("DOMContentLoaded", () => {
+      formModal = new bootstrap.Modal(document.getElementById('formModal'));
+      google.charts.load('current', {packages:["orgchart"]});
+    });
 
-  // --- FUNGSI LOGIN ---
-  function prosesLogin() {
-    const user = document.getElementById('loginUsername').value;
-    const pass = document.getElementById('loginPassword').value;
-    const btn = event.target;
-    
-    btn.disabled = true;
-    btn.innerHTML = "Memverifikasi...";
-    
-    google.script.run.withSuccessHandler(function(res) {
+    // FUNGSI KOMUNIKASI FETCH API KE GOOGLE SCRIPT
+    async function apiCall(payload, loadingMsg) {
+      if(GAS_URL === "ISI_DENGAN_URL_WEB_APP_GAS_ANDA_DISINI") {
+        alert("PENTING: Anda belum memasukkan URL GAS di file index.html (Baris 163).");
+        return { success: false };
+      }
+
+      showLoading(loadingMsg);
+      try {
+        const response = await fetch(GAS_URL, {
+          method: "POST",
+          // Menggunakan text/plain agar Google Apps Script tidak menolak CORS Preflight
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        hideLoading();
+        return result;
+      } catch (err) {
+        console.error(err);
+        hideLoading();
+        alert("Terjadi kesalahan koneksi ke server.");
+        return { success: false, message: err.message };
+      }
+    }
+
+    // --- Loading UI ---
+    function showLoading(msg) {
+      document.getElementById('loadingText').innerText = msg;
+      document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+    function hideLoading() {
+      document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    // --- FITUR LOGIN ---
+    async function prosesLogin() {
+      const u = document.getElementById('loginUsername').value;
+      const p = document.getElementById('loginPassword').value;
+      
+      const res = await apiCall({ action: "login", username: u, password: p }, "Memverifikasi...");
       if(res.success) {
         document.getElementById('loginArea').classList.add('d-none');
         document.getElementById('appArea').classList.remove('d-none');
-        loadDataKeluarga(); // Load data setelah login sukses
+        loadDataKeluarga();
       } else {
         document.getElementById('loginMsg').innerText = res.message;
-        btn.disabled = false;
-        btn.innerHTML = "Login";
       }
-    }).checkLogin(user, pass);
-  }
-
-  function logout() {
-    document.getElementById('loginArea').classList.remove('d-none');
-    document.getElementById('appArea').classList.add('d-none');
-    document.getElementById('loginUsername').value = '';
-    document.getElementById('loginPassword').value = '';
-  }
-
-  // --- CRUD DATA KELUARGA ---
-  function loadDataKeluarga() {
-    document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="text-center">Memuat data...</td></tr>';
-    google.script.run.withSuccessHandler(function(data) {
-      globalData = data;
-      renderTable();
-      renderTree();
-    }).getDataKeluarga();
-  }
-
-  function renderTable() {
-    const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = '';
-    
-    if(globalData.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="text-center">Belum ada data anggota keluarga.</td></tr>';
-      return;
     }
 
-    globalData.forEach(item => {
-      let fotoHtml = item.foto ? `<img src="${item.foto}" class="foto-thumb">` : `<img src="https://via.placeholder.com/50" class="foto-thumb">`;
-      let tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${fotoHtml}</td>
-        <td><strong>${item.nama}</strong><br><small>${item.jk} - ${item.tglLahir}</small></td>
-        <td>${item.statusKeluarga} (${item.statusKawin})</td>
-        <td>${item.ayah || '-'}</td>
-        <td>${item.ibu || '-'}</td>
-        <td>
-          <button class="btn btn-sm btn-warning mb-1" onclick="openForm('edit', '${item.id}')">Edit</button>
-          <button class="btn btn-sm btn-danger mb-1" onclick="hapusData('${item.id}')">Hapus</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
+    function logout() {
+      document.getElementById('loginArea').classList.remove('d-none');
+      document.getElementById('appArea').classList.add('d-none');
+      document.getElementById('loginUsername').value = '';
+      document.getElementById('loginPassword').value = '';
+    }
 
-  function openForm(action, id = null) {
-    document.getElementById('formKeluarga').reset();
-    document.getElementById('formAction').value = action;
-    
-    if(action === 'edit') {
-      document.getElementById('modalTitle').innerText = "Edit Data Anggota";
-      const item = globalData.find(x => x.id == id);
-      if(item) {
-        document.getElementById('formId').value = item.id;
-        document.getElementById('nama').value = item.nama;
-        document.getElementById('jk').value = item.jk;
-        document.getElementById('tglLahir').value = item.tglLahir;
-        document.getElementById('statusKawin').value = item.statusKawin;
-        document.getElementById('statusKeluarga').value = item.statusKeluarga;
-        document.getElementById('kota').value = item.kota;
-        document.getElementById('alamat').value = item.alamat;
-        document.getElementById('ayah').value = item.ayah;
-        document.getElementById('ibu').value = item.ibu;
-        document.getElementById('fotoLama').value = item.foto;
+    // --- LOAD DATA TABLE ---
+    async function loadDataKeluarga() {
+      const res = await apiCall({ action: "getData" }, "Memuat Data...");
+      if(res.success) {
+        globalData = res.data;
+        renderTable();
       }
-    } else {
-      document.getElementById('modalTitle').innerText = "Tambah Data Anggota";
-      document.getElementById('formId').value = "";
-      document.getElementById('fotoLama').value = "";
-    }
-    formModal.show();
-  }
-
-  function simpanData() {
-    const btn = document.getElementById('btnSimpan');
-    const fileInput = document.getElementById('fotoFile');
-    
-    let formObj = {
-      id: document.getElementById('formId').value,
-      action: document.getElementById('formAction').value,
-      nama: document.getElementById('nama').value,
-      jk: document.getElementById('jk').value,
-      tglLahir: document.getElementById('tglLahir').value,
-      statusKawin: document.getElementById('statusKawin').value,
-      statusKeluarga: document.getElementById('statusKeluarga').value,
-      kota: document.getElementById('kota').value,
-      alamat: document.getElementById('alamat').value,
-      ayah: document.getElementById('ayah').value,
-      ibu: document.getElementById('ibu').value,
-      fotoLama: document.getElementById('fotoLama').value,
-      fotoBase64: null
-    };
-
-    if(!formObj.nama || !formObj.jk) {
-      alert("Nama dan Jenis Kelamin wajib diisi!");
-      return;
     }
 
-    btn.disabled = true;
-    btn.innerText = "Menyimpan...";
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+      if(globalData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Belum ada data anggota keluarga.</td></tr>';
+        return;
+      }
 
-    // Proses file foto jika ada
-    if (fileInput.files && fileInput.files[0]) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        formObj.fotoBase64 = e.target.result;
-        kirimKeBackend(formObj, btn);
+      globalData.forEach(item => {
+        let fotoHtml = item.foto ? `<img src="${item.foto}" class="foto-thumb">` : `<img src="https://via.placeholder.com/50" class="foto-thumb">`;
+        tbody.innerHTML += `
+          <tr>
+            <td>${fotoHtml}</td>
+            <td><strong>${item.nama}</strong><br><small>${item.jk} - ${item.tglLahir}</small></td>
+            <td>${item.statusKeluarga} (${item.statusKawin})</td>
+            <td>${item.ayah || '-'}</td>
+            <td>${item.ibu || '-'}</td>
+            <td>
+              <button class="btn btn-sm btn-warning mb-1" onclick="openForm('edit', '${item.id}')">Edit</button>
+              <button class="btn btn-sm btn-danger mb-1" onclick="hapusData('${item.id}')">Hapus</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // --- CRUD ---
+    function openForm(action, id = null) {
+      document.getElementById('formKeluarga').reset();
+      document.getElementById('formAction').value = action;
+      
+      if(action === 'edit') {
+        document.getElementById('modalTitle').innerText = "Edit Data";
+        const item = globalData.find(x => x.id == id);
+        if(item) {
+          ['id','nama','jk','tglLahir','statusKawin','statusKeluarga','kota','alamat','ayah','ibu'].forEach(k => {
+             document.getElementById(k==='id'?'formId':k).value = item[k] || '';
+          });
+          document.getElementById('fotoLama').value = item.foto;
+        }
+      } else {
+        document.getElementById('modalTitle').innerText = "Tambah Data";
+        document.getElementById('formId').value = "";
+        document.getElementById('fotoLama').value = "";
+      }
+      formModal.show();
+    }
+
+    function simpanData() {
+      const fileInput = document.getElementById('fotoFile');
+      let dataObj = {
+        id: document.getElementById('formId').value,
+        action: document.getElementById('formAction').value,
+        nama: document.getElementById('nama').value,
+        jk: document.getElementById('jk').value,
+        tglLahir: document.getElementById('tglLahir').value,
+        statusKawin: document.getElementById('statusKawin').value,
+        statusKeluarga: document.getElementById('statusKeluarga').value,
+        kota: document.getElementById('kota').value,
+        alamat: document.getElementById('alamat').value,
+        ayah: document.getElementById('ayah').value,
+        ibu: document.getElementById('ibu').value,
+        fotoLama: document.getElementById('fotoLama').value,
+        fotoBase64: null
       };
-      reader.readAsDataURL(fileInput.files[0]);
-    } else {
-      kirimKeBackend(formObj, btn);
+
+      if(!dataObj.nama) return alert("Nama wajib diisi!");
+
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          dataObj.fotoBase64 = e.target.result;
+          eksekusiSimpan(dataObj);
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        eksekusiSimpan(dataObj);
+      }
     }
-  }
 
-  function kirimKeBackend(formObj, btn) {
-    google.script.run.withSuccessHandler(function(res) {
-      alert(res);
-      btn.disabled = false;
-      btn.innerText = "Simpan Data";
-      formModal.hide();
-      loadDataKeluarga(); // Reload data
-    }).saveDataKeluarga(formObj);
-  }
-
-  function hapusData(id) {
-    if(confirm("Apakah Anda yakin ingin menghapus data ini?")) {
-      google.script.run.withSuccessHandler(function(res) {
-        alert(res);
+    async function eksekusiSimpan(dataObj) {
+      const res = await apiCall({ action: "saveData", data: dataObj }, "Menyimpan Data...");
+      if(res.success) {
+        alert(res.message);
+        formModal.hide();
         loadDataKeluarga();
-      }).deleteDataKeluarga(id);
+      } else {
+        alert("Gagal: " + res.message);
+      }
     }
-  }
 
-  // --- FUNGSI POHON SILSILAH (VISUALISASI) ---
-  function renderTree() {
-    if(!google.visualization) return; // Tunggu library ter-load
-    
-    const data = new google.visualization.DataTable();
-    data.addColumn('string', 'Name');
-    data.addColumn('string', 'Parent');
-    data.addColumn('string', 'ToolTip');
+    async function hapusData(id) {
+      if(confirm("Yakin ingin menghapus data ini?")) {
+        const res = await apiCall({ action: "deleteData", id: id }, "Menghapus Data...");
+        if(res.success) loadDataKeluarga();
+      }
+    }
 
-    // Format data untuk Google OrgChart (Patrilineal view didasarkan pada Nama Ayah)
-    // Jika Ayah kosong, ia menjadi node root.
-    let chartRows = [];
-    
-    globalData.forEach(item => {
-      let fotoImg = item.foto ? item.foto : 'https://via.placeholder.com/60';
-      
-      // Desain Node HTML
-      let nodeHtml = `
-        <div class="org-node">
-          <img src="${fotoImg}" class="google-visualization-orgchart-node-img"><br>
-          <div class="org-name">${item.nama}</div>
-          <div class="org-status">${item.statusKeluarga}</div>
-        </div>
-      `;
+    // --- POHON SILSILAH ---
+    function renderTree() {
+      if(!google.visualization || globalData.length === 0) return;
+      const data = new google.visualization.DataTable();
+      data.addColumn('string', 'Name');
+      data.addColumn('string', 'Parent');
+      data.addColumn('string', 'ToolTip');
 
-      // Menghubungkan hierarki. Standard OrgChart membaca string persis. 
-      // Kita asumsikan 'Ayah' berisi text persis dengan 'Nama' sang ayah.
-      let parentNode = item.ayah ? item.ayah : '';
-      
-      chartRows.push([{ v: item.nama, f: nodeHtml }, parentNode, item.statusKawin]);
-    });
+      let chartRows = globalData.map(item => {
+        let fotoImg = item.foto || 'https://via.placeholder.com/60';
+        let nodeHtml = `<div class="org-node"><img src="${fotoImg}" class="google-visualization-orgchart-node-img"><br>
+                        <div class="org-name">${item.nama}</div><div class="org-status">${item.statusKeluarga}</div></div>`;
+        return [{ v: item.nama, f: nodeHtml }, item.ayah || '', item.statusKawin];
+      });
 
-    data.addRows(chartRows);
+      data.addRows(chartRows);
+      const chart = new google.visualization.OrgChart(document.getElementById('chart_div'));
+      chart.draw(data, {allowHtml: true, size: 'large', nodeClass: 'google-visualization-orgchart-node'});
+    }
 
-    const chart = new google.visualization.OrgChart(document.getElementById('chart_div'));
-    chart.draw(data, {allowHtml: true, size: 'large', nodeClass: 'google-visualization-orgchart-node'});
-  }
-
-  // --- FUNGSI DOWNLOAD / PRINT ---
-  function downloadPDF() {
-    // Berpindah ke tab pohon sebelum print
-    document.getElementById('pohon-tab').click();
-    setTimeout(() => {
+    function downloadPDF() {
       window.print();
-    }, 500);
-  }
-</script>  
-  
+    }
+  </script>
 </body>
 </html>
