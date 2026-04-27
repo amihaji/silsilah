@@ -197,10 +197,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // =========================================================
     // WAJIB UBAH: Masukkan URL Deploy Web App GAS Anda di bawah ini
-    // =========================================================
-    const GAS_URL  = "https://script.google.com/macros/s/AKfycbzKREHeFiL5mlLjXke-3DX8_e4Rqv5BOLPF0bL9-8cQ69inLuvYxR1MGxUci5IlHVJ3/exec"; 
+    const GAS_URL  = "https://script.google.com/macros/s/AKfycbyUmWAtGzQ0JN4oJFJrcsibbu9w4dt15mKW9KNwnyKqg4HSdY0izpquPxBEvuqaApbR/exec"; 
     let globalData = [];
     let formModal;
     
@@ -209,33 +207,6 @@
       google.charts.load('current', {packages:["orgchart"]});
     });
 
-    // 1. GANTI Fungsi apiCall
-    // Menggunakan URLSearchParams agar dianggap sebagai "Simple Request" oleh browser
-    async function apiCall(payload, loadingMsg) {
-    showLoading(loadingMsg);
-    try {
-        const body = new URLSearchParams();
-        body.append('formData', JSON.stringify(payload));
-
-        // Mode no-cors digunakan untuk POST ke GAS agar tidak kena blokir
-        await fetch(GAS_URL, {
-        method: "POST",
-        mode: "no-cors", 
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString()
-        });
-
-        hideLoading();
-        return { success: true }; 
-    } catch (err) {
-        hideLoading();
-        console.error(err);
-        return { success: false, message: err.message };
-    }
-    }
-
-    
-    // 3. GANTI Fungsi prosesLogin
     // Verifikasi login menggunakan GET agar respon JSON bisa dibaca langsung
     async function prosesLogin() {
     const u = document.getElementById('loginUsername').value;
@@ -259,10 +230,6 @@
     }
     hideLoading();
     }
-
-    // 4. GANTI Fungsi eksekusi (Bagian dari simpanData)
-    // Menambahkan jeda (delay) agar data sempat masuk ke Google Sheets sebelum di-refresh
-
 
     // --- Loading UI ---
     function showLoading(msg) {
@@ -342,25 +309,7 @@
     hideLoading();
     }
 
-    /**
-     * REVISI FUNGSI EKSEKUSI
-     * Memberikan jeda lebih lama agar Google Sheets selesai menulis sebelum di-fetch ulang
-     */
-    async function eksekusi(data) {
-    try {
-        await apiCall({ action: "saveData", data: data }, "Menyimpan ke Cloud...");
-        modalCtrl.hide();
-        
-        // Karena mode 'no-cors', kita beri jeda 3 detik 
-        // agar Google Script punya waktu memproses data sebelum kita minta data terbaru
-        setTimeout(() => {
-        fetchData();
-        }, 3000);
-    } catch (error) {
-        alert("Gagal mengirim data: " + error.message);
-    }
-    }
-
+    
     // --- LOAD DATA TABLE ---
     async function loadDataKeluarga() {
       const res = await apiCall({ action: "getData" }, "Memuat Data...");
@@ -442,30 +391,91 @@
       }
     }
 
-    // --- POHON SILSILAH ---
+    // 1. REVISI TOTAL: renderTree (Agar tidak error 'length')
     function renderTree() {
-      if(!google.visualization || globalData.length === 0) return;
-      const data = new google.visualization.DataTable();
-      data.addColumn('string', 'Name');
-      data.addColumn('string', 'Parent');
-      data.addColumn('string', 'ToolTip');
+        const container = document.getElementById('treeContainer');
+        if (!container) return;
 
-      let chartRows = globalData.map(item => {
-        let fotoImg = item.foto || 'https://via.placeholder.com/60';
-        let nodeHtml = `<div class="org-node"><img src="${fotoImg}" class="google-visualization-orgchart-node-img"><br>
-                        <div class="org-name">${item.nama}</div><div class="org-status">${item.statusKeluarga}</div></div>`;
-        return [{ v: item.nama, f: nodeHtml }, item.ayah || '', item.statusKawin];
-      });
+        // Proteksi jika globalData belum siap atau kosong
+        if (!globalData || !Array.isArray(globalData) || globalData.length === 0) {
+            container.innerHTML = '<div class="alert alert-info">Belum ada data untuk menampilkan silsilah. Silakan tambah data anggota terlebih dahulu.</div>';
+            return;
+        }
 
-      data.addRows(chartRows);
-      const chart = new google.visualization.OrgChart(document.getElementById('chart_div'));
-      chart.draw(data, {allowHtml: true, size: 'large', nodeClass: 'google-visualization-orgchart-node'});
+        try {
+            const rootNodes = globalData.filter(p => !p.ayah && !p.ibu);
+            if (rootNodes.length === 0 && globalData.length > 0) {
+                // Jika tidak ada root murni, ambil orang pertama sebagai root
+                rootNodes.push(globalData[0]);
+            }
+
+            const buildHTML = (person) => {
+                const children = globalData.filter(p => p.ayah === person.nama || p.ibu === person.nama);
+                let html = `<li>
+                    <div class="tree-node">
+                        <img src="${person.foto || ''}" onerror="this.style.display='none'">
+                        <div class="fw-bold">${person.nama}</div>
+                        <small class="text-muted">${person.statusKeluarga || ''}</small>
+                    </div>`;
+                
+                if (children.length > 0) {
+                    html += '<ul>' + children.map(child => buildHTML(child)).join('') + '</ul>';
+                }
+                html += '</li>';
+                return html;
+            };
+
+            container.innerHTML = '<div class="tree"><ul>' + rootNodes.map(root => buildHTML(root)).join('') + '</ul></div>';
+        } catch (e) {
+            console.error("Tree Render Error:", e);
+            container.innerHTML = '<div class="alert alert-danger">Gagal merender pohon silsilah.</div>';
+        }
     }
 
+    // 2. REVISI: apiCall (Gunakan timeout yang lebih manusiawi)
+    async function apiCall(payload, loadingMsg) {
+        showLoading(loadingMsg);
+        try {
+            const body = new URLSearchParams();
+            body.append('formData', JSON.stringify(payload));
+
+            // Menggunakan mode 'no-cors' karena GAS selalu redirect
+            await fetch(GAS_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: body.toString()
+            });
+
+            // Karena no-cors tidak bisa tahu sukses/tidaknya, kita asumsikan terkirim
+            hideLoading();
+            return { success: true };
+        } catch (err) {
+            hideLoading();
+            console.error("Network Error:", err);
+            return { success: false, message: "Koneksi terputus atau gagal." };
+        }
+    }
+
+    // 3. REVISI: eksekusi (Tingkatkan jeda tunggu)
+    async function eksekusi(data) {
+        // Validasi sederhana
+        if (!data.nama) {
+            alert("Nama wajib diisi!");
+            return;
+        }
+        await apiCall({ action: "saveData", data: data }, "Menyimpan data ke Google Sheets...");
+        // Tutup Modal
+        if (modalCtrl) modalCtrl.hide();
+
+        // Beri jeda 3.5 detik sebelum ambil data terbaru
+        setTimeout(() => {
+            fetchData(); 
+        }, 3500);
+    }
     function downloadPDF() {
       window.print();
     }
-
    
   </script>
 </body>
