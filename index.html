@@ -198,7 +198,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // WAJIB UBAH: Masukkan URL Deploy Web App GAS Anda di bawah ini
-    const GAS_URL  = "https://script.google.com/macros/s/AKfycbyUmWAtGzQ0JN4oJFJrcsibbu9w4dt15mKW9KNwnyKqg4HSdY0izpquPxBEvuqaApbR/exec"; 
+    const GAS_URL  = "https://script.google.com/macros/s/AKfycbz0o_reZyG5qV5N8tfNPzZMmVxmUkZmINpmq2mK2WLNxzU-RLY8rhGkT-fDIeoSEvfL/exec"; 
     let globalData = [];
     let formModal;
     
@@ -247,69 +247,6 @@
       document.getElementById('loginPassword').value = '';
     }
 
-    /**
-     * REVISI FUNGSI RENDER TABLE
-     * Menambahkan pengecekan agar tidak error jika data kosong atau undefined
-     */
-    function renderTable() {
-    const tbody = document.getElementById('tableBody');
-    if (!tbody) return;
-
-    // Cek apakah globalData ada dan merupakan array
-    if (!globalData || !Array.isArray(globalData) || globalData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Tidak ada data keluarga ditemukan.</td></tr>';
-        return;
-    }
-
-    tbody.innerHTML = globalData.map(item => `
-        <tr>
-        <td class="text-center">
-            <img src="${item.foto || 'https://via.placeholder.com/50'}" class="foto-thumb" onerror="this.src='https://via.placeholder.com/50'">
-        </td>
-        <td><strong>${item.nama || '-'}</strong></td>
-        <td><span class="badge bg-info text-dark">${item.statusKeluarga || '-'}</span></td>
-        <td>${item.ayah || '-'}</td>
-        <td>${item.ibu || '-'}</td>
-        <td>
-            <button class="btn btn-sm btn-warning" onclick="openForm('edit', '${item.id}')">Edit</button>
-        </td>
-        </tr>
-    `).join('');
-    }
-
-    /**
-     * REVISI FUNGSI FETCH DATA
-     * Memastikan globalData selalu berbentuk Array sebelum memanggil renderTable
-     */
-    async function fetchData() {
-    showLoading("Sinkronisasi Data...");
-    try {
-        const response = await fetch(`${GAS_URL}?action=getData`);
-        if (!response.ok) throw new Error("Gagal menghubungi server");
-        
-        const result = await response.json();
-        
-        // Pastikan result.data adalah Array
-        if (result.success && result.data) {
-        globalData = Array.isArray(result.data) ? result.data : [];
-        } else {
-        globalData = [];
-        }
-        
-        renderTable();
-        // Jika tab pohon sedang aktif, render ulang pohonnya
-        if (document.getElementById('tab-pohon').classList.contains('show')) {
-        renderTree();
-        }
-    } catch (err) {
-        console.error("Gagal sinkron:", err);
-        globalData = []; // Reset ke array kosong agar renderTable tidak crash
-        renderTable();
-    }
-    hideLoading();
-    }
-
-    
     // --- LOAD DATA TABLE ---
     async function loadDataKeluarga() {
       const res = await apiCall({ action: "getData" }, "Memuat Data...");
@@ -391,45 +328,96 @@
       }
     }
 
-    // 1. REVISI TOTAL: renderTree (Agar tidak error 'length')
+    // 1. REVISI fetchData (Menghilangkan error classList)
+    async function fetchData() {
+        showLoading("Menyinkronkan Data...");
+        try {
+            const response = await fetch(`${GAS_URL}?action=getData`);
+            if (!response.ok) throw new Error("Gagal menghubungi server");
+            
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                globalData = Array.isArray(result.data) ? result.data : [];
+            } else {
+                globalData = [];
+            }
+            
+            // Render tabel data
+            renderTable();
+            
+            // Pengecekan aman untuk Tab Pohon
+            const tabPohon = document.getElementById('tab-pohon');
+            if (tabPohon && tabPohon.classList.contains('show')) {
+                renderTree();
+            }
+        } catch (err) {
+            console.error("Gagal sinkron:", err);
+            globalData = []; 
+            renderTable();
+        }
+        hideLoading();
+    }
+
+    // 2. REVISI renderTable (Ganti placeholder ke yang lebih stabil)
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        if (!tbody) return;
+
+        if (!globalData || globalData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Belum ada data.</td></tr>';
+            return;
+        }
+
+        // Menggunakan i.pravatar.cc sebagai cadangan foto yang lebih stabil
+        tbody.innerHTML = globalData.map(item => `
+            <tr>
+                <td class="text-center">
+                    <img src="${item.foto || 'https://i.pravatar.cc/100?u=' + item.id}" 
+                        class="rounded-circle" style="width:40px; height:40px; object-fit:cover;"
+                        onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('${item.nama}')">
+                </td>
+                <td><strong>${item.nama || '-'}</strong></td>
+                <td><span class="badge bg-info text-dark">${item.statusKeluarga || '-'}</span></td>
+                <td>${item.ayah || '-'}</td>
+                <td>${item.ibu || '-'}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="openForm('edit', '${item.id}')">Edit</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // 3. REVISI renderTree (Proteksi ekstra)
     function renderTree() {
         const container = document.getElementById('treeContainer');
         if (!container) return;
 
-        // Proteksi jika globalData belum siap atau kosong
-        if (!globalData || !Array.isArray(globalData) || globalData.length === 0) {
-            container.innerHTML = '<div class="alert alert-info">Belum ada data untuk menampilkan silsilah. Silakan tambah data anggota terlebih dahulu.</div>';
+        if (!globalData || globalData.length === 0) {
+            container.innerHTML = '<div class="alert alert-info">Tambahkan data untuk melihat silsilah.</div>';
             return;
         }
 
-        try {
-            const rootNodes = globalData.filter(p => !p.ayah && !p.ibu);
-            if (rootNodes.length === 0 && globalData.length > 0) {
-                // Jika tidak ada root murni, ambil orang pertama sebagai root
-                rootNodes.push(globalData[0]);
+        const rootNodes = globalData.filter(p => !p.ayah && !p.ibu);
+        const startNode = rootNodes.length > 0 ? rootNodes : [globalData[0]];
+
+        const buildHTML = (person) => {
+            const children = globalData.filter(p => p.ayah === person.nama || p.ibu === person.nama);
+            let html = `<li>
+                <div class="tree-node border p-2 rounded bg-white shadow-sm">
+                    <img src="${person.foto || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(person.nama)}" 
+                        class="rounded-circle mb-1" style="width:30px; height:30px;">
+                    <div style="font-size: 0.85rem; font-weight: bold;">${person.nama}</div>
+                </div>`;
+            
+            if (children.length > 0) {
+                html += '<ul>' + children.map(child => buildHTML(child)).join('') + '</ul>';
             }
+            html += '</li>';
+            return html;
+        };
 
-            const buildHTML = (person) => {
-                const children = globalData.filter(p => p.ayah === person.nama || p.ibu === person.nama);
-                let html = `<li>
-                    <div class="tree-node">
-                        <img src="${person.foto || ''}" onerror="this.style.display='none'">
-                        <div class="fw-bold">${person.nama}</div>
-                        <small class="text-muted">${person.statusKeluarga || ''}</small>
-                    </div>`;
-                
-                if (children.length > 0) {
-                    html += '<ul>' + children.map(child => buildHTML(child)).join('') + '</ul>';
-                }
-                html += '</li>';
-                return html;
-            };
-
-            container.innerHTML = '<div class="tree"><ul>' + rootNodes.map(root => buildHTML(root)).join('') + '</ul></div>';
-        } catch (e) {
-            console.error("Tree Render Error:", e);
-            container.innerHTML = '<div class="alert alert-danger">Gagal merender pohon silsilah.</div>';
-        }
+        container.innerHTML = '<div class="tree"><ul>' + startNode.map(node => buildHTML(node)).join('') + '</ul></div>';
     }
 
     // 2. REVISI: apiCall (Gunakan timeout yang lebih manusiawi)
