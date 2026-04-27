@@ -200,7 +200,7 @@
     // =========================================================
     // WAJIB UBAH: Masukkan URL Deploy Web App GAS Anda di bawah ini
     // =========================================================
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzb9e7F-cRPQt-PBmLt4bDLFsjW1p9Crbcpjz6Q-oNOhX8gO-yBnxpPcHi7gQjfFDoU/exec"; 
+    const GAS_URL  = "https://script.google.com/macros/s/AKfycbzKREHeFiL5mlLjXke-3DX8_e4Rqv5BOLPF0bL9-8cQ69inLuvYxR1MGxUci5IlHVJ3/exec"; 
     let globalData = [];
     let formModal;
     
@@ -234,24 +234,7 @@
     }
     }
 
-    // 2. GANTI Fungsi fetchData
-    // Menggunakan GET agar data bisa terbaca dengan lancar
-    async function fetchData() {
-    showLoading("Menyinkronkan Data...");
-    try {
-        const response = await fetch(`${GAS_URL}?action=getData`);
-        const result = await response.json();
-        if(result.success) {
-        globalData = result.data;
-        renderTable();
-        }
-        hideLoading();
-    } catch (err) {
-        hideLoading();
-        console.error("Gagal sinkron:", err);
-    }
-    }
-
+    
     // 3. GANTI Fungsi prosesLogin
     // Verifikasi login menggunakan GET agar respon JSON bisa dibaca langsung
     async function prosesLogin() {
@@ -279,39 +262,7 @@
 
     // 4. GANTI Fungsi eksekusi (Bagian dari simpanData)
     // Menambahkan jeda (delay) agar data sempat masuk ke Google Sheets sebelum di-refresh
-    async function eksekusi(data) {
-    await apiCall({ action: "saveData", data: data }, "Sedang Menyimpan...");
-    modalCtrl.hide();
-    // Berikan jeda 2 detik karena 'no-cors' tidak menunggu konfirmasi server
-    setTimeout(fetchData, 2000); 
-    }
 
-
-    // FUNGSI KOMUNIKASI FETCH API KE GOOGLE SCRIPT
-    async function BACKUP_apiCall(payload, loadingMsg) {
-      if(GAS_URL === "ISI_DENGAN_URL_WEB_APP_GAS_ANDA_DISINI") {
-        alert("PENTING: Anda belum memasukkan URL GAS di file index.html (Baris 163).");
-        return { success: false };
-      }
-
-      showLoading(loadingMsg);
-      try {
-        const response = await fetch(GAS_URL, {
-          method: "POST",
-          // Menggunakan text/plain agar Google Apps Script tidak menolak CORS Preflight
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(payload)
-        });
-        const result = await response.json();
-        hideLoading();
-        return result;
-      } catch (err) {
-        console.error(err);
-        hideLoading();
-        alert("Terjadi kesalahan koneksi ke server.");
-        return { success: false, message: err.message };
-      }
-    }
 
     // --- Loading UI ---
     function showLoading(msg) {
@@ -322,26 +273,92 @@
       document.getElementById('loadingOverlay').style.display = 'none';
     }
 
-    // --- FITUR LOGIN ---
-    async function BACKUP_prosesLogin() {
-      const u = document.getElementById('loginUsername').value;
-      const p = document.getElementById('loginPassword').value;
-      
-      const res = await apiCall({ action: "login", username: u, password: p }, "Memverifikasi...");
-      if(res.success) {
-        document.getElementById('loginArea').classList.add('d-none');
-        document.getElementById('appArea').classList.remove('d-none');
-        loadDataKeluarga();
-      } else {
-        document.getElementById('loginMsg').innerText = res.message;
-      }
-    }
-
     function logout() {
       document.getElementById('loginArea').classList.remove('d-none');
       document.getElementById('appArea').classList.add('d-none');
       document.getElementById('loginUsername').value = '';
       document.getElementById('loginPassword').value = '';
+    }
+
+    /**
+     * REVISI FUNGSI RENDER TABLE
+     * Menambahkan pengecekan agar tidak error jika data kosong atau undefined
+     */
+    function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    if (!tbody) return;
+
+    // Cek apakah globalData ada dan merupakan array
+    if (!globalData || !Array.isArray(globalData) || globalData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Tidak ada data keluarga ditemukan.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = globalData.map(item => `
+        <tr>
+        <td class="text-center">
+            <img src="${item.foto || 'https://via.placeholder.com/50'}" class="foto-thumb" onerror="this.src='https://via.placeholder.com/50'">
+        </td>
+        <td><strong>${item.nama || '-'}</strong></td>
+        <td><span class="badge bg-info text-dark">${item.statusKeluarga || '-'}</span></td>
+        <td>${item.ayah || '-'}</td>
+        <td>${item.ibu || '-'}</td>
+        <td>
+            <button class="btn btn-sm btn-warning" onclick="openForm('edit', '${item.id}')">Edit</button>
+        </td>
+        </tr>
+    `).join('');
+    }
+
+    /**
+     * REVISI FUNGSI FETCH DATA
+     * Memastikan globalData selalu berbentuk Array sebelum memanggil renderTable
+     */
+    async function fetchData() {
+    showLoading("Sinkronisasi Data...");
+    try {
+        const response = await fetch(`${GAS_URL}?action=getData`);
+        if (!response.ok) throw new Error("Gagal menghubungi server");
+        
+        const result = await response.json();
+        
+        // Pastikan result.data adalah Array
+        if (result.success && result.data) {
+        globalData = Array.isArray(result.data) ? result.data : [];
+        } else {
+        globalData = [];
+        }
+        
+        renderTable();
+        // Jika tab pohon sedang aktif, render ulang pohonnya
+        if (document.getElementById('tab-pohon').classList.contains('show')) {
+        renderTree();
+        }
+    } catch (err) {
+        console.error("Gagal sinkron:", err);
+        globalData = []; // Reset ke array kosong agar renderTable tidak crash
+        renderTable();
+    }
+    hideLoading();
+    }
+
+    /**
+     * REVISI FUNGSI EKSEKUSI
+     * Memberikan jeda lebih lama agar Google Sheets selesai menulis sebelum di-fetch ulang
+     */
+    async function eksekusi(data) {
+    try {
+        await apiCall({ action: "saveData", data: data }, "Menyimpan ke Cloud...");
+        modalCtrl.hide();
+        
+        // Karena mode 'no-cors', kita beri jeda 3 detik 
+        // agar Google Script punya waktu memproses data sebelum kita minta data terbaru
+        setTimeout(() => {
+        fetchData();
+        }, 3000);
+    } catch (error) {
+        alert("Gagal mengirim data: " + error.message);
+    }
     }
 
     // --- LOAD DATA TABLE ---
@@ -351,32 +368,6 @@
         globalData = res.data;
         renderTable();
       }
-    }
-
-    function renderTable() {
-      const tbody = document.getElementById('tableBody');
-      tbody.innerHTML = '';
-      if(globalData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Belum ada data anggota keluarga.</td></tr>';
-        return;
-      }
-
-      globalData.forEach(item => {
-        let fotoHtml = item.foto ? `<img src="${item.foto}" class="foto-thumb">` : `<img src="https://via.placeholder.com/50" class="foto-thumb">`;
-        tbody.innerHTML += `
-          <tr>
-            <td>${fotoHtml}</td>
-            <td><strong>${item.nama}</strong><br><small>${item.jk} - ${item.tglLahir}</small></td>
-            <td>${item.statusKeluarga} (${item.statusKawin})</td>
-            <td>${item.ayah || '-'}</td>
-            <td>${item.ibu || '-'}</td>
-            <td>
-              <button class="btn btn-sm btn-warning mb-1" onclick="openForm('edit', '${item.id}')">Edit</button>
-              <button class="btn btn-sm btn-danger mb-1" onclick="hapusData('${item.id}')">Hapus</button>
-            </td>
-          </tr>
-        `;
-      });
     }
 
     // --- CRUD ---
