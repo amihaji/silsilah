@@ -9,9 +9,27 @@
     :root { --dark-blue: #1A365D; --light-blue: #63B3ED; --light-gray: #EDF2F7; }
     body { background-color: var(--light-gray); font-family: 'Segoe UI', sans-serif; }
     .navbar { background-color: var(--dark-blue) !important; }
-    .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid var(--light-blue); }
+    .foto-thumb { 
+      width: 50px; 
+      height: 50px; 
+      object-fit: cover; 
+      border-radius: 50%; 
+      border: 2px solid var(--light-blue);
+    }
     .loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center; flex-direction: column; }
-  </style>
+ 
+    /* Inisial Bulat */
+    .avatar-inisial {
+      width: 50px; height: 50px; border-radius: 50%;
+      background-color: #4A5568; color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; font-size: 1.1rem; text-transform: uppercase;
+      border: 1px solid #2D3748;
+    }
+    .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 1px solid #ddd; }
+    .loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center; flex-direction: column; }
+
+ </style>
 </head>
 <body>
 
@@ -49,20 +67,24 @@
       </div>
     </nav>
  
-    <div class="container">
+    <div class="container-fluid px-4">
       <div class="card p-3 shadow-sm">
         <div class="d-flex justify-content-between mb-3 align-items-center">
-          <h5 class="m-0">Data Anggota Keluarga</h5>
+          <h5 class="m-0 text-primary">TABEL DATA KELUARGA</h5>
           <button class="btn btn-success btn-sm" onclick="openForm('add')">+ Tambah</button>
         </div>
         <div class="table-responsive">
-          <table class="table table-sm table-hover align-middle">
+          <table class="table table-hover align-middle">
             <thead class="table-light">
               <tr>
-                <th>Foto</th>
+                <th class="text-center">Foto</th>
                 <th>Nama</th>
-                <th>Status</th>
-                <th>Aksi</th>
+                <th>Status Kawin</th>
+                <th>Nama Pasangan</th>
+                <th>Status Keluarga</th>
+                <th>Nama Ayah</th>
+                <th>Nama Ibu</th>
+                <th class="text-center">Aksi</th>
               </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -84,22 +106,22 @@
             <input type="hidden" id="formId">
             <input type="hidden" id="fotoLama">
             <div class="row g-3">
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <label class="form-label">Nama Lengkap</label>
                 <input type="text" id="nama" class="form-control" required>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <label class="form-label">Tanggal Lahir</label>
                 <input type="date" id="tglLahir" class="form-control">
               </div>
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <label class="form-label">Jenis Kelamin</label>
                 <select id="jk" onchange="togglePasangan()">
                   <option value="Laki-laki">Laki-laki</option>
                   <option value="Perempuan">Perempuan</option>
                 </select>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <label class="form-label">Status Perkawinan</label>
                 <select id="statusKawin" onchange="togglePasangan()">  
                   <option value="Single">Single</option>
@@ -109,12 +131,12 @@
                 </select>
               </div>
 
-              <div class="col-md-6" id="divPasangan" style="display:none;">
-                <label class="small text-primary font-weight-bold" id="labelPasangan">Nama Pasangan</label>
+              <div class="col-md-12" id="divPasangan" style="display:none;">
+                <label class="form-label" id="labelPasangan">Nama Pasangan</label>
                 <input type="text" id="namaPasangan" class="form-control form-control-sm">
               </div>
 
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <label class="form-label">Status Keluarga</label>
                 <select id="statusKeluarga" class="form-select">
                   <option value="Suami">Suami</option>
@@ -123,23 +145,23 @@
                   <option value="Cucu">Cucu</option>
                 </select>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <label class="form-label">Alamat Lengkap</label>
                 <textarea id="alamat" class="form-control" rows="2"></textarea>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <label class="form-label">Kota</label>
                 <input type="text" id="kota" class="form-control">
               </div>
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <label class="form-label">Nama Ayah</label>
                 <input type="text" id="ayah" class="form-control">
               </div>
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <label class="form-label">Nama Ibu</label>
                 <input type="text" id="ibu" class="form-control">
               </div>
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <label class="form-label">Unggah Foto</label>
                 <input type="file" id="fotoFile" class="form-control" accept="image/*">
               </div>
@@ -157,7 +179,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVNtehHqsm_XmiFcVySAcYFy1ahF-l2KKqzYPcrsJJE-eTKJRt0VeYkohLAr5_7phz/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbq3nr-dU_c-4k-xxeRKQxt8OL_4oeGsTvBkrSqi84t-jNlCxdx4m5ttLHlHU4X1fZ/exec";
     let globalData   = [];
     let modalInstance;
 
