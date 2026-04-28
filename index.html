@@ -89,15 +89,15 @@
                 <input type="text" id="nama" class="form-control" required>
               </div>
               <div class="col-md-6">
+                <label class="form-label">Tanggal Lahir</label>
+                <input type="date" id="tglLahir" class="form-control">
+              </div>
+              <div class="col-md-6">
                 <label class="form-label">Jenis Kelamin</label>
                 <select id="jk" onchange="togglePasangan()">
                   <option value="Laki-laki">Laki-laki</option>
                   <option value="Perempuan">Perempuan</option>
                 </select>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Tanggal Lahir</label>
-                <input type="date" id="tglLahir" class="form-control">
               </div>
               <div class="col-md-6">
                 <label class="form-label">Status Perkawinan</label>
@@ -109,7 +109,7 @@
                 </select>
               </div>
 
-              <div class="col-md-12" id="divPasangan" style="display:none;">
+              <div class="col-md-6" id="divPasangan" style="display:none;">
                 <label class="small text-primary font-weight-bold" id="labelPasangan">Nama Pasangan</label>
                 <input type="text" id="namaPasangan" class="form-control form-control-sm">
               </div>
@@ -123,13 +123,13 @@
                   <option value="Cucu">Cucu</option>
                 </select>
               </div>
-              <div class="col-md-6">
-                <label class="form-label">Kota</label>
-                <input type="text" id="kota" class="form-control">
-              </div>
               <div class="col-md-12">
                 <label class="form-label">Alamat Lengkap</label>
                 <textarea id="alamat" class="form-control" rows="2"></textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Kota</label>
+                <input type="text" id="kota" class="form-control">
               </div>
               <div class="col-md-6">
                 <label class="form-label">Nama Ayah</label>
@@ -233,8 +233,8 @@
         if(item) {
           document.getElementById('formId').value = item.id;
           document.getElementById('nama').value = item.nama || "";
-          document.getElementById('jk').value = item.jk || "Laki-laki";
           document.getElementById('tglLahir').value = item.tglLahir ? new Date(item.tglLahir).toISOString().split('T')[0] : "";
+          document.getElementById('jk').value = item.jk || "Laki-laki";
           document.getElementById('statusKawin').value = item.statusKawin || "Single";
           document.getElementById('statusKeluarga').value = item.statusKeluarga || "Anak";
           document.getElementById('alamat').value = item.alamat || "";
