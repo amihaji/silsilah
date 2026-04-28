@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Silsilah Keluarga</title>
-  <!-- Bootstrap 5 CSS -->
+  <title>Sistem Silsilah Keluarga</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     :root { --dark-blue: #1A365D; --light-blue: #63B3ED; --light-gray: #EDF2F7; }
@@ -16,13 +15,13 @@
 </head>
 <body>
 
-  <!-- Loading Indicator -->
+  <!-- Indikator Loading -->
   <div class="loading-overlay" id="loader">
     <div class="spinner-border text-primary mb-2"></div>
     <div id="loaderText">Memproses...</div>
   </div>
 
-  <!-- AREA LOGIN -->
+  <!-- Area Login -->
   <div id="loginArea" class="container mt-5">
     <div class="row justify-content-center">
       <div class="col-md-5">
@@ -41,7 +40,7 @@
     </div>
   </div>
 
-  <!-- AREA APLIKASI -->
+  <!-- Area Aplikasi -->
   <div id="appArea" class="d-none">
     <nav class="navbar navbar-expand-lg navbar-dark mb-4">
       <div class="container-fluid">
@@ -62,7 +61,7 @@
             <tr>
               <th>Foto</th>
               <th>Nama</th>
-              <th>Status</th>
+              <th>Status Kel.</th>
               <th>Orang Tua</th>
               <th>Aksi</th>
             </tr>
@@ -73,7 +72,7 @@
     </div>
   </div>
 
-  <!-- MODAL FORM -->
+  <!-- Modal Form Anggota -->
   <div class="modal fade" id="formModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
@@ -98,17 +97,34 @@
                 </select>
               </div>
               <div class="col-md-6">
+                <label class="form-label">Tanggal Lahir</label>
+                <input type="date" id="tglLahir" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Status Perkawinan</label>
+                <select id="statusKawin" class="form-select">
+                  <option value="Single">Single</option>
+                  <option value="Kawin">Kawin</option>
+                  <option value="Duda">Duda</option>
+                  <option value="Janda">Janda</option>
+                </select>
+              </div>
+              <div class="col-md-6">
                 <label class="form-label">Status Keluarga</label>
                 <select id="statusKeluarga" class="form-select">
-                  <option value="Anak">Anak</option>
                   <option value="Suami">Suami</option>
                   <option value="Istri">Istri</option>
+                  <option value="Anak">Anak</option>
                   <option value="Cucu">Cucu</option>
                 </select>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Kota</label>
                 <input type="text" id="kota" class="form-control">
+              </div>
+              <div class="col-md-12">
+                <label class="form-label">Alamat Lengkap</label>
+                <textarea id="alamat" class="form-control" rows="2"></textarea>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Nama Ayah</label>
@@ -119,7 +135,7 @@
                 <input type="text" id="ibu" class="form-control">
               </div>
               <div class="col-md-12">
-                <label class="form-label">Foto</label>
+                <label class="form-label">Unggah Foto</label>
                 <input type="file" id="fotoFile" class="form-control" accept="image/*">
               </div>
             </div>
@@ -135,18 +151,14 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // MASUKKAN URL WEB APP GOOGLE SCRIPT ANDA DI SINI
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVetqoHFqNcqGRSlS2HnXN-ECNhSLyL2ytMcpJLGmB2FVIwbZIu_S7RNo6KLLiecHy/exec";
+    // GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbycMIKpQd794VIUV-_cpW0KiGFYeFqyRnbf8pMogeDH06dlH6ub2fGT9-a-OAk6ySx8/exec";
     let globalData = [];
     let modalInstance;
 
     document.addEventListener('DOMContentLoaded', function() {
       modalInstance = new bootstrap.Modal(document.getElementById('formModal'));
-      
-      // Handler Login
       document.getElementById('formLogin').addEventListener('submit', prosesLogin);
-      
-      // Handler Simpan Data (SOLUSI ERROR PREVENTDEFAULT)
       document.getElementById('formKeluarga').addEventListener('submit', simpanData);
     });
 
@@ -159,8 +171,7 @@
       e.preventDefault();
       const u = document.getElementById('loginUsername').value;
       const p = document.getElementById('loginPassword').value;
-      
-      showLoader(true, "Memverifikasi...");
+      showLoader(true, "Memverifikasi Login...");
       try {
         const resp = await fetch(`${SCRIPT_URL}?action=login&u=${encodeURIComponent(u)}&p=${encodeURIComponent(p)}`);
         const res = await resp.json();
@@ -176,7 +187,7 @@
     }
 
     async function loadData() {
-      showLoader(true, "Mengambil data...");
+      showLoader(true, "Memperbarui Data Tabel...");
       try {
         const resp = await fetch(`${SCRIPT_URL}?action=getData`);
         const res = await resp.json();
@@ -191,16 +202,12 @@
     function renderTable() {
       const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
-      if(globalData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center">Data kosong.</td></tr>';
-        return;
-      }
       globalData.forEach(item => {
-        const img = item.foto ? item.foto : 'https://via.placeholder.com/50';
+        const img = item.foto || 'https://via.placeholder.com/50';
         tbody.innerHTML += `
           <tr>
             <td><img src="${img}" class="foto-thumb" onerror="this.src='https://via.placeholder.com/50'"></td>
-            <td><strong>${item.nama}</strong><br><small>${item.jk}</small></td>
+            <td><strong>${item.nama}</strong></td>
             <td>${item.statusKeluarga}</td>
             <td>A: ${item.ayah || '-'}<br>I: ${item.ibu || '-'}</td>
             <td>
@@ -213,31 +220,33 @@
     function openForm(mode, id = null) {
       document.getElementById('formKeluarga').reset();
       document.getElementById('formId').value = "";
+      document.getElementById('fotoLama').value = "";
+      document.getElementById('modalTitle').innerText = mode === 'add' ? "Tambah Anggota" : "Edit Anggota";
+      
       if(mode === 'edit') {
         const item = globalData.find(x => x.id == id);
         if(item) {
           document.getElementById('formId').value = item.id;
-          document.getElementById('nama').value = item.nama;
-          document.getElementById('jk').value = item.jk;
-          document.getElementById('statusKeluarga').value = item.statusKeluarga;
-          document.getElementById('kota').value = item.kota;
-          document.getElementById('ayah').value = item.ayah;
-          document.getElementById('ibu').value = item.ibu;
-          document.getElementById('fotoLama').value = item.foto;
+          document.getElementById('nama').value = item.nama || "";
+          document.getElementById('jk').value = item.jk || "Laki-laki";
+          document.getElementById('tglLahir').value = item.tglLahir ? new Date(item.tglLahir).toISOString().split('T')[0] : "";
+          document.getElementById('statusKawin').value = item.statusKawin || "Single";
+          document.getElementById('statusKeluarga').value = item.statusKeluarga || "Anak";
+          document.getElementById('alamat').value = item.alamat || "";
+          document.getElementById('kota').value = item.kota || "";
+          document.getElementById('ayah').value = item.ayah || "";
+          document.getElementById('ibu').value = item.ibu || "";
+          document.getElementById('fotoLama').value = item.foto || "";
         }
       }
       modalInstance.show();
     }
 
     async function simpanData(e) {
-      e.preventDefault(); // Di sini 'e' sudah pasti terdefinisi dari addEventListener
-      
+      e.preventDefault();
       const btn = document.getElementById('btnSimpan');
       const fileInput = document.getElementById('fotoFile');
-      const originalText = btn.innerHTML;
-
       btn.disabled = true;
-      btn.innerHTML = "Menyimpan...";
 
       let payload = {
         action: "saveData",
@@ -245,7 +254,10 @@
           id: document.getElementById('formId').value,
           nama: document.getElementById('nama').value,
           jk: document.getElementById('jk').value,
+          tglLahir: document.getElementById('tglLahir').value,
+          statusKawin: document.getElementById('statusKawin').value,
           statusKeluarga: document.getElementById('statusKeluarga').value,
+          alamat: document.getElementById('alamat').value,
           kota: document.getElementById('kota').value,
           ayah: document.getElementById('ayah').value,
           ibu: document.getElementById('ibu').value,
@@ -254,7 +266,6 @@
         }
       };
 
-      // Konversi Foto ke Base64 jika ada
       if (fileInput.files[0]) {
         const reader = new FileReader();
         reader.onload = async function(event) {
@@ -268,32 +279,20 @@
     }
 
     async function kirimData(payload) {
-      showLoader(true, "Mengirim data ke Google Sheets...");
+      showLoader(true, "Menyimpan ke Spreadsheet...");
       try {
-        const resp = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
+        const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
         const res = await resp.json();
         if(res.success) {
           alert(res.message);
           modalInstance.hide();
-          await loadData(); // Otomatis refresh tabel
-        } else {
-          alert("Gagal: " + res.message);
+          loadData();
         }
-      } catch (err) { alert("Kesalahan koneksi."); }
-      finally {
-        showLoader(false);
-        const btn = document.getElementById('btnSimpan');
-        btn.disabled = false;
-        btn.innerHTML = "Simpan Data";
-      }
+      } catch (err) { alert("Gagal menyimpan data."); }
+      finally { showLoader(false); document.getElementById('btnSimpan').disabled = false; }
     }
 
-    function logout() {
-      location.reload();
-    }
+    function logout() { location.reload(); }
   </script>
 </body>
 </html>
