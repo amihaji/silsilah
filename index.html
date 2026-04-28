@@ -242,7 +242,46 @@
       modalInstance.show();
     }
 
+    // Update simpanData untuk memasukkan field namaPasangan
     async function simpanData(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSimpan');
+        btn.disabled = true;
+
+        let payload = {
+            action: "saveData",
+            data: {
+                id: document.getElementById('formId').value,
+                nama: document.getElementById('nama').value,
+                jk: document.getElementById('jk').value,
+                tglLahir: document.getElementById('tglLahir').value,
+                statusKawin: document.getElementById('statusKawin').value,
+                namaPasangan: document.getElementById('namaPasangan').value, // FIELD BARU
+                statusKeluarga: document.getElementById('statusKeluarga').value,
+                alamat: document.getElementById('alamat').value,
+                kota: document.getElementById('kota').value,
+                ayah: document.getElementById('ayah').value,
+                ibu: document.getElementById('ibu').value,
+                fotoLama: document.getElementById('fotoLama').value,
+                fotoBase64: null
+            }
+        };
+        
+        // ... (logika FileReader dan kirimData tetap sama seperti sebelumnya)
+        const fileInput = document.getElementById('fotoFile');
+        if (fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                payload.data.fotoBase64 = event.target.result;
+                await kirimData(payload);
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        } else {
+            await kirimData(payload);
+        }
+    }
+
+    async function BACKUP_simpanData(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSimpan');
       const fileInput = document.getElementById('fotoFile');
@@ -292,7 +331,76 @@
       finally { showLoader(false); document.getElementById('btnSimpan').disabled = false; }
     }
 
-    function logout() { location.reload(); }
+    /***********************************
+    * Fungsi Untuk logout dari aplikasi
+    ************************************/
+    function logout() { 
+      location.reload();
+    }
+
+ /***************************
+  * TAMBAHAN
+  * ***************************/
+
+    // Fungsi Baru untuk Logika Kondisional Poin 2
+    function togglePasangan() {
+        const jk = document.getElementById('jk').value;
+        const statusKawin = document.getElementById('statusKawin').value;
+        const divPasangan = document.getElementById('divPasangan');
+        const labelPasangan = document.getElementById('labelPasangan');
+        
+        let show = false;
+        
+        if (jk === "Laki-laki") {
+            if (statusKawin === "Kawin" || statusKawin === "Duda") {
+                labelPasangan.innerText = "Nama Istri";
+                show = true;
+            }
+        } else if (jk === "Perempuan") {
+            if (statusKawin === "Kawin" || statusKawin === "Janda") {
+                labelPasangan.innerText = "Nama Suami";
+                show = true;
+            }
+        }
+        
+        divPasangan.style.display = show ? "block" : "none";
+        if (!show) document.getElementById('namaPasangan').value = "";
+    }
+
+    // Update fungsi openForm agar memanggil togglePasangan saat Edit
+    function openForm(mode, id = null) {
+        document.getElementById('formKeluarga').reset();
+        document.getElementById('formId').value = "";
+        document.getElementById('fotoLama').value = "";
+        document.getElementById('divPasangan').style.display = "none"; // Reset tampilan dinamis
+        
+        if(mode === 'edit') {
+            const item = globalData.find(x => x.id == id);
+            if(item) {
+                document.getElementById('formId').value = item.id;
+                document.getElementById('nama').value = item.nama || "";
+                document.getElementById('jk').value = item.jk || "Laki-laki";
+                document.getElementById('tglLahir').value = item.tglLahir ? new Date(item.tglLahir).toISOString().split('T')[0] : "";
+                document.getElementById('statusKawin').value = item.statusKawin || "Single";
+                document.getElementById('statusKeluarga').value = item.statusKeluarga || "Anak";
+                document.getElementById('alamat').value = item.alamat || "";
+                document.getElementById('kota').value = item.kota || "";
+                document.getElementById('ayah').value = item.ayah || "";
+                document.getElementById('ibu').value = item.ibu || "";
+                document.getElementById('fotoLama').value = item.foto || "";
+                
+                // Set Nilai Nama Pasangan (Jika ada di data)
+                if(item.namaPasangan) {
+                    document.getElementById('namaPasangan').value = item.namaPasangan;
+                }
+                
+                // Jalankan logika cek field dinamis
+                togglePasangan();
+            }
+        }
+        modalInstance.show();
+    }
+
   </script>
 </body>
 </html>
