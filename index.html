@@ -2,80 +2,24 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aplikasi Silsilah Keluarga</title>
-  
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Google Visualization API untuk Tree/OrgChart -->
-  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  
   <style>
-    :root {
-      --dark-blue: #1A365D;
-      --light-blue: #63B3ED;
-      --light-gray: #EDF2F7;
-      --white: #FFFFFF;
-      --black: #1A202C;
-    }
-    body {
-      background-color: var(--light-gray);
-      color: var(--black);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+    :root { --dark-blue: #1A365D; --light-blue: #63B3ED; --light-gray: #EDF2F7; }
+    body { background-color: var(--light-gray); font-family: 'Segoe UI', sans-serif; }
     .navbar { background-color: var(--dark-blue) !important; }
-    .card-header { background-color: var(--dark-blue); color: var(--white); }
-    .btn-primary {
-      background-color: var(--light-blue);
-      border-color: var(--light-blue);
-      color: var(--dark-blue);
-      font-weight: 600;
-    }
-    .btn-primary:hover { background-color: var(--dark-blue); color: var(--white); }
-    .table-dark { background-color: var(--dark-blue) !important; }
-    .foto-thumb {
-      width: 50px; height: 50px; object-fit: cover;
-      border-radius: 50%; border: 2px solid var(--light-blue);
-    }
-    .tree-container { overflow-x: auto; padding: 20px; min-height: 500px; }
-    
-    /* Custom OrgChart Styling */
-    .google-visualization-orgchart-node {
-      border: 2px solid var(--light-blue) !important;
-      border-radius: 8px !important;
-      background-color: var(--white) !important;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      padding: 10px !important; font-family: inherit !important;
-    }
-    .google-visualization-orgchart-node-img {
-      width: 60px; height: 60px; object-fit: cover;
-      border-radius: 50%; margin-bottom: 5px;
-    }
-    .org-name { font-weight: bold; color: var(--dark-blue); font-size: 14px; }
-    .org-status { font-size: 11px; color: gray; }
-
-    @media print {
-      .no-print, .nav-tabs, .navbar, .btn { display: none !important; }
-      body { background-color: white; }
-      .print-area { display: block !important; }
-      .tree-container { box-shadow: none; border: none; }
-    }
-    
-    /* Overlay Loading */
-    #loadingOverlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(255,255,255,0.8); z-index: 9999;
-      display: flex; justify-content: center; align-items: center;
-      flex-direction: column; display: none;
-    }
+    .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid var(--light-blue); }
+    .loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center; flex-direction: column; }
   </style>
 </head>
 <body>
 
   <!-- Loading Indicator -->
-  <div id="loadingOverlay">
-    <div class="spinner-border text-primary" role="status"></div>
-    <div class="mt-2 fw-bold" id="loadingText">Memproses...</div>
+  <div class="loading-overlay" id="loader">
+    <div class="spinner-border text-primary mb-2"></div>
+    <div id="loaderText">Memproses...</div>
   </div>
 
   <!-- AREA LOGIN -->
@@ -83,20 +27,14 @@
     <div class="row justify-content-center">
       <div class="col-md-5">
         <div class="card shadow">
-          <div class="card-header text-center">
-            <h4>Login Sistem Silsilah</h4>
-          </div>
+          <div class="card-header bg-primary text-white text-center"><h4>Login Silsilah</h4></div>
           <div class="card-body">
-            <div class="mb-3">
-              <label>Username</label>
-              <input type="text" id="loginUsername" class="form-control" placeholder="admin">
-            </div>
-            <div class="mb-3">
-              <label>Password</label>
-              <input type="password" id="loginPassword" class="form-control" placeholder="admin123">
-            </div>
-            <button class="btn btn-primary w-100" onclick="prosesLogin()">Login</button>
-            <div id="loginMsg" class="text-danger mt-2 text-center"></div>
+            <form id="formLogin">
+              <div class="mb-3"><label>Username</label><input type="text" id="loginUsername" class="form-control" required></div>
+              <div class="mb-3"><label>Password</label><input type="password" id="loginPassword" class="form-control" required></div>
+              <button type="submit" class="btn btn-primary w-100">Login</button>
+              <div id="loginMsg" class="text-danger mt-2 text-center"></div>
+            </form>
           </div>
         </div>
       </div>
@@ -105,388 +43,257 @@
 
   <!-- AREA APLIKASI -->
   <div id="appArea" class="d-none">
-    <nav class="navbar navbar-expand-lg navbar-dark no-print">
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
       <div class="container-fluid">
         <a class="navbar-brand" href="#">Pohon Silsilah Keluarga</a>
-        <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
+        <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
       </div>
     </nav>
 
-    <div class="container mt-4">
-      <ul class="nav nav-tabs no-print" id="myTab" role="tablist">
-        <li class="nav-item">
-          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#data" type="button">Data Keluarga</button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link" id="pohon-tab" data-bs-toggle="tab" data-bs-target="#pohon" type="button" onclick="renderTree()">Pohon Silsilah</button>
-        </li>
-      </ul>
+    <div class="container">
+      <div class="d-flex justify-content-between mb-3">
+        <h4>Daftar Anggota Keluarga</h4>
+        <button class="btn btn-success" onclick="openForm('add')">+ Tambah Anggota</button>
+      </div>
       
-      <div class="tab-content mt-3">
-        <!-- TAB DATA -->
-        <div class="tab-pane fade show active no-print" id="data">
-          <div class="d-flex justify-content-between mb-3">
-            <h4>Daftar Anggota</h4>
-            <button class="btn btn-success" onclick="openForm('add')">+ Tambah Anggota</button>
-          </div>
-          <div class="table-responsive bg-white p-3 rounded shadow-sm">
-            <table class="table table-hover table-bordered align-middle">
-              <thead class="table-dark">
-                <tr><th>Foto</th><th>Nama</th><th>Status</th><th>Ayah</th><th>Ibu</th><th>Aksi</th></tr>
-              </thead>
-              <tbody id="tableBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- TAB POHON -->
-        <div class="tab-pane fade print-area" id="pohon">
-          <div class="d-flex justify-content-between mb-3 no-print">
-            <h4>Bagan Silsilah</h4>
-            <button class="btn btn-primary" onclick="downloadPDF()">Download PDF / Print</button>
-          </div>
-          <div class="tree-container bg-white rounded shadow-sm">
-            <div id="chart_div"></div>
-          </div>
-        </div>
+      <div class="table-responsive bg-white p-3 rounded shadow-sm">
+        <table class="table table-hover align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th>Foto</th>
+              <th>Nama</th>
+              <th>Status</th>
+              <th>Orang Tua</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
       </div>
     </div>
   </div>
 
   <!-- MODAL FORM -->
-  <div class="modal fade" id="formModal" tabindex="-1">
+  <div class="modal fade" id="formModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalTitle">Form Data</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <form id="formKeluarga">
-            <input type="hidden" id="formId"><input type="hidden" id="formAction" value="add"><input type="hidden" id="fotoLama">
-            <div class="row">
-              <div class="col-md-6 mb-2"><label>Nama Lengkap</label><input type="text" id="nama" class="form-control" required></div>
-              <div class="col-md-6 mb-2">
-                <label>Jenis Kelamin</label>
-                <select id="jk" class="form-select"><option>Laki-laki</option><option>Perempuan</option></select>
+        <form id="formKeluarga">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle">Tambah Data</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="formId">
+            <input type="hidden" id="fotoLama">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Nama Lengkap</label>
+                <input type="text" id="nama" class="form-control" required>
               </div>
-              <div class="col-md-6 mb-2"><label>Tanggal Lahir</label><input type="date" id="tglLahir" class="form-control" required></div>
-              <div class="col-md-6 mb-2">
-                <label>Status Perkawinan</label>
-                <select id="statusKawin" class="form-select"><option>Single</option><option>Kawin</option><option>Duda</option><option>Janda</option></select>
+              <div class="col-md-6">
+                <label class="form-label">Jenis Kelamin</label>
+                <select id="jk" class="form-select">
+                  <option value="Laki-laki">Laki-laki</option>
+                  <option value="Perempuan">Perempuan</option>
+                </select>
               </div>
-              <div class="col-md-6 mb-2">
-                <label>Status Keluarga</label>
-                <select id="statusKeluarga" class="form-select"><option>Suami</option><option>Istri</option><option>Anak</option><option>Cucu</option><option>Cicit</option></select>
+              <div class="col-md-6">
+                <label class="form-label">Status Keluarga</label>
+                <select id="statusKeluarga" class="form-select">
+                  <option value="Anak">Anak</option>
+                  <option value="Suami">Suami</option>
+                  <option value="Istri">Istri</option>
+                  <option value="Cucu">Cucu</option>
+                </select>
               </div>
-              <div class="col-md-6 mb-2"><label>Kota</label><input type="text" id="kota" class="form-control"></div>
-              <div class="col-md-12 mb-2"><label>Alamat</label><textarea id="alamat" class="form-control" rows="2"></textarea></div>
-              <div class="col-md-6 mb-2"><label>Nama Ayah (Tulis Persis)</label><input type="text" id="ayah" class="form-control" placeholder="Kosongkan jika root/leluhur"></div>
-              <div class="col-md-6 mb-2"><label>Nama Ibu</label><input type="text" id="ibu" class="form-control"></div>
-              <div class="col-md-12 mb-2"><label>Upload Foto</label><input type="file" id="fotoFile" class="form-control" accept="image/*"></div>
+              <div class="col-md-6">
+                <label class="form-label">Kota</label>
+                <input type="text" id="kota" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Nama Ayah</label>
+                <input type="text" id="ayah" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Nama Ibu</label>
+                <input type="text" id="ibu" class="form-control">
+              </div>
+              <div class="col-md-12">
+                <label class="form-label">Foto</label>
+                <input type="file" id="fotoFile" class="form-control" accept="image/*">
+              </div>
             </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="button" class="btn btn-primary" onclick="simpanData()">Simpan Data</button>
-        </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary" id="btnSimpan">Simpan Data</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // WAJIB UBAH: Masukkan URL Deploy Web App GAS Anda di bawah ini
-    const GAS_URL  = "https://script.google.com/macros/s/AKfycbw8V5g-Ooqz_a-BhNsxdB6n1S9GRsGlQb9w6wc7sghpzfblP111Qa2M5fW65nLYok5W/exec"; 
+    // MASUKKAN URL WEB APP GOOGLE SCRIPT ANDA DI SINI
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVetqoHFqNcqGRSlS2HnXN-ECNhSLyL2ytMcpJLGmB2FVIwbZIu_S7RNo6KLLiecHy/exec";
     let globalData = [];
-    let formModal;
-    
-    document.addEventListener("DOMContentLoaded", () => {
-      formModal = new bootstrap.Modal(document.getElementById('formModal'));
-      google.charts.load('current', {packages:["orgchart"]});
+    let modalInstance;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      modalInstance = new bootstrap.Modal(document.getElementById('formModal'));
+      
+      // Handler Login
+      document.getElementById('formLogin').addEventListener('submit', prosesLogin);
+      
+      // Handler Simpan Data (SOLUSI ERROR PREVENTDEFAULT)
+      document.getElementById('formKeluarga').addEventListener('submit', simpanData);
     });
 
-    // Verifikasi login menggunakan GET agar respon JSON bisa dibaca langsung
-    async function prosesLogin() {
-    const u = document.getElementById('loginUsername').value;
-    const p = document.getElementById('loginPassword').value;
-    
-    showLoading("Memverifikasi...");
-    try {
-        const res = await fetch(`${GAS_URL}?action=login&u=${encodeURIComponent(u)}&p=${encodeURIComponent(p)}`);
-        const data = await res.json();
-        
-        if(data.success) {
-        document.getElementById('loginArea').classList.add('d-none');
-        document.getElementById('appArea').classList.remove('d-none');
-        fetchData();
-        } else {
-        document.getElementById('loginMsg').innerText = data.message;
-        }
-    } catch(e) {
-        console.error(e);
-        alert("Koneksi Error atau URL GAS salah.");
-    }
-    hideLoading();
+    function showLoader(show, text = "Memproses...") {
+      document.getElementById('loader').style.display = show ? 'flex' : 'none';
+      document.getElementById('loaderText').innerText = text;
     }
 
-    // --- Loading UI ---
-    function showLoading(msg) {
-      document.getElementById('loadingText').innerText = msg;
-      document.getElementById('loadingOverlay').style.display = 'flex';
+    async function prosesLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('loginUsername').value;
+      const p = document.getElementById('loginPassword').value;
+      
+      showLoader(true, "Memverifikasi...");
+      try {
+        const resp = await fetch(`${SCRIPT_URL}?action=login&u=${encodeURIComponent(u)}&p=${encodeURIComponent(p)}`);
+        const res = await resp.json();
+        if(res.success) {
+          document.getElementById('loginArea').classList.add('d-none');
+          document.getElementById('appArea').classList.remove('d-none');
+          loadData();
+        } else {
+          document.getElementById('loginMsg').innerText = res.message;
+        }
+      } catch (err) { alert("Gagal koneksi ke server."); }
+      finally { showLoader(false); }
     }
-    function hideLoading() {
-      document.getElementById('loadingOverlay').style.display = 'none';
+
+    async function loadData() {
+      showLoader(true, "Mengambil data...");
+      try {
+        const resp = await fetch(`${SCRIPT_URL}?action=getData`);
+        const res = await resp.json();
+        if(res.success) {
+          globalData = res.data;
+          renderTable();
+        }
+      } catch (err) { console.error(err); }
+      finally { showLoader(false); }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+      if(globalData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center">Data kosong.</td></tr>';
+        return;
+      }
+      globalData.forEach(item => {
+        const img = item.foto ? item.foto : 'https://via.placeholder.com/50';
+        tbody.innerHTML += `
+          <tr>
+            <td><img src="${img}" class="foto-thumb" onerror="this.src='https://via.placeholder.com/50'"></td>
+            <td><strong>${item.nama}</strong><br><small>${item.jk}</small></td>
+            <td>${item.statusKeluarga}</td>
+            <td>A: ${item.ayah || '-'}<br>I: ${item.ibu || '-'}</td>
+            <td>
+              <button class="btn btn-sm btn-warning" onclick="openForm('edit', '${item.id}')">Edit</button>
+            </td>
+          </tr>`;
+      });
+    }
+
+    function openForm(mode, id = null) {
+      document.getElementById('formKeluarga').reset();
+      document.getElementById('formId').value = "";
+      if(mode === 'edit') {
+        const item = globalData.find(x => x.id == id);
+        if(item) {
+          document.getElementById('formId').value = item.id;
+          document.getElementById('nama').value = item.nama;
+          document.getElementById('jk').value = item.jk;
+          document.getElementById('statusKeluarga').value = item.statusKeluarga;
+          document.getElementById('kota').value = item.kota;
+          document.getElementById('ayah').value = item.ayah;
+          document.getElementById('ibu').value = item.ibu;
+          document.getElementById('fotoLama').value = item.foto;
+        }
+      }
+      modalInstance.show();
+    }
+
+    async function simpanData(e) {
+      e.preventDefault(); // Di sini 'e' sudah pasti terdefinisi dari addEventListener
+      
+      const btn = document.getElementById('btnSimpan');
+      const fileInput = document.getElementById('fotoFile');
+      const originalText = btn.innerHTML;
+
+      btn.disabled = true;
+      btn.innerHTML = "Menyimpan...";
+
+      let payload = {
+        action: "saveData",
+        data: {
+          id: document.getElementById('formId').value,
+          nama: document.getElementById('nama').value,
+          jk: document.getElementById('jk').value,
+          statusKeluarga: document.getElementById('statusKeluarga').value,
+          kota: document.getElementById('kota').value,
+          ayah: document.getElementById('ayah').value,
+          ibu: document.getElementById('ibu').value,
+          fotoLama: document.getElementById('fotoLama').value,
+          fotoBase64: null
+        }
+      };
+
+      // Konversi Foto ke Base64 jika ada
+      if (fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = async function(event) {
+          payload.data.fotoBase64 = event.target.result;
+          await kirimData(payload);
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        await kirimData(payload);
+      }
+    }
+
+    async function kirimData(payload) {
+      showLoader(true, "Mengirim data ke Google Sheets...");
+      try {
+        const resp = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        const res = await resp.json();
+        if(res.success) {
+          alert(res.message);
+          modalInstance.hide();
+          await loadData(); // Otomatis refresh tabel
+        } else {
+          alert("Gagal: " + res.message);
+        }
+      } catch (err) { alert("Kesalahan koneksi."); }
+      finally {
+        showLoader(false);
+        const btn = document.getElementById('btnSimpan');
+        btn.disabled = false;
+        btn.innerHTML = "Simpan Data";
+      }
     }
 
     function logout() {
-      document.getElementById('loginArea').classList.remove('d-none');
-      document.getElementById('appArea').classList.add('d-none');
-      document.getElementById('loginUsername').value = '';
-      document.getElementById('loginPassword').value = '';
+      location.reload();
     }
-
-    // --- LOAD DATA TABLE ---
-    async function loadDataKeluarga() {
-      const res = await apiCall({ action: "getData" }, "Memuat Data...");
-      if(res.success) {
-        globalData = res.data;
-        renderTable();
-      }
-    }
-
-    // --- CRUD ---
-    function openForm(action, id = null) {
-      document.getElementById('formKeluarga').reset();
-      document.getElementById('formAction').value = action;
-      
-      if(action === 'edit') {
-        document.getElementById('modalTitle').innerText = "Edit Data";
-        const item = globalData.find(x => x.id == id);
-        if(item) {
-          ['id','nama','jk','tglLahir','statusKawin','statusKeluarga','kota','alamat','ayah','ibu'].forEach(k => {
-             document.getElementById(k==='id'?'formId':k).value = item[k] || '';
-          });
-          document.getElementById('fotoLama').value = item.foto;
-        }
-      } else {
-        document.getElementById('modalTitle').innerText = "Tambah Data";
-        document.getElementById('formId').value = "";
-        document.getElementById('fotoLama').value = "";
-      }
-      formModal.show();
-    }
-
-
-    // Pastikan fungsi simpan Anda terlihat seperti ini
-    async function simpanData(event) {
-        event.preventDefault();
-        const submitBtn = document.querySelector('#formKeluarga button[type="submit"]');
-        const originalBtnText = submitBtn.innerHTML;
-        
-        // 1. Beri indikator loading
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = 'Menyimpan...';
-
-        const formData = {
-            action: 'saveData',
-            data: {
-                id: document.getElementById('memberId').value,
-                nama: document.getElementById('nama').value,
-                jk: document.getElementById('jk').value,
-                // ... (ambil semua field lainnya)
-            }
-        };
-
-        try {
-            const response = await fetch(SCRIPT_URL + "?formData=" + encodeURIComponent(JSON.stringify(formData)), {
-                method: 'POST'
-            });
-            const result = await response.json();
-
-            if (result.success) {
-                // Tampilkan pesan menggunakan kunci yang konsisten
-                alert(result.message || result.msg || "Data berhasil disimpan");
-                
-                // 2. SOLUSI ERROR ARIA: Hilangkan fokus dari tombol sebelum menutup modal
-                submitBtn.blur(); 
-                
-                // 3. Tutup Modal menggunakan API Bootstrap
-                const myModalEl = document.getElementById('formModal');
-                const modal = bootstrap.Modal.getInstance(myModalEl);
-                modal.hide();
-
-                // 4. Reset Form dan Refresh Tabel
-                document.getElementById('formKeluarga').reset();
-                loadData(); // Fungsi untuk mengambil data terbaru
-            } else {
-                alert("Gagal: " + (result.message || "Terjadi kesalahan"));
-            }
-        } catch (error) {
-            console.error("Error:", error);
-            alert("Terjadi kesalahan koneksi");
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnText;
-        }
-    }
-
-    async function eksekusiSimpan(dataObj) {
-      const res = await apiCall({ action: "saveData", data: dataObj }, "Menyimpan Data...");
-      if(res.success) {
-        alert(res.message);
-        formModal.hide();
-        loadDataKeluarga();
-      } else {
-        alert("Gagal: " + res.message);
-      }
-    }
-
-    async function hapusData(id) {
-      if(confirm("Yakin ingin menghapus data ini?")) {
-        const res = await apiCall({ action: "deleteData", id: id }, "Menghapus Data...");
-        if(res.success) loadDataKeluarga();
-      }
-    }
-
-    // 1. REVISI fetchData (Menghilangkan error classList)
-    async function fetchData() {
-        showLoading("Menyinkronkan Data...");
-        try {
-            const response = await fetch(`${GAS_URL}?action=getData`);
-            if (!response.ok) throw new Error("Gagal menghubungi server");
-            
-            const result = await response.json();
-            
-            if (result.success && result.data) {
-                globalData = Array.isArray(result.data) ? result.data : [];
-            } else {
-                globalData = [];
-            }
-            
-            // Render tabel data
-            renderTable();
-            
-            // Pengecekan aman untuk Tab Pohon
-            const tabPohon = document.getElementById('tab-pohon');
-            if (tabPohon && tabPohon.classList.contains('show')) {
-                renderTree();
-            }
-        } catch (err) {
-            console.error("Gagal sinkron:", err);
-            globalData = []; 
-            renderTable();
-        }
-        hideLoading();
-    }
-
-    // 2. REVISI renderTable (Ganti placeholder ke yang lebih stabil)
-    function renderTable() {
-        const tbody = document.getElementById('tableBody');
-        if (!tbody) return;
-
-        if (!globalData || globalData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Belum ada data.</td></tr>';
-            return;
-        }
-
-        // Menggunakan i.pravatar.cc sebagai cadangan foto yang lebih stabil
-        tbody.innerHTML = globalData.map(item => `
-            <tr>
-                <td class="text-center">
-                    <img src="${item.foto || 'https://i.pravatar.cc/100?u=' + item.id}" 
-                        class="rounded-circle" style="width:40px; height:40px; object-fit:cover;"
-                        onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('${item.nama}')">
-                </td>
-                <td><strong>${item.nama || '-'}</strong></td>
-                <td><span class="badge bg-info text-dark">${item.statusKeluarga || '-'}</span></td>
-                <td>${item.ayah || '-'}</td>
-                <td>${item.ibu || '-'}</td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="openForm('edit', '${item.id}')">Edit</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    // 3. REVISI renderTree (Proteksi ekstra)
-    function renderTree() {
-        const container = document.getElementById('treeContainer');
-        if (!container) return;
-
-        if (!globalData || globalData.length === 0) {
-            container.innerHTML = '<div class="alert alert-info">Tambahkan data untuk melihat silsilah.</div>';
-            return;
-        }
-
-        const rootNodes = globalData.filter(p => !p.ayah && !p.ibu);
-        const startNode = rootNodes.length > 0 ? rootNodes : [globalData[0]];
-
-        const buildHTML = (person) => {
-            const children = globalData.filter(p => p.ayah === person.nama || p.ibu === person.nama);
-            let html = `<li>
-                <div class="tree-node border p-2 rounded bg-white shadow-sm">
-                    <img src="${person.foto || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(person.nama)}" 
-                        class="rounded-circle mb-1" style="width:30px; height:30px;">
-                    <div style="font-size: 0.85rem; font-weight: bold;">${person.nama}</div>
-                </div>`;
-            
-            if (children.length > 0) {
-                html += '<ul>' + children.map(child => buildHTML(child)).join('') + '</ul>';
-            }
-            html += '</li>';
-            return html;
-        };
-
-        container.innerHTML = '<div class="tree"><ul>' + startNode.map(node => buildHTML(node)).join('') + '</ul></div>';
-    }
-
-    // 2. REVISI: apiCall (Gunakan timeout yang lebih manusiawi)
-    async function apiCall(payload, loadingMsg) {
-        showLoading(loadingMsg);
-        try {
-            const body = new URLSearchParams();
-            body.append('formData', JSON.stringify(payload));
-
-            // Menggunakan mode 'no-cors' karena GAS selalu redirect
-            await fetch(GAS_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: body.toString()
-            });
-
-            // Karena no-cors tidak bisa tahu sukses/tidaknya, kita asumsikan terkirim
-            hideLoading();
-            return { success: true };
-        } catch (err) {
-            hideLoading();
-            console.error("Network Error:", err);
-            return { success: false, message: "Koneksi terputus atau gagal." };
-        }
-    }
-
-    // 3. REVISI: eksekusi (Tingkatkan jeda tunggu)
-    async function eksekusi(data) {
-        // Validasi sederhana
-        if (!data.nama) {
-            alert("Nama wajib diisi!");
-            return;
-        }
-        await apiCall({ action: "saveData", data: data }, "Menyimpan data ke Google Sheets...");
-        // Tutup Modal
-        if (modalCtrl) modalCtrl.hide();
-
-        // Beri jeda 3.5 detik sebelum ambil data terbaru
-        setTimeout(() => {
-            fetchData(); 
-        }, 3500);
-    }
-    function downloadPDF() {
-      window.print();
-    }
-   
   </script>
 </body>
 </html>
