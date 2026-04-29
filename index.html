@@ -457,11 +457,11 @@
           const reader  = new FileReader();
           reader.onload = async function(event) {
               payload.data.fotoBase64 = event.target.result;
-              await kirimDataFinal(payload);
+              await kirimData(payload);
           };
           reader.readAsDataURL(fileInput.files[0]);
       } else {
-          await kirimDataFinal(payload);
+          await kirimData(payload);
       }
     }
 
@@ -584,20 +584,19 @@
     ************************************/
     async function kirimData(payload) {
         try {
-            const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-            const res = await resp.json();
-
-            if (res.success) {
-                // Tampilkan pesan sukses di atas tombol simpan
-                showMessage("Data berhasil disimpan!", "success", "formMessage");
-                setTimeout(() => {
-                    if (modalInstance) modalInstance.hide();
-                    loadData();
-                }, 1500);
-            } else {
-                showMessage("Gagal: " + res.message, "error", "formMessage");
-                resetSimpanButton();
-            }
+          const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+          const res = await resp.json();
+          if (res.success) {
+              // Tampilkan pesan sukses di atas tombol simpan
+              showMessage("Data berhasil disimpan!", "success", "formMessage");
+              setTimeout(() => {
+                if (modalInstance) modalInstance.hide();
+                loadData();
+            }, 1500);
+          } else {
+            showMessage("Gagal: " + res.message, "error", "formMessage");
+            resetSimpanButton();
+          }
         } catch (err) {
             showMessage("Kesalahan Koneksi", "error", "formMessage");
             resetSimpanButton();
