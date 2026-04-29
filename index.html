@@ -475,66 +475,73 @@
      * Fokus: Memperbaiki tanda kutip pada argumen onclick agar tidak HANG.
      */
     async function loadData() {
-        showLoader(true, "Memuat data...");
-        try {
-            const resp = await fetch(`${SCRIPT_URL}?action=readData`);
-            const res = await resp.json();
-            globalData = res.data || [];
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
+    showLoader(true, "Memuat data keluarga...");
+    try {
+        const resp = await fetch(`${SCRIPT_URL}?action=readData`);
+        const res = await resp.json();
+        
+        // Pastikan mengambil array dari res.data sesuai standar Google Apps Script Anda
+        globalData = res.data || [];
+        
+        const tbody = document.getElementById('tableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
 
-            globalData.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><img src="${item.foto || 'https://via.placeholder.com/50'}" class="foto-thumb" onerror="this.src='https://via.placeholder.com/50'"></td>
-                    <td>${item.nama}</td>
-                    <td>${item.statusKawin}</td>
-                    <td>${item.namaPasangan || '-'}</td>
-                    <td>${item.statusKeluarga}</td>
-                    <td>${item.ayah || '-'}</td>
-                    <td>${item.ibu || '-'}</td>
-                    <td class="text-center">
-                        <div class="btn-group btn-group-sm">
-                            <!-- PERBAIKAN: Tambah tanda kutip tunggal pada ${item.id} -->
-                            <button class="btn btn-info text-white" onclick="viewDetail('${item.id}')" title="Lihat">👁️</button>
-                            <button class="btn btn-warning text-white" onclick="openForm('edit', '${item.id}')" title="Edit">✏️</button>
-                            <button class="btn btn-danger" onclick="hapusData('${item.id}', '${item.nama}')" title="Hapus">🗑️</button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        } catch (err) {
-            showMessage("Gagal memuat data", "error", "tableMessage");
-        } finally {
-            showLoader(false);
+        if (globalData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Tidak ada data ditemukan</td></tr>';
+            return;
         }
-    }
 
-    /**
-     * REVISI: Fungsi viewDetail
-     * Fokus: Mengisi id="viewContent" dan menampilkan id="viewModal"
-     */
-    function viewDetail(id) {
-        const item = globalData.find(x => x.id == id);
+        globalData.forEach(item => {
+            const tr = document.createElement('tr');
+            // Gunakan template literal dengan tanda kutip tunggal (') untuk ID agar tidak HANG
+            tr.innerHTML = `
+                <td><img src="${item.foto || '[https://via.placeholder.com/50](https://via.placeholder.com/50)'}" class="foto-thumb" onerror="this.src='[https://via.placeholder.com/50](https://via.placeholder.com/50)'"></td>
+                <td>${item.nama || '-'}</td>
+                <td>${item.statusKawin || '-'}</td>
+                <td>${item.namaPasangan || '-'}</td>
+                <td>${item.statusKeluarga || '-'}</td>
+                <td>${item.ayah || '-'}</td>
+                <td>${item.ibu || '-'}</td>
+                <td class="text-center">
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-info text-white" onclick="viewDetail('${item.id}')" title="Lihat">👁️</button>
+                        <button type="button" class="btn btn-warning text-white" onclick="openForm('edit', '${item.id}')" title="Edit">✏️</button>
+                        <button type="button" class="btn btn-danger" onclick="hapusData('${item.id}', '${item.nama}')" title="Hapus">🗑️</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (err) {
+        console.error("Load Error:", err);
+        showMessage("Gagal memuat data dari server", "error", "tableMessage");
+    } finally {
+        showLoader(false);
+    }
+}
+
+function viewDetail(id) {
+    try {
+        const item = globalData.find(x => String(x.id) === String(id));
         if (!item) return;
 
         const viewContent = document.getElementById('viewContent');
         if (viewContent) {
             viewContent.innerHTML = `
                 <div class="col-md-4 text-center mb-3">
-                    <img src="${item.foto || 'https://via.placeholder.com/150'}" class="img-fluid rounded border shadow-sm" style="max-height:250px" onerror="this.src='https://via.placeholder.com/150'">
+                    <img src="${item.foto || '[https://via.placeholder.com/150](https://via.placeholder.com/150)'}" class="img-fluid rounded border shadow-sm" style="max-height:250px" onerror="this.src='[https://via.placeholder.com/150](https://via.placeholder.com/150)'">
                 </div>
                 <div class="col-md-8">
                     <table class="table table-sm table-borderless">
-                        <tr><td width="40%" class="fw-bold">Nama Lengkap</td><td>: ${item.nama}</td></tr>
-                        <tr><td class="fw-bold">Jenis Kelamin</td><td>: ${item.jk}</td></tr>
+                        <tr><td width="40%" class="fw-bold">Nama Lengkap</td><td>: ${item.nama || '-'}</td></tr>
+                        <tr><td class="fw-bold">Jenis Kelamin</td><td>: ${item.jk || '-'}</td></tr>
                         <tr><td class="fw-bold">Tgl Lahir</td><td>: ${item.tglLahir || '-'}</td></tr>
-                        <tr><td class="fw-bold">Status Kawin</td><td>: ${item.statusKawin}</td></tr>
-                        <tr><td class="fw-bold">Pasangan</td><td>: ${item.namaPasangan || '-'}</td></tr>
-                        <tr><td class="fw-bold">Status Keluarga</td><td>: ${item.statusKeluarga}</td></tr>
-                        <tr><td class="fw-bold">Ayah</td><td>: ${item.ayah || '-'}</td></tr>
-                        <tr><td class="fw-bold">Ibu</td><td>: ${item.ibu || '-'}</td></tr>
+                        <tr><td class="fw-bold">Status Kawin</td><td>: ${item.statusKawin || '-'}</td></tr>
+                        <tr><td class="fw-bold">Nama Pasangan</td><td>: ${item.namaPasangan || '-'}</td></tr>
+                        <tr><td class="fw-bold">Status Keluarga</td><td>: ${item.statusKeluarga || '-'}</td></tr>
+                        <tr><td class="fw-bold">Nama Ayah</td><td>: ${item.ayah || '-'}</td></tr>
+                        <tr><td class="fw-bold">Nama Ibu</td><td>: ${item.ibu || '-'}</td></tr>
                         <tr><td class="fw-bold">Alamat</td><td>: ${item.alamat || '-'}</td></tr>
                         <tr><td class="fw-bold">Kota</td><td>: ${item.kota || '-'}</td></tr>
                     </table>
@@ -546,48 +553,47 @@
             viewModalInstance = new bootstrap.Modal(document.getElementById('viewModal'));
         }
         viewModalInstance.show();
+    } catch (e) {
+        console.error("View Error:", e);
     }
+}
 
-    /**
-     * REVISI: Fungsi hapusData
-     * Fokus: Sinkronisasi ID confirmTitle, confirmText, dan confirmBtnAction
-     */
-    function hapusData(id, nama) {
-        const title = document.getElementById('confirmTitle');
-        const text = document.getElementById('confirmText');
-        if (title) title.innerText = "KONFIRMASI HAPUS";
-        if (text) text.innerText = `Apakah Anda yakin ingin menghapus data "${nama}"?`;
+  function hapusData(id, nama) {
+    const title = document.getElementById('confirmTitle');
+    const text = document.getElementById('confirmText');
+    if (title) title.innerText = "KONFIRMASI HAPUS";
+    if (text) text.innerText = `Apakah Anda yakin ingin menghapus data "${nama}"?`;
 
-        const btnAction = document.getElementById('confirmBtnAction');
-        if (btnAction) {
-            btnAction.onclick = async function() {
-                if (confirmModalInstance) confirmModalInstance.hide();
-                showLoader(true, "Menghapus...");
-                try {
-                    const resp = await fetch(SCRIPT_URL, { 
-                        method: 'POST', 
-                        body: JSON.stringify({ action: "deleteData", id: id }) 
-                    });
-                    const res = await resp.json();
-                    if (res.success) {
-                        showMessage("Data berhasil dihapus", "success", "tableMessage");
-                        loadData();
-                    } else {
-                        showMessage("Gagal: " + res.message, "error", "tableMessage");
-                    }
-                } catch (e) {
-                    showMessage("Kesalahan jaringan", "error", "tableMessage");
-                } finally {
-                    showLoader(false);
+    const btnAction = document.getElementById('confirmBtnAction');
+    if (btnAction) {
+        btnAction.onclick = async function() {
+            if (confirmModalInstance) confirmModalInstance.hide();
+            showLoader(true, "Menghapus data...");
+            try {
+                const resp = await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: "deleteData", id: id }) 
+                });
+                const res = await resp.json();
+                if (res.success) {
+                    showMessage("Data berhasil dihapus", "success", "tableMessage");
+                    loadData();
+                } else {
+                    showMessage("Gagal: " + res.message, "error", "tableMessage");
                 }
-            };
-        }
-
-        if (!confirmModalInstance) {
-            confirmModalInstance = new bootstrap.Modal(document.getElementById('confirmModal'));
-        }
-        confirmModalInstance.show();
+            } catch (e) {
+                showMessage("Kesalahan jaringan saat menghapus", "error", "tableMessage");
+            } finally {
+                showLoader(false);
+            }
+        };
     }
+
+    if (!confirmModalInstance) {
+        confirmModalInstance = new bootstrap.Modal(document.getElementById('confirmModal'));
+    }
+    confirmModalInstance.show();
+}
 
     /************************************
      * Kirim data untuk disimpan di sheet
