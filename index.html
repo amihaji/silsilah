@@ -470,17 +470,18 @@
       }
     }
 
-    /**
-     * REVISI: Fungsi loadData (Bagian Render Tabel)
-     * Fokus: Memperbaiki tanda kutip pada argumen onclick agar tidak HANG.
-     */
-    async function loadData() {
-    showLoader(true, "Memuat data keluarga...");
+  /**
+ * REVISI: Fungsi loadData
+ * Fokus: Memastikan pengambilan properti .data agar tabel tidak kosong
+ * dan penggunaan tanda kutip pada parameter onclick agar tidak HANG.
+ */
+async function loadData() {
+    showLoader(true, "Memuat data...");
     try {
         const resp = await fetch(`${SCRIPT_URL}?action=readData`);
         const res = await resp.json();
         
-        // Pastikan mengambil array dari res.data sesuai standar Google Apps Script Anda
+        // Perbaikan: Ambil res.data karena server mengirim objek {success:true, data:[...]}
         globalData = res.data || [];
         
         const tbody = document.getElementById('tableBody');
@@ -488,19 +489,19 @@
         tbody.innerHTML = '';
 
         if (globalData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Tidak ada data ditemukan</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center">Tidak ada data ditemukan</td></tr>';
             return;
         }
 
         globalData.forEach(item => {
             const tr = document.createElement('tr');
-            // Gunakan template literal dengan tanda kutip tunggal (') untuk ID agar tidak HANG
+            // PERBAIKAN KRUSIAL: Membungkus ${item.id} dengan tanda kutip tunggal agar tidak HANG
             tr.innerHTML = `
-                <td><img src="${item.foto || '[https://via.placeholder.com/50](https://via.placeholder.com/50)'}" class="foto-thumb" onerror="this.src='[https://via.placeholder.com/50](https://via.placeholder.com/50)'"></td>
-                <td>${item.nama || '-'}</td>
-                <td>${item.statusKawin || '-'}</td>
+                <td><img src="${item.foto || 'https://via.placeholder.com/50'}" class="foto-thumb" onerror="this.src='https://via.placeholder.com/50'"></td>
+                <td>${item.nama || ''}</td>
+                <td>${item.statusKawin || ''}</td>
                 <td>${item.namaPasangan || '-'}</td>
-                <td>${item.statusKeluarga || '-'}</td>
+                <td>${item.statusKeluarga || ''}</td>
                 <td>${item.ayah || '-'}</td>
                 <td>${item.ibu || '-'}</td>
                 <td class="text-center">
@@ -515,50 +516,54 @@
         });
     } catch (err) {
         console.error("Load Error:", err);
-        showMessage("Gagal memuat data dari server", "error", "tableMessage");
+        showMessage("Gagal memuat data", "error", "tableMessage");
     } finally {
         showLoader(false);
     }
 }
 
+/**
+ * REVISI: Fungsi viewDetail
+ * Fokus: Sinkronisasi dengan id="viewContent" dan id="viewModal" di REV4
+ */
 function viewDetail(id) {
-    try {
-        const item = globalData.find(x => String(x.id) === String(id));
-        if (!item) return;
+    const item = globalData.find(x => String(x.id) === String(id));
+    if (!item) return;
 
-        const viewContent = document.getElementById('viewContent');
-        if (viewContent) {
-            viewContent.innerHTML = `
-                <div class="col-md-4 text-center mb-3">
-                    <img src="${item.foto || '[https://via.placeholder.com/150](https://via.placeholder.com/150)'}" class="img-fluid rounded border shadow-sm" style="max-height:250px" onerror="this.src='[https://via.placeholder.com/150](https://via.placeholder.com/150)'">
-                </div>
-                <div class="col-md-8">
-                    <table class="table table-sm table-borderless">
-                        <tr><td width="40%" class="fw-bold">Nama Lengkap</td><td>: ${item.nama || '-'}</td></tr>
-                        <tr><td class="fw-bold">Jenis Kelamin</td><td>: ${item.jk || '-'}</td></tr>
-                        <tr><td class="fw-bold">Tgl Lahir</td><td>: ${item.tglLahir || '-'}</td></tr>
-                        <tr><td class="fw-bold">Status Kawin</td><td>: ${item.statusKawin || '-'}</td></tr>
-                        <tr><td class="fw-bold">Nama Pasangan</td><td>: ${item.namaPasangan || '-'}</td></tr>
-                        <tr><td class="fw-bold">Status Keluarga</td><td>: ${item.statusKeluarga || '-'}</td></tr>
-                        <tr><td class="fw-bold">Nama Ayah</td><td>: ${item.ayah || '-'}</td></tr>
-                        <tr><td class="fw-bold">Nama Ibu</td><td>: ${item.ibu || '-'}</td></tr>
-                        <tr><td class="fw-bold">Alamat</td><td>: ${item.alamat || '-'}</td></tr>
-                        <tr><td class="fw-bold">Kota</td><td>: ${item.kota || '-'}</td></tr>
-                    </table>
-                </div>
-            `;
-        }
-
-        if (!viewModalInstance) {
-            viewModalInstance = new bootstrap.Modal(document.getElementById('viewModal'));
-        }
-        viewModalInstance.show();
-    } catch (e) {
-        console.error("View Error:", e);
+    const viewContent = document.getElementById('viewContent');
+    if (viewContent) {
+        viewContent.innerHTML = `
+            <div class="col-md-4 text-center mb-3">
+                <img src="${item.foto || 'https://via.placeholder.com/150'}" class="img-fluid rounded border shadow-sm" style="max-height:250px" onerror="this.src='https://via.placeholder.com/150'">
+            </div>
+            <div class="col-md-8">
+                <table class="table table-sm table-borderless">
+                    <tr><td width="40%" class="fw-bold">Nama Lengkap</td><td>: ${item.nama || '-'}</td></tr>
+                    <tr><td class="fw-bold">Jenis Kelamin</td><td>: ${item.jk || '-'}</td></tr>
+                    <tr><td class="fw-bold">Tgl Lahir</td><td>: ${item.tglLahir || '-'}</td></tr>
+                    <tr><td class="fw-bold">Status Kawin</td><td>: ${item.statusKawin || '-'}</td></tr>
+                    <tr><td class="fw-bold">Nama Pasangan</td><td>: ${item.namaPasangan || '-'}</td></tr>
+                    <tr><td class="fw-bold">Status Keluarga</td><td>: ${item.statusKeluarga || '-'}</td></tr>
+                    <tr><td class="fw-bold">Nama Ayah</td><td>: ${item.ayah || '-'}</td></tr>
+                    <tr><td class="fw-bold">Nama Ibu</td><td>: ${item.ibu || '-'}</td></tr>
+                    <tr><td class="fw-bold">Alamat</td><td>: ${item.alamat || '-'}</td></tr>
+                    <tr><td class="fw-bold">Kota</td><td>: ${item.kota || '-'}</td></tr>
+                </table>
+            </div>
+        `;
     }
+
+    if (!viewModalInstance) {
+        viewModalInstance = new bootstrap.Modal(document.getElementById('viewModal'));
+    }
+    viewModalInstance.show();
 }
 
-  function hapusData(id, nama) {
+/**
+ * REVISI: Fungsi hapusData
+ * Fokus: Sinkronisasi dengan id="confirmModal" dan elemen didalamnya
+ */
+function hapusData(id, nama) {
     const title = document.getElementById('confirmTitle');
     const text = document.getElementById('confirmText');
     if (title) title.innerText = "KONFIRMASI HAPUS";
@@ -582,7 +587,7 @@ function viewDetail(id) {
                     showMessage("Gagal: " + res.message, "error", "tableMessage");
                 }
             } catch (e) {
-                showMessage("Kesalahan jaringan saat menghapus", "error", "tableMessage");
+                showMessage("Kesalahan koneksi jaringan", "error", "tableMessage");
             } finally {
                 showLoader(false);
             }
