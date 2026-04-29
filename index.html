@@ -301,7 +301,8 @@
           loadData();
         } else {
           // document.getElementById('loginMsg').innerText = res.message;
-          document.getElementById('formMessage').innerText = res.message;
+          //document.getElementById('formMessage').innerText = res.message;
+          showMessage("Gagal koneksi ke server : " + res.message, "error");
         }
       } catch (err) { 
         // alert("Gagal koneksi ke server."); 
