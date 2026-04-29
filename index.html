@@ -9,27 +9,9 @@
     :root { --dark-blue: #1A365D; --light-blue: #63B3ED; --light-gray: #EDF2F7; }
     body { background-color: var(--light-gray); font-family: 'Segoe UI', sans-serif; }
     .navbar { background-color: var(--dark-blue) !important; }
-    .foto-thumb { 
-      width: 50px; 
-      height: 50px; 
-      object-fit: cover; 
-      border-radius: 50%; 
-      border: 2px solid var(--light-blue);
-    }
+    .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid var(--light-blue); }
     .loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center; flex-direction: column; }
- 
-    /* Inisial Bulat */
-    .avatar-inisial {
-      width: 50px; height: 50px; border-radius: 50%;
-      background-color: #4A5568; color: white;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: bold; font-size: 1.1rem; text-transform: uppercase;
-      border: 1px solid #2D3748;
-    }
-    .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 1px solid #ddd; }
-    .loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center; flex-direction: column; }
-
- </style>
+  </style>
 </head>
 <body>
 
@@ -67,24 +49,20 @@
       </div>
     </nav>
  
-    <div class="container-fluid px-4">
-      <div class="card shadow-sm">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-          <h5 class="m-0 fw-bold">DATA KELUARGA</h5>
+    <div class="container">
+      <div class="card p-3 shadow-sm">
+        <div class="d-flex justify-content-between mb-3 align-items-center">
+          <h5 class="m-0">Data Anggota Keluarga</h5>
           <button class="btn btn-success btn-sm" onclick="openForm('add')">+ Tambah</button>
         </div>
         <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead>
+          <table class="table table-sm table-hover align-middle">
+            <thead class="table-light">
               <tr>
-                <th class="text-center">Foto</th>
+                <th>Foto</th>
                 <th>Nama</th>
-                <th>Status Kawin</th>
-                <th>Pasangan</th>
-                <th>Status Kel.</th>
-                <th>Ayah</th>
-                <th>Ibu</th>
-                <th class="text-center">Aksi</th>
+                <th>Status</th>
+                <th>Aksi</th>
               </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -179,7 +157,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx7mAwXh_fo9LEjSkl3uLECwUQ--sGRx_rXPBHi4R6yO94hu3xnQDgHlYhhCpAJvuMs/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx4Ww_EyHpjQVC0K0xk8YLbR-HD5i4HE2cOicb1TXs2aJHpn0Bb1az-daR3DM6ZawsL/exec";
     let globalData   = [];
     let modalInstance;
 
@@ -213,7 +191,30 @@
       finally { showLoader(false); }
     }
 
+    /**
+     * REVISI: Fungsi loadData
+     * Memastikan urutan async/await benar
+     */
     async function loadData() {
+      showLoader(true, "Memperbarui Data Tabel...");
+      try {
+        const resp = await fetch(`${SCRIPT_URL}?action=getData`);
+        const res = await resp.json();
+        if (res.success && res.data) {
+          globalData = res.data; // Pastikan data masuk ke variabel global
+          renderTable(); // Panggil render setelah data siap
+        } else {
+          console.warn("Gagal mengambil data: ", res);
+        }
+      } catch (err) {
+        console.error("Error loadData:", err);
+        alert("Gagal memuat data dari server.");
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    async function BACKUP_loadData() {
       showLoader(true, "Memperbarui Data Tabel...");
       try {
         const resp = await fetch(`${SCRIPT_URL}?action=getData`);
@@ -226,39 +227,40 @@
       finally { showLoader(false); }
     }
 
-    // --- GANTI FUNGSI renderTable DENGAN INI ---
+    /**
+     * REVISI: Fungsi renderTable
+     * Menyesuaikan dengan variabel globalData dan memastikan data tampil
+     */
     function renderTable() {
-      const tb = document.getElementById('tableBody');
-      tb.innerHTML = '';
+      const tbody = document.getElementById('tableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
       
-      gData.forEach(item => {
-        // Fungsi inisial (misal: "AK" untuk Anang Karim)
-        const getInitials = (nama, ayah) => {
-          const n = nama ? nama.trim().charAt(0) : "?";
-          const a = ayah ? ayah.trim().charAt(0) : "";
-          return `<div class="avatar-circle" style="width:45px; height:45px; border-radius:50%; background:#4a5568; color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px; border:2px solid #e2e8f0;">${n}${a}</div>`;
-        };
+      if (!globalData || globalData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Data tidak ditemukan atau kosong.</td></tr>';
+        return;
+      }
 
-        const displayFoto = item.foto 
-          ? `<img src="${item.foto}" style="width:45px; height:45px; object-fit:cover; border-radius:50%; border:2px solid #e2e8f0;" onerror="this.outerHTML='${getInitials(item.nama, item.ayah)}'">` 
-          : getInitials(item.nama, item.ayah);
-
-        // Render baris tabel dengan urutan kolom yang benar
-        tb.innerHTML += `
+      globalData.forEach(item => {
+        // Gunakan placeholder jika foto kosong
+        const img = (item.foto && item.foto.includes('http')) ? item.foto : 'https://via.placeholder.com/50?text=No+Foto';
+        
+        tbody.innerHTML += `
           <tr>
-            <td class="text-center">${displayFoto}</td>
+            <td><img src="${img}" class="foto-thumb" onerror="this.src='https://via.placeholder.com/50?text=Error'"></td>
             <td><strong>${item.nama || '-'}</strong></td>
-            <td>${item.statusKawin || '-'}</td>
-            <td>${item.namaPasangan || '-'}</td>
             <td>${item.statusKeluarga || '-'}</td>
-            <td>${item.ayah || '-'}</td>
-            <td>${item.ibu || '-'}</td>
-            <td class="text-center">
-              <button class="btn btn-sm btn-outline-warning" onclick="openForm('edit', '${item.id}')">Edit</button>
+            <td class="small">
+              <span class="text-muted">A:</span> ${item.ayah || '-'}<br>
+              <span class="text-muted">I:</span> ${item.ibu || '-'}
+            </td>
+            <td>
+              <button class="btn btn-sm btn-warning fw-bold" onclick="openForm('edit', '${item.id}')">EDIT</button>
             </td>
           </tr>`;
       });
     }
+
 
     function BACKUP_renderTable() {
       const tbody = document.getElementById('tableBody');
