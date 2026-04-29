@@ -471,32 +471,54 @@
     }
 
     /**
-     * REVISI: Fungsi loadData
-     * Fokus: Menyesuaikan pengambilan data array langsung (sesuai backend REV3)
+     * FUNGSI LOAD DATA (Fokus Utama)
+     * Menampilkan data dari Google Sheets ke Tabel HTML
      */
     async function loadData() {
-        showLoader(true, "Memuat data keluarga...");
+        // Tampilkan loading
+        showLoader(true, "Sedang mengambil data keluarga...");
+        
         try {
-            const resp = await fetch(`${SCRIPT_URL}?action=readData`);
-            const res = await resp.json();
+            // Panggil endpoint readData
+            const response = await fetch(`${SCRIPT_URL}?action=readData`);
+            const res = await response.json();
             
-            // Sesuai file REV3-silsilah-code.txt, backend mengirimkan array langsung
-            globalData = Array.isArray(res) ? res : (res.data || []);
-            
+            console.log("Data diterima dari server:", res); // Cek di F12 Console
+
+            /**
+             * PENANGANAN STRUKTUR DATA:
+             * Backend REV3 Anda mengirim return JSON.stringify(data) dimana 'data' adalah array.
+             * Jadi kita harus memastikan globalData menerima array tersebut.
+             */
+            if (Array.isArray(res)) {
+                globalData = res;
+            } else if (res && res.data && Array.isArray(res.data)) {
+                globalData = res.data;
+            } else {
+                globalData = [];
+            }
+
             const tbody = document.getElementById('tableBody');
             if (!tbody) return;
+            
             tbody.innerHTML = '';
 
             if (globalData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted p-4">Tidak ada data keluarga ditemukan</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-muted">Tidak ada data ditemukan di database.</td></tr>';
                 return;
             }
 
+            // Loop data dan masukkan ke tabel
             globalData.forEach(item => {
                 const tr = document.createElement('tr');
-                // FIX KRUSIAL: Tambahkan tanda kutip tunggal pada ID agar tidak HANG
+                
+                // Gunakan tanda kutip tunggal ('') untuk membungkus ID agar tidak HANG saat diklik
                 tr.innerHTML = `
-                    <td><img src="${item.foto || 'https://via.placeholder.com/50'}" class="foto-thumb" onerror="this.src='https://via.placeholder.com/50'"></td>
+                    <td>
+                        <img src="${item.foto || 'https://via.placeholder.com/50'}" 
+                            class="foto-thumb" 
+                            onerror="this.src='https://via.placeholder.com/50'">
+                    </td>
                     <td>${item.nama || '-'}</td>
                     <td>${item.statusKawin || '-'}</td>
                     <td>${item.namaPasangan || '-'}</td>
@@ -505,18 +527,23 @@
                     <td>${item.ibu || '-'}</td>
                     <td class="text-center">
                         <div class="btn-group btn-group-sm">
-                            <button type="button" class="btn btn-info text-white px-2" onclick="viewDetail('${item.id}')" title="Lihat Profil">👁️</button>
-                            <button type="button" class="btn btn-warning text-white px-2" onclick="openForm('edit', '${item.id}')" title="Edit Data">✏️</button>
-                            <button type="button" class="btn btn-danger px-2" onclick="hapusData('${item.id}', '${item.nama}')" title="Hapus Data">🗑️</button>
+                            <button type="button" class="btn btn-info text-white" onclick="viewDetail('${item.id}')">👁️</button>
+                            <button type="button" class="btn btn-warning text-white" onclick="openForm('edit', '${item.id}')">✏️</button>
+                            <button type="button" class="btn btn-danger" onclick="hapusData('${item.id}', '${item.nama}')">🗑️</button>
                         </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
-        } catch (err) {
-            console.error("Load Error:", err);
-            showMessage("Gagal memuat data dari server", "error", "tableMessage");
+
+        } catch (error) {
+            console.error("Gagal memuat data:", error);
+            const tbody = document.getElementById('tableBody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger p-4">Terjadi kesalahan koneksi ke server.</td></tr>`;
+            }
         } finally {
+            // Matikan loading
             showLoader(false);
         }
     }
