@@ -262,28 +262,25 @@
     let globalData = [];
     let modalInstance;
     let confirmModalInstance;
-
+    
     document.addEventListener('DOMContentLoaded', function() {
         // Daftarkan modal utama
         const elForm = document.getElementById('formModal');
         if (elForm) modalInstance = new bootstrap.Modal(elForm);
         
-        // Daftarkan modal view
-        const elView = document.getElementById('viewModal');
-        if (elView) viewModalInstance = new bootstrap.Modal(elView);
-        
         // Daftarkan modal konfirmasi
         const elConfirm = document.getElementById('confirmModal');
         if (elConfirm) confirmModalInstance = new bootstrap.Modal(elConfirm);
-
-        // Registrasi Event Submit Form (Gunakan ID dari HTML Anda)
+        
+        // HAPUS pendaftaran viewModalInstance - tidak perlu
+        
+        // Registrasi Event Submit Form
         const fLogin = document.getElementById('formLogin');
         if (fLogin) fLogin.onsubmit = prosesLogin;
         
         const fKeluarga = document.getElementById('formKeluarga');
         if (fKeluarga) fKeluarga.onsubmit = simpanData;
     });
-
     /***********************
      * Tampilan showloader 
      ***********************/
