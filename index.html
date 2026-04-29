@@ -253,27 +253,31 @@
     </div>
   </div>
 
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     
     // *************************      
     // DEKLARASI VARIABEL GLOBAL
     // **************************
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyaHsPtpilz0mRPBPj5uSXq2tMKpPMXKyzLkuE7inCji56Wo5sYRL13-jxkjldgYoxc/exec";
-    let globalData   = [];
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxSXLlFBZ06DCpu7uO0gkuEgD35c6b4jWSrfkhWEu4Cjmhx2MxWMXCuRhNWyDzXW0IB/exec";
+    let globalData = [];
     let modalInstance;
     let confirmModalInstance;
 
     document.addEventListener('DOMContentLoaded', function() {
-      modalInstance = new bootstrap.Modal(document.getElementById('formModal'));
-      document.getElementById('formLogin').addEventListener('submit', prosesLogin);
-      document.getElementById('formKeluarga').addEventListener('submit', simpanData);
-     
-      function initConfirmModal() {
-        const el = document.getElementById('confirmModal');
-        if (el) confirmModalInstance = new bootstrap.Modal(el);
-      }
+        // Inisialisasi Modal Utama
+        modalInstance = new bootstrap.Modal(document.getElementById('formModal'));
+        
+        // Inisialisasi Modal Konfirmasi (Point 4)
+        const cEl = document.getElementById('confirmModal');
+        if (cEl) confirmModalInstance = new bootstrap.Modal(cEl);
+
+        // Event Listeners (Pastikan ID Form Sesuai HTML REV3)
+        const fLogin = document.getElementById('formLogin');
+        if (fLogin) fLogin.addEventListener('submit', prosesLogin);
+        
+        const fKeluarga = document.getElementById('formSilsilah'); // Sesuaikan ID di REV3
+        if (fKeluarga) fKeluarga.addEventListener('submit', simpanData);
     });
 
     /***********************
@@ -288,27 +292,34 @@
      * Fungsi untuk login aplikasi
      * *****************************/
     async function prosesLogin(e) {
-      e.preventDefault();
-      const u = document.getElementById('loginUsername').value;
-      const p = document.getElementById('loginPassword').value;
-      showLoader(true, "Memverifikasi Login...");
-      try {
-        const resp = await fetch(`${SCRIPT_URL}?action=login&u=${encodeURIComponent(u)}&p=${encodeURIComponent(p)}`);
-        const res = await resp.json();
-        if(res.success) {
-          document.getElementById('loginArea').classList.add('d-none');
-          document.getElementById('appArea').classList.remove('d-none');
-          loadData();
+    e.preventDefault();
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+    const btn = e.target.querySelector('button[type="submit"]');
+    
+    // Spinner hanya pada tombol (Point 1)
+    const textAsli = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';
+
+    try {
+      const resp = await fetch(`${SCRIPT_URL}?action=login&u=${user}&p=${pass}`);
+      const res = await resp.json();
+        if (res.success) {
+            document.getElementById('loginArea').classList.add('d-none');
+            document.getElementById('appArea').classList.remove('d-none');
+            loadData();
         } else {
-          // document.getElementById('loginMsg').innerText = res.message;
-          //document.getElementById('formMessage').innerText = res.message;
-          showMessage("Gagal koneksi ke server : " + res.message, "error");
+            //alert(res.message);
+            showMessage(res.message, "error");
         }
-      } catch (err) { 
-        // alert("Gagal koneksi ke server."); 
-        showMessage("Gagal koneksi ke server : " + err.message, "error");
+      } catch (err) {
+          //alert("Gagal terhubung ke server");
+          showMessage("Gagal terhubung ke serrver : " + err.message, "error");
+      } finally {
+          btn.disabled = false;
+          btn.innerHTML = textAsli;
       }
-      finally { showLoader(false); }
     }
 
     /**********************************************************
@@ -375,82 +386,46 @@
      * Mengubah judul dan aktifkan kembali tombol simpan
      *********************************************************/
     function openForm(mode, id = null) {
-        const form = document.getElementById('formSilsilah');
-        if (form) form.reset();
-        document.getElementById('formId').value = "";
-        document.getElementById('formMessage').style.display = 'none';
-        
-        // Fix Point 4: Reset Status Tombol Simpan
-        const btn = document.getElementById('btnSimpan');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = 'SIMPAN DATA';
-        }
-
-        // Fix Point 2: Update Judul Modal Dinamis
-        const titleEl = document.getElementById('formModalTitle');
-        if (titleEl) {
-            titleEl.innerText = (mode === 'edit') ? "Edit Data Keluarga" : "Tambah Data Keluarga";
-        }
-        if (mode === 'edit' && id) {
-            const item = globalData.find(x => x.id == id);
-            if (item) {
-                document.getElementById('formId').value = item.id;
-                document.getElementById('nama').value = item.nama || "";
-                document.getElementById('jk').value = item.jk || "Laki-laki";
-                document.getElementById('tglLahir').value = item.tglLahir ? new Date(item.tglLahir).toISOString().split('T')[0] : "";
-                document.getElementById('statusKawin').value = item.statusKawin || "Single";
-                document.getElementById('namaPasangan').value = item.namaPasangan || "";
-                document.getElementById('statusKeluarga').value = item.statusKeluarga || "Anak";
-                document.getElementById('alamat').value = item.alamat || "";
-                document.getElementById('kota').value = item.kota || "";
-                document.getElementById('ayah').value = item.ayah || "";
-                document.getElementById('ibu').value = item.ibu || "";
-                document.getElementById('fotoLama').value = item.foto || "";
-                if (typeof togglePasangan === "function") togglePasangan();
-            }
-        }
-        if (modalInstance) modalInstance.show();
-    }
-
-    function BACKUP_openForm(mode, id = null) {
-      const form = document.getElementById('formSilsilah');
-      form.reset();
-      document.getElementById('formId').value = "";
-      document.getElementById('formMessage').style.display = 'none';
-      
-      // Aktifkan kembali tombol simpan (Fix Point 4)
-      const btn = document.getElementById('btnSimpan');
-      btn.disabled = false;
-      btn.innerHTML = 'SIMPAN DATA';
-
-      // Update Judul Modal (Fix Point 2)
-      const titleEl = document.getElementById('formModalTitle');
-      if (titleEl) {
-          titleEl.innerText = mode === 'edit' ? "Edit Data Keluarga" : "Tambah Data Keluarga";
-      }
-
-      if (mode === 'edit') {
-          const item = globalData.find(x => x.id == id);
-          if (item) {
-              document.getElementById('formId').value = item.id;
-              document.getElementById('nama').value = item.nama || "";
-              document.getElementById('jk').value = item.jk || "Laki-laki";
-              document.getElementById('tglLahir').value = item.tglLahir ? new Date(item.tglLahir).toISOString().split('T')[0] : "";
-              document.getElementById('statusKawin').value = item.statusKawin || "Single";
-              document.getElementById('namaPasangan').value = item.namaPasangan || "";
-              document.getElementById('statusKeluarga').value = item.statusKeluarga || "Anak";
-              document.getElementById('alamat').value = item.alamat || "";
-              document.getElementById('kota').value = item.kota || "";
-              document.getElementById('ayah').value = item.ayah || "";
-              document.getElementById('ibu').value = item.ibu || "";
-              document.getElementById('fotoLama').value = item.foto || "";
-              if (typeof togglePasangan === "function") togglePasangan();
-          }
-      }
-      modalInstance.show();
-    }
+    const form = document.getElementById('formSilsilah');
+    if(form) form.reset();
     
+    document.getElementById('formId').value = "";
+    document.getElementById('formMessage').style.display = 'none';
+    
+    // Aktifkan kembali tombol simpan (Point 4.4)
+    const btn = document.getElementById('btnSimpan');
+    if(btn) {
+        btn.disabled = false;
+        btn.innerHTML = 'SIMPAN DATA';
+    }
+
+    // Perbarui Judul Modal
+    const modalTitle = document.querySelector('#formModal .modal-title');
+    if(modalTitle) {
+        modalTitle.innerText = (mode === 'edit') ? "EDIT DATA KELUARGA" : "TAMBAH DATA KELUARGA";
+    }
+
+    if (mode === 'edit') {
+        const item = globalData.find(x => x.id == id);
+        if (item) {
+            document.getElementById('formId').value = item.id;
+            document.getElementById('nama').value = item.nama || "";
+            document.getElementById('jk').value = item.jk || "Laki-laki";
+            document.getElementById('tglLahir').value = item.tglLahir ? new Date(item.tglLahir).toISOString().split('T')[0] : "";
+            document.getElementById('statusKawin').value = item.statusKawin || "Single";
+            document.getElementById('namaPasangan').value = item.namaPasangan || "";
+            document.getElementById('statusKeluarga').value = item.statusKeluarga || "Anak";
+            document.getElementById('alamat').value = item.alamat || "";
+            document.getElementById('kota').value = item.kota || "";
+            document.getElementById('ayah').value = item.ayah || "";
+            document.getElementById('ibu').value = item.ibu || "";
+            document.getElementById('fotoLama').value = item.foto || "";
+            if(typeof togglePasangan === 'function') togglePasangan();
+        }
+    }
+    modalInstance.show();
+    }
+
     /******************************
      * Update simpan Data di sheet
     *******************************/
@@ -491,45 +466,6 @@
       }
     }
 
-    async function BACKUP_simpanData(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btnSimpan');
-      btn.disabled = true; // Kunci tombol saat proses
-      btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyimpan...';
-      
-      document.getElementById('formMessage').style.display = 'none';
-
-      let payload = {
-          action: "saveData",
-          data: {
-              id: document.getElementById('formId').value,
-              nama: document.getElementById('nama').value,
-              jk: document.getElementById('jk').value,
-              tglLahir: document.getElementById('tglLahir').value,
-              statusKawin: document.getElementById('statusKawin').value,
-              namaPasangan: document.getElementById('namaPasangan').value,
-              statusKeluarga: document.getElementById('statusKeluarga').value,
-              alamat: document.getElementById('alamat').value,
-              kota: document.getElementById('kota').value,
-              ayah: document.getElementById('ayah').value,
-              ibu: document.getElementById('ibu').value,
-              fotoLama: document.getElementById('fotoLama').value,
-              fotoBase64: null
-          }
-      };
-      const fileInput = document.getElementById('fotoFile');
-      if (fileInput.files[0]) {
-          const reader = new FileReader();
-          reader.onload = async function(event) {
-              payload.data.fotoBase64 = event.target.result;
-              await kirimData(payload);
-          };
-          reader.readAsDataURL(fileInput.files[0]);
-      } else {
-          await kirimData(payload);
-      }
-    }
-    
     /*************************************
      * Mengembalikan status tombol simpan
      *************************************/
@@ -539,84 +475,6 @@
           btn.disabled = false;
           btn.innerHTML = 'SIMPAN DATA';
       }
-    }
-
-    async function BACKUP_simpanData(e) {
-        e.preventDefault();
-        const btn = document.getElementById('btnSimpan');
-        btn.disabled = true;
-
-        // Sembunyikan pesan lama jika ada sebelum proses baru
-        document.getElementById('formMessage').style.display = 'none';
-
-        let payload = {
-            action: "saveData",
-            data: {
-                id: document.getElementById('formId').value,
-                nama: document.getElementById('nama').value,
-                jk: document.getElementById('jk').value,
-                tglLahir: document.getElementById('tglLahir').value,
-                statusKawin: document.getElementById('statusKawin').value,
-                namaPasangan: document.getElementById('namaPasangan').value,
-                statusKeluarga: document.getElementById('statusKeluarga').value,
-                alamat: document.getElementById('alamat').value,
-                kota: document.getElementById('kota').value,
-                ayah: document.getElementById('ayah').value,
-                ibu: document.getElementById('ibu').value,
-                fotoLama: document.getElementById('fotoLama').value,
-                fotoBase64: null
-            }
-        };
-
-        const fileInput = document.getElementById('fotoFile');
-        if (fileInput.files[0]) {
-            const reader = new FileReader();
-            reader.onload = async function(event) {
-                payload.data.fotoBase64 = event.target.result;
-                await kirimData(payload);
-            };
-            reader.readAsDataURL(fileInput.files[0]);
-        } else {
-            await kirimData(payload);
-        }
-    }
-
-    async function BACKUP_simpanData(e) {
-        e.preventDefault();
-        const btn = document.getElementById('btnSimpan');
-        btn.disabled = true;
-
-        let payload = {
-            action: "saveData",
-            data: {
-                id: document.getElementById('formId').value,
-                nama: document.getElementById('nama').value,
-                jk: document.getElementById('jk').value,
-                tglLahir: document.getElementById('tglLahir').value,
-                statusKawin: document.getElementById('statusKawin').value,
-                namaPasangan: document.getElementById('namaPasangan').value, // FIELD BARU
-                statusKeluarga: document.getElementById('statusKeluarga').value,
-                alamat: document.getElementById('alamat').value,
-                kota: document.getElementById('kota').value,
-                ayah: document.getElementById('ayah').value,
-                ibu: document.getElementById('ibu').value,
-                fotoLama: document.getElementById('fotoLama').value,
-                fotoBase64: null
-            }
-        };
-        
-        // ... (logika FileReader dan kirimData tetap sama seperti sebelumnya)
-        const fileInput = document.getElementById('fotoFile');
-        if (fileInput.files[0]) {
-            const reader = new FileReader();
-            reader.onload = async function(event) {
-                payload.data.fotoBase64 = event.target.result;
-                await kirimData(payload);
-            };
-            reader.readAsDataURL(fileInput.files[0]);
-        } else {
-            await kirimData(payload);
-        }
     }
 
     /********************
@@ -696,12 +554,12 @@
      * Hapus data di sheet
      * *******************/
     function hapusData(id, nama) {
-    document.getElementById('confirmTitle').innerText = "Hapus Data";
-    document.getElementById('confirmText').innerText = `Hapus data "${nama}"? Tindakan ini tidak bisa dibatalkan.`;
-    
-    const btnConfirm = document.getElementById('confirmBtnAction');
-      btnConfirm.onclick = async () => {
-        if (confirmModalInstance) confirmModalInstance.hide();
+    // Set teks konfirmasi 
+    document.getElementById('confirmTitle').innerText = "Konfirmasi Hapus";
+    document.getElementById('confirmText').innerText = `Apakah Anda yakin ingin menghapus data "${nama}"?`;
+    const btnAction = document.getElementById('confirmBtnAction');
+    btnAction.onclick = async () => {
+        confirmModalInstance.hide();
         showLoader(true, "Menghapus...");
         try {
             const resp = await fetch(SCRIPT_URL, { 
@@ -710,51 +568,18 @@
             });
             const res = await resp.json();
             if (res.success) {
-                showMessage(`Data "${nama}" berhasil dihapus.`, "success", "tableMessage");
+                showMessage("Data berhasil dihapus", "success", "tableMessage");
                 loadData();
-            } else {
-                showMessage("Gagal menghapus data.", "error", "tableMessage");
             }
-        } catch (err) {
-            showMessage("Error koneksi saat menghapus.", "error", "tableMessage");
+        } catch (e) {
+            showMessage("Gagal menghapus data", "error", "tableMessage");
         } finally {
             showLoader(false);
         }
-      };
-      if (!confirmModalInstance) initConfirmModal();
-      confirmModalInstance.show();
+    };
+    confirmModalInstance.show();
     }
-
-    function BACKUP_hapusData(id, nama) {
-      // Setup Modal Konfirmasi (Point 3)
-      document.getElementById('confirmTitle').innerText = "Hapus Data Keluarga";
-      document.getElementById('confirmText').innerText = `Apakah Anda yakin ingin menghapus data "${nama}"? Tindakan ini tidak dapat dibatalkan.`;
-      const btnAction = document.getElementById('confirmBtnAction');
-      btnAction.onclick = async () => {
-        confirmModalInstance.hide();
-        showLoader(true, "Menghapus data...");
-          try {
-                const resp = await fetch(SCRIPT_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ action: "deleteData", id: id }) 
-                });
-                const res = await resp.json();
-                
-                if (res.success) {
-                    showMessage(`Data "${nama}" telah dihapus.`, "success", "tableMessage");
-                    loadData();
-                } else {
-                    showMessage("Gagal menghapus data.", "error", "tableMessage");
-                }
-          } catch (err) {
-                showMessage("Kesalahan koneksi saat menghapus.", "error", "tableMessage");
-          } finally {
-                showLoader(false);
-          }
-      };
-      confirmModalInstance.show();
-    }
-
+    
     /************************************
      * Kirim data untuk disimpan di sheet
     ************************************/
@@ -778,32 +603,6 @@
             showMessage("Kesalahan Koneksi", "error", "formMessage");
             resetSimpanButton();
         }
-    }
-    
-    async function BACKUP_kirimData(payload) {
-      try {
-          const resp = await fetch(SCRIPT_URL, {
-              method: 'POST',
-              body: JSON.stringify(payload)
-          });
-          const res = await resp.json();
-
-          if (res.success) {
-              // Tampilkan pesan sukses di form (Point 1 & 2)
-              showMessage("Data berhasil disimpan!", "success", "formMessage");
-              
-              setTimeout(() => {
-                  modalInstance.hide();
-                  loadData();
-              }, 1500);
-          } else {
-              showMessage("Gagal: " + res.message, "error", "formMessage");
-              resetSimpanButton();
-          }
-      } catch (err) {
-          showMessage("Koneksi Error: " + err.toString(), "error", "formMessage");
-          resetSimpanButton();
-      }
     }
     
     /***********************************
