@@ -497,96 +497,109 @@
      * View detail data 
      * ******************/
     function viewDetail(id) {
-    const item = globalData.find(x => x.id == id);
-    if (!item) {
-        console.error("Data tidak ditemukan untuk ID:", id);
-        return;
-    }
+        try {
+            const item = globalData.find(x => x.id == id);
+            if (!item) {
+                console.error("Data ID tidak ditemukan");
+                return;
+            }
 
-      // Gunakan template literal untuk mengisi id="viewContent" sesuai HTML Anda
-      const viewContainer = document.getElementById('viewContent');
-      if (viewContainer) {
-          viewContainer.innerHTML = `
-              <div class="col-md-4 text-center mb-3">
-                  <img src="${item.foto || 'https://via.placeholder.com/150'}" class="img-fluid rounded border shadow-sm" style="max-height:250px">
-              </div>
-              <div class="col-md-8">
-                  <table class="table table-sm table-borderless">
-                      <tr><td width="40%" class="fw-bold">Nama Lengkap</td><td>: ${item.nama}</td></tr>
-                      <tr><td class="fw-bold">Jenis Kelamin</td><td>: ${item.jk}</td></tr>
-                      <tr><td class="fw-bold">Tgl Lahir</td><td>: ${item.tglLahir || '-'}</td></tr>
-                      <tr><td class="fw-bold">Status Kawin</td><td>: ${item.statusKawin}</td></tr>
-                      <tr><td class="fw-bold">Nama Pasangan</td><td>: ${item.namaPasangan || '-'}</td></tr>
-                      <tr><td class="fw-bold">Status Keluarga</td><td>: ${item.statusKeluarga}</td></tr>
-                      <tr><td class="fw-bold">Nama Ayah</td><td>: ${item.ayah || '-'}</td></tr>
-                      <tr><td class="fw-bold">Nama Ibu</td><td>: ${item.ibu || '-'}</td></tr>
-                      <tr><td class="fw-bold">Alamat</td><td>: ${item.alamat || '-'}</td></tr>
-                      <tr><td class="fw-bold">Kota</td><td>: ${item.kota || '-'}</td></tr>
-                  </table>
-              </div>
-          `;
-      }
-      // Tampilkan Modal dengan pengaman (Fix Hang)
-      try {
-          if (!viewModalInstance) {
-              viewModalInstance = new bootstrap.Modal(document.getElementById('viewModal'));
-          }
-          viewModalInstance.show();
-      } catch (err) {
-          console.error("Gagal menampilkan modal View:", err);
-      }
+            // 1. Ambil kontainer konten view
+            const viewContainer = document.getElementById('viewContent');
+            if (!viewContainer) {
+                console.error("Elemen 'viewContent' tidak ditemukan di HTML");
+                return;
+            }
+
+            // 2. Isi konten secara dinamis
+            viewContainer.innerHTML = `
+                <div class="col-md-4 text-center mb-3">
+                    <img src="${item.foto || 'https://via.placeholder.com/150'}" 
+                        class="img-fluid rounded border shadow-sm" 
+                        style="max-height:250px"
+                        onerror="this.src='https://via.placeholder.com/150'">
+                </div>
+                <div class="col-md-8">
+                    <table class="table table-sm table-borderless">
+                        <tr><td width="40%" class="fw-bold">Nama Lengkap</td><td>: ${item.nama || '-'}</td></tr>
+                        <tr><td class="fw-bold">Jenis Kelamin</td><td>: ${item.jk || '-'}</td></tr>
+                        <tr><td class="fw-bold">Tgl Lahir</td><td>: ${item.tglLahir || '-'}</td></tr>
+                        <tr><td class="fw-bold">Status Kawin</td><td>: ${item.statusKawin || '-'}</td></tr>
+                        <tr><td class="fw-bold">Nama Pasangan</td><td>: ${item.namaPasangan || '-'}</td></tr>
+                        <tr><td class="fw-bold">Status Keluarga</td><td>: ${item.statusKeluarga || '-'}</td></tr>
+                        <tr><td class="fw-bold">Nama Ayah</td><td>: ${item.ayah || '-'}</td></tr>
+                        <tr><td class="fw-bold">Nama Ibu</td><td>: ${item.ibu || '-'}</td></tr>
+                        <tr><td class="fw-bold">Alamat</td><td>: ${item.alamat || '-'}</td></tr>
+                        <tr><td class="fw-bold">Kota</td><td>: ${item.kota || '-'}</td></tr>
+                    </table>
+                </div>
+            `;
+
+            // 3. Tampilkan Modal (Gunakan pencarian elemen langsung agar tidak hang)
+            const viewEl = document.getElementById('viewModal');
+            if (viewEl) {
+                const myModal = bootstrap.Modal.getOrCreateInstance(viewEl);
+                myModal.show();
+            }
+
+        } catch (err) {
+            console.error("Error pada viewDetail:", err);
+            alert("Gagal menampilkan detail: " + err.message);
+        }
     }
 
     /**
      * REVISI: Fungsi hapusData
-     * Mengatasi Hang dan memastikan aksi tombol "YA, HAPUS" berfungsi.
+     * Fokus mencegah hang saat inisialisasi modal konfirmasi.
      */
     function hapusData(id, nama) {
-        // Set teks konfirmasi (Gunakan ID confirmTitle dan confirmText sesuai HTML Anda)
-        const title = document.getElementById('confirmTitle');
-        const text = document.getElementById('confirmText');
-        if (title) title.innerText = "KONFIRMASI HAPUS";
-        if (text) text.innerText = `Apakah Anda yakin ingin menghapus data anggota keluarga "${nama}"?`;
-        
-        // Pasang aksi klik pada tombol YA, HAPUS (id="confirmBtnAction")
-        const btnAction = document.getElementById('confirmBtnAction');
-        if (btnAction) {
-            btnAction.onclick = async function() {
-                // Tutup modal dulu agar tidak terjadi penumpukan overlay
-                if (confirmModalInstance) confirmModalInstance.hide();
-                
-                showLoader(true, "Sedang menghapus...");
-                try {
-                    const resp = await fetch(SCRIPT_URL, { 
-                        method: 'POST', 
-                        body: JSON.stringify({ action: "deleteData", id: id }) 
-                    });
-                    const res = await resp.json();
-                    if (res.success) {
-                        showMessage(`Data "${nama}" telah berhasil dihapus`, "success", "tableMessage");
-                        loadData(); // Refresh tabel
-                    } else {
-                        showMessage("Gagal: " + res.message, "error", "tableMessage");
-                    }
-                } catch (e) {
-                    showMessage("Terjadi kesalahan jaringan", "error", "tableMessage");
-                } finally {
-                    showLoader(false);
-                }
-            };
-        }
-        
-        // Tampilkan Modal Konfirmasi dengan pengaman (Fix Hang)
         try {
-            if (!confirmModalInstance) {
-                confirmModalInstance = new bootstrap.Modal(document.getElementById('confirmModal'));
+            // 1. Update teks konfirmasi
+            const title = document.getElementById('confirmTitle');
+            const text = document.getElementById('confirmText');
+            if (title) title.innerText = "KONFIRMASI HAPUS";
+            if (text) text.innerText = `Apakah Anda yakin ingin menghapus data "${nama}"?`;
+            
+            // 2. Set aksi tombol hapus
+            const btnAction = document.getElementById('confirmBtnAction');
+            if (btnAction) {
+                btnAction.onclick = async function() {
+                    const confirmEl = document.getElementById('confirmModal');
+                    const myModal = bootstrap.Modal.getOrCreateInstance(confirmEl);
+                    myModal.hide();
+                    
+                    showLoader(true, "Menghapus data...");
+                    try {
+                        const resp = await fetch(SCRIPT_URL, { 
+                            method: 'POST', 
+                            body: JSON.stringify({ action: "deleteData", id: id }) 
+                        });
+                        const res = await resp.json();
+                        if (res.success) {
+                            showMessage(`Data "${nama}" berhasil dihapus`, "success", "tableMessage");
+                            loadData();
+                        } else {
+                            showMessage("Gagal: " + res.message, "error", "tableMessage");
+                        }
+                    } catch (e) {
+                        showMessage("Kesalahan jaringan", "error", "tableMessage");
+                    } finally {
+                        showLoader(false);
+                    }
+                };
             }
-            confirmModalInstance.show();
+            
+            // 3. Tampilkan Modal Konfirmasi
+            const confirmEl = document.getElementById('confirmModal');
+            if (confirmEl) {
+                const myModal = bootstrap.Modal.getOrCreateInstance(confirmEl);
+                myModal.show();
+            }
+
         } catch (err) {
-            console.error("Gagal menampilkan modal Hapus:", err);
+            console.error("Error pada hapusData:", err);
         }
     }
-    
     /************************************
      * Kirim data untuk disimpan di sheet
     ************************************/
