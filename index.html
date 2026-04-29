@@ -9,8 +9,33 @@
     :root { --dark-blue: #1A365D; --light-blue: #63B3ED; --light-gray: #EDF2F7; }
     body { background-color: var(--light-gray); font-family: 'Segoe UI', sans-serif; }
     .navbar { background-color: var(--dark-blue) !important; }
-    .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid var(--light-blue); }
+    /* Tampilan  Foto Pada Tabel Data Kelauarga */
+    .foto-thumb { 
+      width: 50px; 
+      height: 50px; 
+      object-fit: cover; 
+      border-radius: 50%; 
+      border: 2px solid var(--light-blue); 
+    }
     .loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center; flex-direction: column; }
+    .btn-round { 
+      width: 32px; height: 32px; border-radius: 50%; 
+      display: inline-flex; align-items: center; justify-content: center; 
+      padding: 0; border: 1px solid #dee2e6; background: white; transition: 0.2s;
+    }
+    .btn-round:hover { background-color: #f0f0f0 !important; color: #000 !important; }
+    .btn-view { color: #0d6efd; }
+    .btn-edit { color: #ffc107; }
+    .btn-delete { color: #dc3545; }
+    /* Tampilan Foto Untuk Detail Data Keluarga */
+    .view-photo { 
+      width: 150px; 
+      height: 150px; 
+      object-fit: cover; 
+      border-radius: 8px; 
+      border: 3px solid var(--light-blue);
+    }
+
   </style>
 </head>
 <body>
@@ -124,7 +149,6 @@
                   <option value="Suami">Suami</option>
                   <option value="Istri">Istri</option>
                   <option value="Anak">Anak</option>
-                  <option value="Cucu">Cucu</option>
                 </select>
               </div>
               <div class="col-md-12">
@@ -158,10 +182,30 @@
     </div>
   </div>
 
+  <!-- Modal Form View Data -->
+  <div class="modal fade" id="viewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title">Detail Profil Keluarga</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row" id="viewContent">
+            <!-- Diisi via JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4OfoRIvGjhDhytfYIgWmk0eJJVh0V7Dz2y-9XoRr5PmDlyl4RcBny3bLR-HeZCi9i/exec";
+    
+    // *************************      
+    // DEKLARASI VARIABEL GLOBAL
+    // **************************
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLje8ggIJOMzwQQTpRnorltH_DtwBrnPVDgLXFPZjbcxx4cR9SA738s6BQMPABRnSx/exec";
     let globalData   = [];
     let modalInstance;
 
@@ -171,11 +215,17 @@
       document.getElementById('formKeluarga').addEventListener('submit', simpanData);
     });
 
+    /***********************
+     * Tampilan showloader 
+     ***********************/
     function showLoader(show, text = "Memproses...") {
       document.getElementById('loader').style.display = show ? 'flex' : 'none';
       document.getElementById('loaderText').innerText = text;
     }
 
+    /*******************************
+     * Fungsi untuk login aplikasi
+     * *****************************/
     async function prosesLogin(e) {
       e.preventDefault();
       const u = document.getElementById('loginUsername').value;
@@ -195,10 +245,9 @@
       finally { showLoader(false); }
     }
 
-    /**
-     * REVISI: Fungsi loadData
-     * Memastikan urutan async/await benar
-     */
+    /**********************************************************
+     * Untuk loadData dan Memastikan urutan async/await benar
+     *********************************************************/
     async function loadData() {
       showLoader(true, "Memperbarui Data Tabel...");
       try {
@@ -218,19 +267,9 @@
       }
     }
 
-    async function BACKUP_loadData() {
-      showLoader(true, "Memperbarui Data Tabel...");
-      try {
-        const resp = await fetch(`${SCRIPT_URL}?action=getData`);
-        const res = await resp.json();
-        if(res.success) {
-          globalData = res.data;
-          renderTable();
-        }
-      } catch (err) { console.error(err); }
-      finally { showLoader(false); }
-    }
-
+    /****************************
+     * Buat Tabel Data Keluarga
+     * **************************/
     function renderTable() {
       const tbody = document.getElementById('tableBody');
       if (!tbody) return;
@@ -242,12 +281,11 @@
       }
 
       globalData.forEach(item => {
-        // Logika tampilan foto
         const img = (item.foto && item.foto.includes('http')) ? item.foto : '[https://via.placeholder.com/50?text=No+Foto](https://via.placeholder.com/50?text=No+Foto)';
         
         tbody.innerHTML += `
           <tr>
-            <td><img src="${img}" class="foto-thumb" onerror="this.src='[https://via.placeholder.com/50?text=Error](https://via.placeholder.com/50?text=Error)'"></td>
+            <td><img src="${img}" class="foto-thumb" onerror="this.src='[https://via.placeholder.com/50](https://via.placeholder.com/50)'"></td>
             <td><strong>${item.nama || '-'}</strong></td>
             <td>${item.statusKawin || '-'}</td>
             <td>${item.namaPasangan || '-'}</td>
@@ -255,46 +293,19 @@
             <td>${item.ayah || '-'}</td>
             <td>${item.ibu || '-'}</td>
             <td class="text-center">
-              <button class="btn btn-sm btn-warning fw-bold" onclick="openForm('edit', '${item.id}')">EDIT</button>
+              <div class="d-flex justify-content-center gap-1">
+                <button class="btn-round btn-view" onclick="viewDetail('${item.id}')" title="View">👁</button>
+                <button class="btn-round btn-edit" onclick="openForm('edit', '${item.id}')" title="Edit">✎</button>
+                <button class="btn-round btn-delete" onclick="hapusData('${item.id}', '${item.nama}')" title="Hapus">✖</button>
+              </div>
             </td>
           </tr>`;
       });
     }
-
-    /**
-     * REVISI: Fungsi renderTable
-     * Menyesuaikan dengan variabel globalData dan memastikan data tampil
-     */
-    function BACKUP_renderTable() {
-      const tbody = document.getElementById('tableBody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      
-      if (!globalData || globalData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Data tidak ditemukan atau kosong.</td></tr>';
-        return;
-      }
-
-      globalData.forEach(item => {
-        // Gunakan placeholder jika foto kosong
-        const img = (item.foto && item.foto.includes('http')) ? item.foto : 'https://via.placeholder.com/50?text=No+Foto';
-        
-        tbody.innerHTML += `
-          <tr>
-            <td><img src="${img}" class="foto-thumb" onerror="this.src='https://via.placeholder.com/50?text=Error'"></td>
-            <td><strong>${item.nama || '-'}</strong></td>
-            <td>${item.statusKeluarga || '-'}</td>
-            <td class="small">
-              <span class="text-muted">A:</span> ${item.ayah || '-'}<br>
-              <span class="text-muted">I:</span> ${item.ibu || '-'}
-            </td>
-            <td>
-              <button class="btn btn-sm btn-warning fw-bold" onclick="openForm('edit', '${item.id}')">EDIT</button>
-            </td>
-          </tr>`;
-      });
-    }
-
+ 
+    /****************************************
+     * Untuk tampilkan form Tambah dan Edit
+     * **************************************/
     function openForm(mode, id = null) {
       document.getElementById('formKeluarga').reset();
       document.getElementById('formId').value = "";
@@ -319,8 +330,10 @@
       }
       modalInstance.show();
     }
-
-    // Update simpanData untuk memasukkan field namaPasangan
+    
+    /******************************
+    / Update simpan Data di sheet
+    *******************************/
     async function simpanData(e) {
         e.preventDefault();
         const btn = document.getElementById('btnSimpan');
@@ -359,42 +372,60 @@
         }
     }
 
-    async function BACKUP_simpanData(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btnSimpan');
-      const fileInput = document.getElementById('fotoFile');
-      btn.disabled = true;
-
-      let payload = {
-        action: "saveData",
-        data: {
-          id: document.getElementById('formId').value,
-          nama: document.getElementById('nama').value,
-          jk: document.getElementById('jk').value,
-          tglLahir: document.getElementById('tglLahir').value,
-          statusKawin: document.getElementById('statusKawin').value,
-          statusKeluarga: document.getElementById('statusKeluarga').value,
-          alamat: document.getElementById('alamat').value,
-          kota: document.getElementById('kota').value,
-          ayah: document.getElementById('ayah').value,
-          ibu: document.getElementById('ibu').value,
-          fotoLama: document.getElementById('fotoLama').value,
-          fotoBase64: null
-        }
-      };
-
-      if (fileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = async function(event) {
-          payload.data.fotoBase64 = event.target.result;
-          await kirimData(payload);
-        };
-        reader.readAsDataURL(fileInput.files[0]);
-      } else {
-        await kirimData(payload);
-      }
+    /********************
+     * View detail data 
+     * ******************/
+    function viewDetail(id) {
+      const item = globalData.find(x => x.id == id);
+      if(!item) return;
+      
+      const img = (item.foto && item.foto.includes('http')) ? item.foto : '[https://via.placeholder.com/150?text=No+Foto](https://via.placeholder.com/150?text=No+Foto)';
+      const content = `
+        <div class="col-md-4 text-center mb-3">
+          <img src="${img}" class="view-photo shadow-sm">
+          <h5 class="mt-2 text-primary">${item.nama}</h5>
+          <span class="badge bg-secondary">${item.statusKeluarga}</span>
+        </div>
+        <div class="col-md-8">
+          <table class="table table-sm table-borderless">
+            <tr><td width="150" class="fw-bold">Jenis Kelamin</td><td>: ${item.jk || '-'}</td></tr>
+            <tr><td class="fw-bold">Tgl Lahir</td><td>: ${item.tglLahir ? new Date(item.tglLahir).toLocaleDateString('id-ID') : '-'}</td></tr>
+            <tr><td class="fw-bold">Status Kawin</td><td>: ${item.statusKawin || '-'}</td></tr>
+            <tr><td class="fw-bold">Pasangan</td><td>: ${item.namaPasangan || '-'}</td></tr>
+            <tr><td class="fw-bold">Nama Ayah</td><td>: ${item.ayah || '-'}</td></tr>
+            <tr><td class="fw-bold">Nama Ibu</td><td>: ${item.ibu || '-'}</td></tr>
+            <tr><td class="fw-bold">Alamat</td><td>: ${item.alamat || '-'}</td></tr>
+            <tr><td class="fw-bold">Kota</td><td>: ${item.kota || '-'}</td></tr>
+          </table>
+        </div>
+      `;
+      document.getElementById('viewContent').innerHTML = content;
+      new bootstrap.Modal(document.getElementById('viewModal')).show();
     }
 
+    /**********************
+     * Hapus data di sheet
+     * *******************/
+    async function hapusData(id, nama) {
+      if(!confirm(`Apakah Anda yakin ingin menghapus data "${nama}"?`)) return;
+      
+      showLoader(true, "Menghapus Data...");
+      try {
+        const payload = { action: "deleteData", id: id };
+        const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const res = await resp.json();
+        if(res.success) {
+          alert("Data berhasil dihapus.");
+          loadData();
+        }
+      } catch (err) { alert("Gagal menghapus data."); }
+      finally { showLoader(false); }
+    }
+
+
+    /*************************************
+     * Kirim data untuk disimpan di sheet
+     * **********************************/
     async function kirimData(payload) {
       showLoader(true, "Menyimpan ke Spreadsheet...");
       try {
