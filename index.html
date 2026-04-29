@@ -6,7 +6,7 @@
   <title>Sistem Silsilah Keluarga</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    /* :root { --dark-blue: #1A365D; --light-blue: #63B3ED; --light-gray: #EDF2F7; } */
+    :root { --dark-blue: #1A365D; --light-blue: #63B3ED; --light-gray: #EDF2F7; } 
     body { background-color: var(--light-gray); font-family: 'Segoe UI', sans-serif; }
     .navbar { background-color: var(--dark-blue) !important; }
     /* Tampilan  Foto Pada Tabel Data Kelauarga */
@@ -545,86 +545,111 @@
       }
     }
 
-    /**
-     * REVISI: Fungsi viewDetail
-     * Fokus: Mengisi id="viewContent" dan menampilkan id="viewModal" (Fix Hang)
-     */
     function viewDetail(id) {
     console.log("viewDetail dipanggil dengan id:", id);
     
-      try {
-          const item = globalData.find(x => String(x.id) === String(id));
-          console.log("Data yang ditemukan:", item);
-          
-          if (!item) {
-              console.error("Data tidak ditemukan untuk id:", id);
-              showMessage("Data tidak ditemukan", "error", "tableMessage");
-              return;
-          }
+    try {
+        const item = globalData.find(x => String(x.id) === String(id));
+        
+        if (!item) {
+            showMessage("Data tidak ditemukan", "error", "tableMessage");
+            return;
+        }
 
-          const viewContainer = document.getElementById('viewContent');
-          if (viewContainer) {
-              viewContainer.innerHTML = `
-                  <div class="col-md-4 text-center mb-3">
-                      <img src="${item.foto || 'https://via.placeholder.com/150'}" 
-                          class="img-fluid rounded border shadow-sm" 
-                          style="max-height:250px; width:auto;" 
-                          onerror="this.src='https://via.placeholder.com/150'">
-                  </div>
-                  <div class="col-md-8">
-                      <div class="table-responsive">
-                          <table class="table table-sm table-borderless">
-                              <tr><td width="40%" class="fw-bold">Nama Lengkap</td><td>: ${item.nama || '-'}</td></tr>
-                              <tr><td class="fw-bold">Jenis Kelamin</td><td>: ${item.jk || '-'}</td></tr>
-                              <tr><td class="fw-bold">Tgl Lahir</td><td>: ${item.tglLahir || '-'}</td></tr>
-                              <tr><td class="fw-bold">Status Kawin</td><td>: ${item.statusKawin || '-'}</td></tr>
-                              <tr><td class="fw-bold">Nama Pasangan</td><td>: ${item.namaPasangan || '-'}</td></tr>
-                              <tr><td class="fw-bold">Status Keluarga</td><td>: ${item.statusKeluarga || '-'}</td></tr>
-                              <tr><td class="fw-bold">Nama Ayah</td><td>: ${item.ayah || '-'}</td></tr>
-                              <tr><td class="fw-bold">Nama Ibu</td><td>: ${item.ibu || '-'}</td></tr>
-                              <tr><td class="fw-bold">Alamat</td><td>: ${item.alamat || '-'}</td></tr>
-                              <tr><td class="fw-bold">Kota</td><td>: ${item.kota || '-'}</td></tr>
-                          </table>
-                      </div>
-                  </div>
-              `;
-          }
+        const viewContainer = document.getElementById('viewContent');
+        if (viewContainer) {
+            viewContainer.innerHTML = `
+                <div class="row">
+                    <div class="col-md-4 text-center mb-3">
+                        <img src="${item.foto || 'https://via.placeholder.com/150'}" 
+                            class="img-fluid rounded border shadow-sm" 
+                            style="max-height:200px; width:auto; object-fit:cover;" 
+                            onerror="this.src='https://via.placeholder.com/150'">
+                    </div>
+                    <div class="col-md-8">
+                        <table class="table table-sm table-borderless">
+                            <tr><th width="35%">Nama Lengkap</th><td>: ${item.nama || '-'}</td></tr>
+                            <tr><th>Jenis Kelamin</th><td>: ${item.jk || '-'}</td></tr>
+                            <tr><th>Tgl Lahir</th><td>: ${item.tglLahir ? new Date(item.tglLahir).toLocaleDateString('id-ID') : '-'}</td></tr>
+                            <tr><th>Status Kawin</th><td>: ${item.statusKawin || '-'}</td></tr>
+                            <tr><th>Nama Pasangan</th><td>: ${item.namaPasangan || '-'}</td></tr>
+                            <tr><th>Status Keluarga</th><td>: ${item.statusKeluarga || '-'}</td></tr>
+                            <tr><th>Nama Ayah</th><td>: ${item.ayah || '-'}</td></tr>
+                            <tr><th>Nama Ibu</th><td>: ${item.ibu || '-'}</td></tr>
+                            <tr><th>Alamat</th><td>: ${item.alamat || '-'}</td></tr>
+                            <tr><th>Kota</th><td>: ${item.kota || '-'}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
 
-          const viewEl = document.getElementById('viewModal');
-          if (!viewEl) return;
-
-          // Hapus semua modal backdrop yang mungkin tersisa
-          document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
-          document.body.classList.remove('modal-open');
-          document.body.style.overflow = '';
-          
-          // Reset style modal
-          viewEl.style.display = '';
-          viewEl.classList.remove('show');
-          
-          // Trigger reflow - memaksa browser untuk merender ulang
-          void viewEl.offsetHeight;
-          
-          // Tampilkan modal dengan cara yang lebih langsung
-          viewEl.style.display = 'block';
-          viewEl.classList.add('show');
-          document.body.classList.add('modal-open');
-          
-          // Buat backdrop manual jika diperlukan
-          let backdrop = document.querySelector('.modal-backdrop');
-          if (!backdrop) {
-              backdrop = document.createElement('div');
-              backdrop.className = 'modal-backdrop fade show';
-              document.body.appendChild(backdrop);
-          }
-  
-          console.log("Modal harusnya sudah tampil");
-          
-      } catch (e) {
-          console.error("View Error detail:", e);
-          showMessage("Gagal menampilkan detail: " + e.message, "error", "tableMessage");
-      }
+        // Bersihkan backdrop lama
+        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        
+        // Ambil element modal
+        const modalEl = document.getElementById('viewModal');
+        
+        // Reset style modal
+        modalEl.style.display = 'block';
+        modalEl.style.position = 'fixed';
+        modalEl.style.top = '0';
+        modalEl.style.left = '0';
+        modalEl.style.zIndex = '1060';
+        modalEl.style.width = '100%';
+        modalEl.style.height = '100%';
+        modalEl.style.overflowX = 'hidden';
+        modalEl.style.overflowY = 'auto';
+        modalEl.style.outline = '0';
+        
+        // Pastikan modal dialog di tengah
+        const modalDialog = modalEl.querySelector('.modal-dialog');
+        if (modalDialog) {
+            modalDialog.style.margin = '1.75rem auto';
+            modalDialog.style.position = 'relative';
+            modalDialog.style.top = '50px';
+        }
+        
+        // Tambah backdrop
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        backdrop.style.position = 'fixed';
+        backdrop.style.top = '0';
+        backdrop.style.left = '0';
+        backdrop.style.zIndex = '1040';
+        backdrop.style.width = '100vw';
+        backdrop.style.height = '100vh';
+        backdrop.style.backgroundColor = 'rgba(0,0,0,0.5)';
+        document.body.appendChild(backdrop);
+        
+        // Lock body scroll
+        document.body.style.overflow = 'hidden';
+        document.body.style.paddingRight = '0px';
+        
+        // Tambah class active ke modal
+        modalEl.classList.add('show');
+        
+        console.log("Modal harus sudah tampil sekarang");
+        
+        // Event untuk menutup modal
+        const closeButtons = modalEl.querySelectorAll('[data-bs-dismiss="modal"]');
+        closeButtons.forEach(btn => {
+            btn.onclick = function() {
+                modalEl.style.display = 'none';
+                modalEl.classList.remove('show');
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                document.body.style.overflow = '';
+                document.body.classList.remove('modal-open');
+            };
+        });
+        
+    } catch (e) {
+        console.error("View Error:", e);
+        showMessage("Gagal menampilkan detail", "error", "tableMessage");
     }
+}
 
     /**
      * REVISI: Fungsi hapusData
