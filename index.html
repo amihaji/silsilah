@@ -103,13 +103,15 @@
       </div>
     </nav>
    
+      <!-- TAMBAHKAN BARIS INI: Tempat pesan untuk aksi di tabel (Hapus) -->
+      <div id="tableMessage" class="form-msg"></div>
+
       <div class="card p-3 shadow-sm">
         <div class="d-flex justify-content-between mb-3 align-items-center">
           <h5 class="m-0">Data Anggota Keluarga</h5>
           <button class="btn btn-success btn-sm" onclick="openForm('add')">+ Tambah</button>
         </div>
-        <!-- TAMBAHKAN BARIS INI: Tempat pesan untuk aksi di tabel (Hapus) -->
-        <div id="tableMessage" class="form-msg"></div>
+       
 
         <div class="table-responsive">
           <table class="table table-sm table-hover align-middle">
@@ -524,34 +526,6 @@
       myModal.show();
     }
 
-    function BACKUP_viewDetail(id) {
-      const item = globalData.find(x => x.id == id);
-      if(!item) return;
-      
-      const img = (item.foto && item.foto.includes('http')) ? item.foto : '[https://via.placeholder.com/150?text=No+Foto](https://via.placeholder.com/150?text=No+Foto)';
-      const content = `
-        <div class="col-md-4 text-center mb-3">
-          <img src="${img}" class="view-photo shadow-sm">
-          <h5 class="mt-2 text-primary">${item.nama}</h5>
-          <span class="badge bg-secondary">${item.statusKeluarga}</span>
-        </div>
-        <div class="col-md-8">
-          <table class="table table-sm table-borderless">
-            <tr><td width="150" class="fw-bold">Jenis Kelamin</td><td>: ${item.jk || '-'}</td></tr>
-            <tr><td class="fw-bold">Tgl Lahir</td><td>: ${item.tglLahir ? new Date(item.tglLahir).toLocaleDateString('id-ID') : '-'}</td></tr>
-            <tr><td class="fw-bold">Status Kawin</td><td>: ${item.statusKawin || '-'}</td></tr>
-            <tr><td class="fw-bold">Pasangan</td><td>: ${item.namaPasangan || '-'}</td></tr>
-            <tr><td class="fw-bold">Nama Ayah</td><td>: ${item.ayah || '-'}</td></tr>
-            <tr><td class="fw-bold">Nama Ibu</td><td>: ${item.ibu || '-'}</td></tr>
-            <tr><td class="fw-bold">Alamat</td><td>: ${item.alamat || '-'}</td></tr>
-            <tr><td class="fw-bold">Kota</td><td>: ${item.kota || '-'}</td></tr>
-          </table>
-        </div>
-      `;
-      document.getElementById('viewContent').innerHTML = content;
-      new bootstrap.Modal(document.getElementById('viewModal')).show();
-    }
-
     /**********************
      * Hapus data di sheet
      * *******************/
@@ -584,28 +558,6 @@
             showLoader(false);
         }
     }
-
-
-    async function BACKUP_hapusData(id, nama) {
-      if(!confirm(`Apakah Anda yakin ingin menghapus data "${nama}"?`)) return;
-      
-      showLoader(true, "Menghapus Data...");
-      try {
-        const payload = { action: "deleteData", id: id };
-        const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-        const res = await resp.json();
-        if(res.success) {
-          // alert("Data berhasil dihapus.");
-           showMessage("Data berhasil di hapus" + res.message, "success");
-          loadData();
-        }
-      } catch (err) {
-        // alert("Gagal menghapus data."); 
-        showMessage("Gagal menghapus data" + err.message, "error");
-      }
-      finally { showLoader(false); }
-    }
-
 
     /*************************************
      * Kirim data untuk disimpan di sheet
@@ -727,12 +679,12 @@
         modalInstance.show();
     }
 
-    /**
-     * Fungsi Pesan General (Point 4)
+    /*****************************************************************
+     * Fungsi Pesan General
      * @param {string} msg - Teks pesan
      * @param {string} type - success, error, warning, info
      * @param {string} elementId - ID element tempat menampilkan pesan
-     */
+     ******************************************************************/
     function showMessage(msg, type = 'info', elementId = 'formMessage') {
         const el = document.getElementById(elementId);
         if (!el) return;
