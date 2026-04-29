@@ -44,6 +44,10 @@
     .modal-header .btn-close {
         filter: brightness(0) invert(1); /* Membuat tombol close jadi putih */
     }
+    /* Pastikan modal tampil di atas konten lain */
+    .modal {z-index: 1050; }
+    .modal-backdrop { z-index: 1040; }
+    .modal.show { display: block; }
 
     /* Styling Pesan (Alert Custom) */
     .form-msg {
@@ -549,84 +553,73 @@
     console.log("viewDetail dipanggil dengan id:", id);
     
       try {
-        const item = globalData.find(x => String(x.id) === String(id));
-        console.log("Data yang ditemukan:", item);
-        
-        if (!item) {
-            console.error("Data tidak ditemukan untuk id:", id);
-            showMessage("Data tidak ditemukan", "error", "tableMessage");
-            return;
-        }
+          const item = globalData.find(x => String(x.id) === String(id));
+          console.log("Data yang ditemukan:", item);
+          
+          if (!item) {
+              console.error("Data tidak ditemukan untuk id:", id);
+              showMessage("Data tidak ditemukan", "error", "tableMessage");
+              return;
+          }
 
-        // TEST: Coba alert dulu untuk memastikan function jalan
-        alert("Test: View detail untuk " + item.nama);
-        
-        // Cek element viewModal
-        const viewEl = document.getElementById('viewModal');
-        console.log("Element viewModal:", viewEl);
-        
-        if (!viewEl) {
-            console.error("Element dengan id 'viewModal' tidak ditemukan!");
-            return;
-        }
+          const viewContainer = document.getElementById('viewContent');
+          if (viewContainer) {
+              viewContainer.innerHTML = `
+                  <div class="col-md-4 text-center mb-3">
+                      <img src="${item.foto || 'https://via.placeholder.com/150'}" 
+                          class="img-fluid rounded border shadow-sm" 
+                          style="max-height:250px; width:auto;" 
+                          onerror="this.src='https://via.placeholder.com/150'">
+                  </div>
+                  <div class="col-md-8">
+                      <div class="table-responsive">
+                          <table class="table table-sm table-borderless">
+                              <tr><td width="40%" class="fw-bold">Nama Lengkap</td><td>: ${item.nama || '-'}</td></tr>
+                              <tr><td class="fw-bold">Jenis Kelamin</td><td>: ${item.jk || '-'}</td></tr>
+                              <tr><td class="fw-bold">Tgl Lahir</td><td>: ${item.tglLahir || '-'}</td></tr>
+                              <tr><td class="fw-bold">Status Kawin</td><td>: ${item.statusKawin || '-'}</td></tr>
+                              <tr><td class="fw-bold">Nama Pasangan</td><td>: ${item.namaPasangan || '-'}</td></tr>
+                              <tr><td class="fw-bold">Status Keluarga</td><td>: ${item.statusKeluarga || '-'}</td></tr>
+                              <tr><td class="fw-bold">Nama Ayah</td><td>: ${item.ayah || '-'}</td></tr>
+                              <tr><td class="fw-bold">Nama Ibu</td><td>: ${item.ibu || '-'}</td></tr>
+                              <tr><td class="fw-bold">Alamat</td><td>: ${item.alamat || '-'}</td></tr>
+                              <tr><td class="fw-bold">Kota</td><td>: ${item.kota || '-'}</td></tr>
+                          </table>
+                      </div>
+                  </div>
+              `;
+          }
 
-        const viewContainer = document.getElementById('viewContent');
-        if (viewContainer) {
-            viewContainer.innerHTML = `
-                <div class="col-md-4 text-center mb-3">
-                    <img src="${item.foto || 'https://via.placeholder.com/150'}" 
-                        class="img-fluid rounded border shadow-sm" 
-                        style="max-height:250px; width:auto;" 
-                        onerror="this.src='https://via.placeholder.com/150'">
-                </div>
-                <div class="col-md-8">
-                    <div class="table-responsive">
-                        <table class="table table-sm table-borderless">
-                            <tr><td width="40%" class="fw-bold">Nama Lengkap</td><td>: ${item.nama || '-'}</td></tr>
-                            <tr><td class="fw-bold">Jenis Kelamin</td><td>: ${item.jk || '-'}</td></tr>
-                            <tr><td class="fw-bold">Tgl Lahir</td><td>: ${item.tglLahir || '-'}</td></tr>
-                            <tr><td class="fw-bold">Status Kawin</td><td>: ${item.statusKawin || '-'}</td></tr>
-                            <tr><td class="fw-bold">Nama Pasangan</td><td>: ${item.namaPasangan || '-'}</td></tr>
-                            <tr><td class="fw-bold">Status Keluarga</td><td>: ${item.statusKeluarga || '-'}</td></tr>
-                            <tr><td class="fw-bold">Nama Ayah</td><td>: ${item.ayah || '-'}</td></tr>
-                            <tr><td class="fw-bold">Nama Ibu</td><td>: ${item.ibu || '-'}</td></tr>
-                            <tr><td class="fw-bold">Alamat</td><td>: ${item.alamat || '-'}</td></tr>
-                            <tr><td class="fw-bold">Kota</td><td>: ${item.kota || '-'}</td></tr>
-                        </table>
-                    </div>
-                </div>
-            `;
-            console.log("Content berhasil diisi");
-        }
+          const viewEl = document.getElementById('viewModal');
+          if (!viewEl) return;
 
-        // Coba cara berbeda untuk menampilkan modal
-        console.log("Mencoba menampilkan modal...");
-        
-        // Hapus backdrop yang mungkin tersisa
-        const existingBackdrop = document.querySelector('.modal-backdrop');
-        if (existingBackdrop) {
-            console.log("Menghapus backdrop lama");
-            existingBackdrop.remove();
-        }
-        
-        // Hapus class modal-open di body jika ada
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = '';
-        
-        // Gunakan cara jQuery style jika Bootstrap modal bermasalah
-        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-            console.log("Menggunakan bootstrap.Modal");
-            const myModal = new bootstrap.Modal(viewEl);
-            myModal.show();
-            console.log("Modal show() sudah dipanggil");
-        } else {
-            console.error("Bootstrap tidak tersedia!");
-            // Fallback: tampilkan manual
-            viewEl.style.display = 'block';
-            viewEl.classList.add('show');
-            document.body.classList.add('modal-open');
-        }
-        
+          // Hapus semua modal backdrop yang mungkin tersisa
+          document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+          document.body.classList.remove('modal-open');
+          document.body.style.overflow = '';
+          
+          // Reset style modal
+          viewEl.style.display = '';
+          viewEl.classList.remove('show');
+          
+          // Trigger reflow - memaksa browser untuk merender ulang
+          void viewEl.offsetHeight;
+          
+          // Tampilkan modal dengan cara yang lebih langsung
+          viewEl.style.display = 'block';
+          viewEl.classList.add('show');
+          document.body.classList.add('modal-open');
+          
+          // Buat backdrop manual jika diperlukan
+          let backdrop = document.querySelector('.modal-backdrop');
+          if (!backdrop) {
+              backdrop = document.createElement('div');
+              backdrop.className = 'modal-backdrop fade show';
+              document.body.appendChild(backdrop);
+          }
+  
+          console.log("Modal harusnya sudah tampil");
+          
       } catch (e) {
           console.error("View Error detail:", e);
           showMessage("Gagal menampilkan detail: " + e.message, "error", "tableMessage");
