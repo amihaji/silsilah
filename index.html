@@ -81,6 +81,8 @@
           <div class="card-header bg-primary text-white text-center"><h4>Login Silsilah</h4></div>
           <div class="card-body">
             <form id="formLogin">
+              <!-- Tampilkan pesan diatas tombol -->
+              <div id="formMessage" class="form-msg"></div>
               <div class="mb-3"><label>Username</label><input type="text" id="loginUsername" class="form-control" required></div>
               <div class="mb-3"><label>Password</label><input type="password" id="loginPassword" class="form-control" required></div>
               <button type="submit" class="btn btn-primary w-100">Login</button>
@@ -100,13 +102,15 @@
         <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
       </div>
     </nav>
- 
-    <div class="container">
+   
       <div class="card p-3 shadow-sm">
         <div class="d-flex justify-content-between mb-3 align-items-center">
           <h5 class="m-0">Data Anggota Keluarga</h5>
           <button class="btn btn-success btn-sm" onclick="openForm('add')">+ Tambah</button>
         </div>
+        <!-- TAMBAHKAN BARIS INI: Tempat pesan untuk aksi di tabel (Hapus) -->
+        <div id="tableMessage" class="form-msg"></div>
+
         <div class="table-responsive">
           <table class="table table-sm table-hover align-middle">
             <thead class="table-light">
@@ -125,7 +129,7 @@
           </table>
         </div>
       </div>
-    </div>
+  </div>
 
   <!-- Modal Form Anggota -->
   <div class="modal fade" id="formModal" tabindex="-1" aria-hidden="true">
@@ -201,7 +205,8 @@
             </div>
           </div>
           <!-- Tampilkan pesan diatas tombol -->
-          <div id="formMessage" class="form-msg"></div>
+          <!-- <div id="formMessage" class="form-msg"></div>-->
+          <div id="formMessage" class="modal-footer"></div>
           
           <!-- Tampilkan tombol disini -->
           <div class="modal-footer">
@@ -552,6 +557,37 @@
      * Hapus data di sheet
      * *******************/
     async function hapusData(id, nama) {
+        // Tetap gunakan confirm bawaan untuk keamanan sebelum menghapus
+        if(!confirm(`Apakah Anda yakin ingin menghapus data "${nama}"?`)) return;
+        
+        // Sembunyikan pesan lama jika ada
+        const tableMsg = document.getElementById('tableMessage');
+        if(tableMsg) tableMsg.style.display = 'none';
+        showLoader(true, "Menghapus Data...");
+        try {
+            const payload = { action: "deleteData", id: id };
+            const resp = await fetch(SCRIPT_URL, { 
+                method: 'POST', 
+                body: JSON.stringify(payload) 
+            });
+            const res = await resp.json();
+            if(res.success) {
+                // Gunakan showMessage dengan target element 'tableMessage'
+                showMessage(`Data "${nama}" berhasil dihapus.`, "success", "tableMessage");
+                loadData(); // Refresh tabel
+            } else {
+                showMessage("Gagal menghapus: " + res.message, "error", "tableMessage");
+            }
+        } catch (err) {
+            showMessage("Koneksi gagal saat menghapus data.", "error", "tableMessage");
+            console.error(err);
+        } finally {
+            showLoader(false);
+        }
+    }
+
+
+    async function BACKUP_hapusData(id, nama) {
       if(!confirm(`Apakah Anda yakin ingin menghapus data "${nama}"?`)) return;
       
       showLoader(true, "Menghapus Data...");
