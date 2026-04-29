@@ -470,107 +470,78 @@
       }
     }
 
-     /**
-     * FUNGSI LOAD DATA (REVISI TOTAL)
-     * Fokus: Memastikan data muncul di tabel "Data Keluarga"
-     */
     async function loadData() {
-        // 1. Tampilkan Loader
-        showLoader(true, "Memuat Data Keluarga...");
-        
-        try {
-            const url = `${SCRIPT_URL}?action=readData`;
-            const response = await fetch(url);
-            
-            if (!response.ok) throw new Error("Gagal menghubungi server");
-            
-            const res = await response.json();
-            
-            // 2. Debugging di Console (Tekan F12 untuk melihat ini)
-            console.log("Raw Response dari Server:", res);
+    showLoader(true, "Memuat Data Keluarga...");
+    
+      try {
+          // PERBAIKAN: Ganti readData menjadi getData
+          const url = `${SCRIPT_URL}?action=getData`;
+          const response = await fetch(url);
+          
+          if (!response.ok) throw new Error("Gagal menghubungi server");
+          
+          const res = await response.json();
+          
+          console.log("Raw Response:", res);
 
-            /**
-             * 3. PENANGANAN STRUKTUR DATA (Sangat Penting)
-             * Kita cek semua kemungkinan format yang dikirim backend
-             */
-            if (res && res.data && Array.isArray(res.data)) {
-                // Jika formatnya { success: true, data: [...] }
-                globalData = res.data;
-            } else if (Array.isArray(res)) {
-                // Jika formatnya [...] (array langsung)
-                globalData = res;
-            } else {
-                // Jika tidak dikenal
-                globalData = [];
-            }
+          if (res && res.data && Array.isArray(res.data)) {
+              globalData = res.data;
+          } else if (Array.isArray(res)) {
+              globalData = res;
+          } else {
+              globalData = [];
+          }
 
-            // 4. Render ke Tabel
-            const tbody = document.getElementById('tableBody');
-            if (!tbody) {
-                console.error("Elemen 'tableBody' tidak ditemukan!");
-                return;
-            }
+          // Render tabel sama seperti kode Anda yang sudah ada
+          const tbody = document.getElementById('tableBody');
+          if (!tbody) return;
 
-            tbody.innerHTML = ''; // Kosongkan tabel
+          tbody.innerHTML = '';
 
-            if (globalData.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="8" class="text-center p-4">
-                            <div class="text-muted">Tidak ada data ditemukan di database</div>
-                        </td>
-                    </tr>`;
-                return;
-            }
+          if (globalData.length === 0) {
+              tbody.innerHTML = `<tr><td colspan="8" class="text-center p-4"><div class="text-muted">Tidak ada data ditemukan di database</div></td></tr>`;
+              return;
+          }
 
-            // 5. Bangun Baris Tabel
-            globalData.forEach((item, index) => {
-                const tr = document.createElement('tr');
-                
-                // Ambil ID dengan aman (pastikan string)
-                const itemId = item.id ? String(item.id) : '';
-                const itemNama = item.nama ? item.nama.replace(/'/g, "\\'") : 'Tanpa Nama';
+          globalData.forEach((item, index) => {
+              const tr = document.createElement('tr');
+              const itemId = item.id ? String(item.id) : '';
+              const itemNama = item.nama ? item.nama.replace(/'/g, "\\'") : 'Tanpa Nama';
 
-                tr.innerHTML = `
-                    <td class="text-center">
-                        <img src="${item.foto || 'https://via.placeholder.com/50'}" 
-                            class="foto-thumb" 
-                            onerror="this.src='https://via.placeholder.com/50'">
-                    </td>
-                    <td>${item.nama || '-'}</td>
-                    <td>${item.statusKawin || '-'}</td>
-                    <td>${item.namaPasangan || '-'}</td>
-                    <td>${item.statusKeluarga || '-'}</td>
-                    <td>${item.ayah || '-'}</td>
-                    <td>${item.ibu || '-'}</td>
-                    <td class="text-center">
-                        <div class="btn-group btn-group-sm">
-                            <button type="button" class="btn btn-info text-white" onclick="viewDetail('${itemId}')">👁️</button>
-                            <button type="button" class="btn btn-warning text-white" onclick="openForm('edit', '${itemId}')">✏️</button>
-                            <button type="button" class="btn btn-danger" onclick="hapusData('${itemId}', '${itemNama}')">🗑️</button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+              tr.innerHTML = `
+                  <td class="text-center">
+                      <img src="${item.foto || 'https://via.placeholder.com/50'}" 
+                          class="foto-thumb" 
+                          onerror="this.src='https://via.placeholder.com/50'">
+                  </td>
+                  <td>${item.nama || '-'}</td>
+                  <td>${item.statusKawin || '-'}</td>
+                  <td>${item.namaPasangan || '-'}</td>
+                  <td>${item.statusKeluarga || '-'}</td>
+                  <td>${item.ayah || '-'}</td>
+                  <td>${item.ibu || '-'}</td>
+                  <td class="text-center">
+                      <div class="btn-group btn-group-sm">
+                          <button type="button" class="btn btn-info text-white" onclick="viewDetail('${itemId}')">👁️</button>
+                          <button type="button" class="btn btn-warning text-white" onclick="openForm('edit', '${itemId}')">✏️</button>
+                          <button type="button" class="btn btn-danger" onclick="hapusData('${itemId}', '${itemNama}')">🗑️</button>
+                      </div>
+                  </td>
+              `;
+              tbody.appendChild(tr);
+          });
 
-            console.log(`Berhasil merender ${globalData.length} baris data.`);
+          console.log(`Berhasil merender ${globalData.length} baris data.`);
 
-        } catch (error) {
-            console.error("Error saat loadData:", error);
-            const tbody = document.getElementById('tableBody');
-            if (tbody) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="8" class="text-center p-4">
-                            <div class="text-danger">Gagal memuat data: ${error.message}</div>
-                        </td>
-                    </tr>`;
-            }
-        } finally {
-            // 6. Matikan Loader
-            showLoader(false);
-        }
+      } catch (error) {
+          console.error("Error:", error);
+          const tbody = document.getElementById('tableBody');
+          if (tbody) {
+              tbody.innerHTML = `<tr><td colspan="8" class="text-center p-4"><div class="text-danger">Gagal memuat data: ${error.message}</div></td></tr>`;
+          }
+      } finally {
+          showLoader(false);
+      }
     }
 
     /**
