@@ -236,6 +236,24 @@
     </div>
   </div>
 
+  <!-- MODAL KONFIRMASI CUSTOM -->
+  <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-body text-center p-4">
+          <div class="mb-3"><span style="font-size: 3rem;">⚠️</span></div>
+          <h5 id="confirmTitle" class="fw-bold text-dark">Konfirmasi</h5>
+          <p id="confirmText" class="small text-muted mb-4"></p>
+          <div class="d-flex justify-content-center gap-2">
+            <button type="button" class="btn btn-light btn-sm px-4 fw-bold" data-bs-dismiss="modal">BATAL</button>
+            <button type="button" class="btn btn-danger btn-sm px-4 fw-bold" id="confirmBtnAction">YA, HAPUS</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     
@@ -245,11 +263,17 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLje8ggIJOMzwQQTpRnorltH_DtwBrnPVDgLXFPZjbcxx4cR9SA738s6BQMPABRnSx/exec";
     let globalData   = [];
     let modalInstance;
+    let confirmModalInstance;
 
     document.addEventListener('DOMContentLoaded', function() {
       modalInstance = new bootstrap.Modal(document.getElementById('formModal'));
       document.getElementById('formLogin').addEventListener('submit', prosesLogin);
       document.getElementById('formKeluarga').addEventListener('submit', simpanData);
+     
+      function initConfirmModal() {
+        const el = document.getElementById('confirmModal');
+        if (el) confirmModalInstance = new bootstrap.Modal(el);
+      }
     });
 
     /***********************
@@ -344,30 +368,83 @@
       });
     }
  
-    /****************************************
+    /**********************************************************
      * Untuk tampilkan form Tambah dan Edit
-     * **************************************/
+     * Mengubah judul dan aktifkan kembali tombol simpan
+     *********************************************************/
     function openForm(mode, id = null) {
-      document.getElementById('formKeluarga').reset();
-      document.getElementById('formId').value = "";
-      document.getElementById('fotoLama').value = "";
-      document.getElementById('modalTitle').innerText = mode === 'add' ? "Tambah Anggota" : "Edit Anggota";
-      
-      if(mode === 'edit') {
-        const item = globalData.find(x => x.id == id);
-        if(item) {
-          document.getElementById('formId').value = item.id;
-          document.getElementById('nama').value = item.nama || "";
-          document.getElementById('tglLahir').value = item.tglLahir ? new Date(item.tglLahir).toISOString().split('T')[0] : "";
-          document.getElementById('jk').value = item.jk || "Laki-laki";
-          document.getElementById('statusKawin').value = item.statusKawin || "Single";
-          document.getElementById('statusKeluarga').value = item.statusKeluarga || "Anak";
-          document.getElementById('alamat').value = item.alamat || "";
-          document.getElementById('kota').value = item.kota || "";
-          document.getElementById('ayah').value = item.ayah || "";
-          document.getElementById('ibu').value = item.ibu || "";
-          document.getElementById('fotoLama').value = item.foto || "";
+        const form = document.getElementById('formSilsilah');
+        if (form) form.reset();
+        document.getElementById('formId').value = "";
+        document.getElementById('formMessage').style.display = 'none';
+        
+        // Fix Point 4: Reset Status Tombol Simpan
+        const btn = document.getElementById('btnSimpan');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = 'SIMPAN DATA';
         }
+
+        // Fix Point 2: Update Judul Modal Dinamis
+        const titleEl = document.getElementById('formModalTitle');
+        if (titleEl) {
+            titleEl.innerText = (mode === 'edit') ? "Edit Data Keluarga" : "Tambah Data Keluarga";
+        }
+        if (mode === 'edit' && id) {
+            const item = globalData.find(x => x.id == id);
+            if (item) {
+                document.getElementById('formId').value = item.id;
+                document.getElementById('nama').value = item.nama || "";
+                document.getElementById('jk').value = item.jk || "Laki-laki";
+                document.getElementById('tglLahir').value = item.tglLahir ? new Date(item.tglLahir).toISOString().split('T')[0] : "";
+                document.getElementById('statusKawin').value = item.statusKawin || "Single";
+                document.getElementById('namaPasangan').value = item.namaPasangan || "";
+                document.getElementById('statusKeluarga').value = item.statusKeluarga || "Anak";
+                document.getElementById('alamat').value = item.alamat || "";
+                document.getElementById('kota').value = item.kota || "";
+                document.getElementById('ayah').value = item.ayah || "";
+                document.getElementById('ibu').value = item.ibu || "";
+                document.getElementById('fotoLama').value = item.foto || "";
+                if (typeof togglePasangan === "function") togglePasangan();
+            }
+        }
+        if (modalInstance) modalInstance.show();
+    }
+
+    function BACKUP_openForm(mode, id = null) {
+      const form = document.getElementById('formSilsilah');
+      form.reset();
+      document.getElementById('formId').value = "";
+      document.getElementById('formMessage').style.display = 'none';
+      
+      // Aktifkan kembali tombol simpan (Fix Point 4)
+      const btn = document.getElementById('btnSimpan');
+      btn.disabled = false;
+      btn.innerHTML = 'SIMPAN DATA';
+
+      // Update Judul Modal (Fix Point 2)
+      const titleEl = document.getElementById('formModalTitle');
+      if (titleEl) {
+          titleEl.innerText = mode === 'edit' ? "Edit Data Keluarga" : "Tambah Data Keluarga";
+      }
+
+      if (mode === 'edit') {
+          const item = globalData.find(x => x.id == id);
+          if (item) {
+              document.getElementById('formId').value = item.id;
+              document.getElementById('nama').value = item.nama || "";
+              document.getElementById('jk').value = item.jk || "Laki-laki";
+              document.getElementById('tglLahir').value = item.tglLahir ? new Date(item.tglLahir).toISOString().split('T')[0] : "";
+              document.getElementById('statusKawin').value = item.statusKawin || "Single";
+              document.getElementById('namaPasangan').value = item.namaPasangan || "";
+              document.getElementById('statusKeluarga').value = item.statusKeluarga || "Anak";
+              document.getElementById('alamat').value = item.alamat || "";
+              document.getElementById('kota').value = item.kota || "";
+              document.getElementById('ayah').value = item.ayah || "";
+              document.getElementById('ibu').value = item.ibu || "";
+              document.getElementById('fotoLama').value = item.foto || "";
+              if (typeof togglePasangan === "function") togglePasangan();
+          }
       }
       modalInstance.show();
     }
@@ -376,6 +453,93 @@
      * Update simpan Data di sheet
     *******************************/
     async function simpanData(e) {
+      e.preventDefault();
+      const btn     = document.getElementById('btnSimpan');
+      btn.disabled  = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyimpan...';
+      document.getElementById('formMessage').style.display = 'none';
+      let payload = {
+          action: "saveData",
+          data: {
+              id: document.getElementById('formId').value,
+              nama: document.getElementById('nama').value,
+              jk: document.getElementById('jk').value,
+              tglLahir: document.getElementById('tglLahir').value,
+              statusKawin: document.getElementById('statusKawin').value,
+              namaPasangan: document.getElementById('namaPasangan').value,
+              statusKeluarga: document.getElementById('statusKeluarga').value,
+              alamat: document.getElementById('alamat').value,
+              kota: document.getElementById('kota').value,
+              ayah: document.getElementById('ayah').value,
+              ibu: document.getElementById('ibu').value,
+              fotoLama: document.getElementById('fotoLama').value,
+              fotoBase64: null
+          }
+      };
+      const fileInput = document.getElementById('fotoFile');
+      if (fileInput && fileInput.files[0]) {
+          const reader  = new FileReader();
+          reader.onload = async function(event) {
+              payload.data.fotoBase64 = event.target.result;
+              await kirimDataFinal(payload);
+          };
+          reader.readAsDataURL(fileInput.files[0]);
+      } else {
+          await kirimDataFinal(payload);
+      }
+    }
+
+    async function BACKUP_simpanData(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSimpan');
+      btn.disabled = true; // Kunci tombol saat proses
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyimpan...';
+      
+      document.getElementById('formMessage').style.display = 'none';
+
+      let payload = {
+          action: "saveData",
+          data: {
+              id: document.getElementById('formId').value,
+              nama: document.getElementById('nama').value,
+              jk: document.getElementById('jk').value,
+              tglLahir: document.getElementById('tglLahir').value,
+              statusKawin: document.getElementById('statusKawin').value,
+              namaPasangan: document.getElementById('namaPasangan').value,
+              statusKeluarga: document.getElementById('statusKeluarga').value,
+              alamat: document.getElementById('alamat').value,
+              kota: document.getElementById('kota').value,
+              ayah: document.getElementById('ayah').value,
+              ibu: document.getElementById('ibu').value,
+              fotoLama: document.getElementById('fotoLama').value,
+              fotoBase64: null
+          }
+      };
+      const fileInput = document.getElementById('fotoFile');
+      if (fileInput.files[0]) {
+          const reader = new FileReader();
+          reader.onload = async function(event) {
+              payload.data.fotoBase64 = event.target.result;
+              await kirimData(payload);
+          };
+          reader.readAsDataURL(fileInput.files[0]);
+      } else {
+          await kirimData(payload);
+      }
+    }
+    
+    /*************************************
+     * Mengembalikan status tombol simpan
+     *************************************/
+    function resetSimpanButton() {
+    const btn = document.getElementById('btnSimpan');
+      if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = 'SIMPAN DATA';
+      }
+    }
+
+    async function BACKUP_simpanData(e) {
         e.preventDefault();
         const btn = document.getElementById('btnSimpan');
         btn.disabled = true;
@@ -529,86 +693,117 @@
     /**********************
      * Hapus data di sheet
      * *******************/
-    async function hapusData(id, nama) {
-        // Tetap gunakan confirm bawaan untuk keamanan sebelum menghapus
-        if(!confirm(`Apakah Anda yakin ingin menghapus data "${nama}"?`)) return;
-        
-        // Sembunyikan pesan lama jika ada
-        const tableMsg = document.getElementById('tableMessage');
-        if(tableMsg) tableMsg.style.display = 'none';
-        showLoader(true, "Menghapus Data...");
+    function hapusData(id, nama) {
+    document.getElementById('confirmTitle').innerText = "Hapus Data";
+    document.getElementById('confirmText').innerText = `Hapus data "${nama}"? Tindakan ini tidak bisa dibatalkan.`;
+    
+    const btnConfirm = document.getElementById('confirmBtnAction');
+      btnConfirm.onclick = async () => {
+        if (confirmModalInstance) confirmModalInstance.hide();
+        showLoader(true, "Menghapus...");
         try {
-            const payload = { action: "deleteData", id: id };
             const resp = await fetch(SCRIPT_URL, { 
                 method: 'POST', 
-                body: JSON.stringify(payload) 
+                body: JSON.stringify({ action: "deleteData", id: id }) 
             });
             const res = await resp.json();
-            if(res.success) {
-                // Gunakan showMessage dengan target element 'tableMessage'
+            if (res.success) {
                 showMessage(`Data "${nama}" berhasil dihapus.`, "success", "tableMessage");
-                loadData(); // Refresh tabel
+                loadData();
             } else {
-                showMessage("Gagal menghapus: " + res.message, "error", "tableMessage");
+                showMessage("Gagal menghapus data.", "error", "tableMessage");
             }
         } catch (err) {
-            showMessage("Koneksi gagal saat menghapus data.", "error", "tableMessage");
-            console.error(err);
+            showMessage("Error koneksi saat menghapus.", "error", "tableMessage");
         } finally {
             showLoader(false);
         }
+      };
+      if (!confirmModalInstance) initConfirmModal();
+      confirmModalInstance.show();
     }
 
-    /*************************************
+    function BACKUP_hapusData(id, nama) {
+      // Setup Modal Konfirmasi (Point 3)
+      document.getElementById('confirmTitle').innerText = "Hapus Data Keluarga";
+      document.getElementById('confirmText').innerText = `Apakah Anda yakin ingin menghapus data "${nama}"? Tindakan ini tidak dapat dibatalkan.`;
+      const btnAction = document.getElementById('confirmBtnAction');
+      btnAction.onclick = async () => {
+        confirmModalInstance.hide();
+        showLoader(true, "Menghapus data...");
+          try {
+                const resp = await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: "deleteData", id: id }) 
+                });
+                const res = await resp.json();
+                
+                if (res.success) {
+                    showMessage(`Data "${nama}" telah dihapus.`, "success", "tableMessage");
+                    loadData();
+                } else {
+                    showMessage("Gagal menghapus data.", "error", "tableMessage");
+                }
+          } catch (err) {
+                showMessage("Kesalahan koneksi saat menghapus.", "error", "tableMessage");
+          } finally {
+                showLoader(false);
+          }
+      };
+      confirmModalInstance.show();
+    }
+
+    /************************************
      * Kirim data untuk disimpan di sheet
-     * **********************************/
+    ************************************/
     async function kirimData(payload) {
-      showLoader(true, "Sedang memproses data...");
-      const btn = document.getElementById('btnSimpan');
+        try {
+            const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const res = await resp.json();
+
+            if (res.success) {
+                // Tampilkan pesan sukses di atas tombol simpan
+                showMessage("Data berhasil disimpan!", "success", "formMessage");
+                setTimeout(() => {
+                    if (modalInstance) modalInstance.hide();
+                    loadData();
+                }, 1500);
+            } else {
+                showMessage("Gagal: " + res.message, "error", "formMessage");
+                resetSimpanButton();
+            }
+        } catch (err) {
+            showMessage("Kesalahan Koneksi", "error", "formMessage");
+            resetSimpanButton();
+        }
+    }
+    
+    async function BACKUP_kirimData(payload) {
       try {
           const resp = await fetch(SCRIPT_URL, {
               method: 'POST',
               body: JSON.stringify(payload)
           });
           const res = await resp.json();
+
           if (res.success) {
-              showMessage("Data berhasil disimpan ke server!", "success");
-              // Beri jeda 1.5 detik agar user bisa baca pesan sukses sebelum modal tertutup
+              // Tampilkan pesan sukses di form (Point 1 & 2)
+              showMessage("Data berhasil disimpan!", "success", "formMessage");
+              
               setTimeout(() => {
                   modalInstance.hide();
                   loadData();
               }, 1500);
           } else {
-              showMessage("Gagal menyimpan: " + res.message, "error");
-              btn.disabled = false; // Aktifkan kembali tombol agar bisa coba lagi
+              showMessage("Gagal: " + res.message, "error", "formMessage");
+              resetSimpanButton();
           }
       } catch (err) {
-          // 4.1 Parameter Error Sistem
-          showMessage("Koneksi bermasalah: " + err.toString(), "error");
-          btn.disabled = false;
-      } finally {
-          showLoader(false);
+          showMessage("Koneksi Error: " + err.toString(), "error", "formMessage");
+          resetSimpanButton();
       }
     }
     
-    async function BACKUP_kirimData(payload) {
-      showLoader(true, "Menyimpan ke Spreadsheet...");
-      try {
-        const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-        const res = await resp.json();
-        if(res.success) {
-          // alert(res.message);
-          showMessage("Sukses : " + res.message, "success"); 
-          modalInstance.hide();
-          loadData();
-        }
-      } catch (err) { 
-        // alert("Gagal menyimpan data."); 
-        showMessage("Gagal menyimpan data", "error");  
-      }
-      finally { showLoader(false); document.getElementById('btnSimpan').disabled = false; }
-    }
-
     /***********************************
     * Fungsi Untuk logout dari aplikasi
     ************************************/
@@ -628,7 +823,6 @@
         const labelPasangan = document.getElementById('labelPasangan');
         
         let show = false;
-        
         if (jk === "Laki-laki") {
             if (statusKawin === "Kawin" || statusKawin === "Duda") {
                 labelPasangan.innerText = "Nama Istri";
@@ -643,40 +837,6 @@
         
         divPasangan.style.display = show ? "block" : "none";
         if (!show) document.getElementById('namaPasangan').value = "";
-    }
-
-    // Update fungsi openForm agar memanggil togglePasangan saat Edit
-    function openForm(mode, id = null) {
-        document.getElementById('formKeluarga').reset();
-        document.getElementById('formId').value = "";
-        document.getElementById('fotoLama').value = "";
-        document.getElementById('divPasangan').style.display = "none"; // Reset tampilan dinamis
-        
-        if(mode === 'edit') {
-            const item = globalData.find(x => x.id == id);
-            if(item) {
-                document.getElementById('formId').value = item.id;
-                document.getElementById('nama').value = item.nama || "";
-                document.getElementById('jk').value = item.jk || "Laki-laki";
-                document.getElementById('tglLahir').value = item.tglLahir ? new Date(item.tglLahir).toISOString().split('T')[0] : "";
-                document.getElementById('statusKawin').value = item.statusKawin || "Single";
-                document.getElementById('statusKeluarga').value = item.statusKeluarga || "Anak";
-                document.getElementById('alamat').value = item.alamat || "";
-                document.getElementById('kota').value = item.kota || "";
-                document.getElementById('ayah').value = item.ayah || "";
-                document.getElementById('ibu').value = item.ibu || "";
-                document.getElementById('fotoLama').value = item.foto || "";
-                
-                // Set Nilai Nama Pasangan (Jika ada di data)
-                if(item.namaPasangan) {
-                    document.getElementById('namaPasangan').value = item.namaPasangan;
-                }
-                
-                // Jalankan logika cek field dinamis
-                togglePasangan();
-            }
-        }
-        modalInstance.show();
     }
 
     /*****************************************************************
