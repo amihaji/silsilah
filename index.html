@@ -264,20 +264,23 @@
     let confirmModalInstance;
 
     document.addEventListener('DOMContentLoaded', function() {
-      // Inisialisasi Modal-Modal
+      // Pastikan ID sesuai dengan HTML: formModal, viewModal, confirmModal
       modalInstance = new bootstrap.Modal(document.getElementById('formModal'));
       viewModalInstance = new bootstrap.Modal(document.getElementById('viewModal'));
-        
+    
       const cEl = document.getElementById('confirmModal');
-      if (cEl) confirmModalInstance = new bootstrap.Modal(cEl);
+      if (cEl) {
+          confirmModalInstance = new bootstrap.Modal(cEl);
+      }
 
       // Registrasi Event Submit Form
       const fLogin = document.getElementById('formLogin');
       if (fLogin) fLogin.onsubmit = prosesLogin;
-        
+      
       const fKeluarga = document.getElementById('formKeluarga');
       if (fKeluarga) fKeluarga.onsubmit = simpanData;
     });
+
 
     /***********************
      * Tampilan showloader 
@@ -494,64 +497,86 @@
     function viewDetail(id) {
     const item = globalData.find(x => x.id == id);
     if (!item) return;
-    const content = `
-        <div class="col-md-4 text-center mb-3">
-            <img src="${item.foto || 'https://via.placeholder.com/150'}" class="img-fluid rounded border" style="max-height:200px">
-        </div>
-        <div class="col-md-8">
-            <table class="table table-sm table-borderless">
-                <tr><td width="35%">Nama</td><td>: <strong>${item.nama}</strong></td></tr>
-                <tr><td>JK / Tgl Lahir</td><td>: ${item.jk} / ${item.tglLahir || '-'}</td></tr>
-                <tr><td>Status Kawin</td><td>: ${item.statusKawin}</td></tr>
-                <tr><td>Pasangan</td><td>: ${item.namaPasangan || '-'}</td></tr>
-                <tr><td>Status Keluarga</td><td>: ${item.statusKeluarga}</td></tr>
-                <tr><td>Ayah / Ibu</td><td>: ${item.ayah || '-'} / ${item.ibu || '-'}</td></tr>
-                <tr><td>Alamat</td><td>: ${item.alamat || '-'}, ${item.kota || '-'}</td></tr>
-            </table>
-        </div>
-    `;
-    
-    document.getElementById('viewContent').innerHTML = content;
-    if (!viewModalInstance) {
-        viewModalInstance = new bootstrap.Modal(document.getElementById('viewModal'));
-    }
-    viewModalInstance.show();
+      // Membuat konten detail secara dinamis
+      const content = `
+          <div class="col-md-4 text-center mb-3">
+              <img src="${item.foto || 'https://via.placeholder.com/150'}" class="img-fluid rounded border shadow-sm" style="max-height:250px">
+          </div>
+          <div class="col-md-8">
+              <table class="table table-sm table-borderless">
+                  <tr><td width="35%" class="fw-bold">Nama Lengkap</td><td>: ${item.nama}</td></tr>
+                  <tr><td class="fw-bold">Jenis Kelamin</td><td>: ${item.jk}</td></tr>
+                  <tr><td class="fw-bold">Tgl Lahir</td><td>: ${item.tglLahir || '-'}</td></tr>
+                  <tr><td class="fw-bold">Status Kawin</td><td>: ${item.statusKawin}</td></tr>
+                  <tr><td class="fw-bold">Nama Pasangan</td><td>: ${item.namaPasangan || '-'}</td></tr>
+                  <tr><td class="fw-bold">Status Keluarga</td><td>: ${item.statusKeluarga}</td></tr>
+                  <tr><td class="fw-bold">Nama Ayah</td><td>: ${item.ayah || '-'}</td></tr>
+                  <tr><td class="fw-bold">Nama Ibu</td><td>: ${item.ibu || '-'}</td></tr>
+                  <tr><td class="fw-bold">Alamat</td><td>: ${item.alamat || '-'}</td></tr>
+                  <tr><td class="fw-bold">Kota</td><td>: ${item.kota || '-'}</td></tr>
+              </table>
+          </div>
+      `;
+      
+      const viewContainer = document.getElementById('viewContent');
+      if (viewContainer) {
+          viewContainer.innerHTML = content;
+      }
+
+      // Tampilkan modal (menggunakan instance yang sudah dibuat di DOMContentLoaded)
+      if (viewModalInstance) {
+          viewModalInstance.show();
+      } else {
+          // Fallback jika instance belum ada
+          viewModalInstance = new bootstrap.Modal(document.getElementById('viewModal'));
+          viewModalInstance.show();
+      }
     }
 
     /**********************
      * Hapus data di sheet
      * *******************/
     function hapusData(id, nama) {
-    if (!confirmModalInstance) {
-        confirmModalInstance = new bootstrap.Modal(document.getElementById('confirmModal'));
-    }
+    // Set teks konfirmasi
+    const title = document.getElementById('confirmTitle');
+    const text = document.getElementById('confirmText');
+    if (title) title.innerText = "KONFIRMASI HAPUS";
+    if (text) text.innerText = `Apakah Anda yakin ingin menghapus data "${nama}"?`;
     
-    document.getElementById('confirmTitle').innerText = "Konfirmasi Hapus";
-    document.getElementById('confirmText').innerText = `Hapus data "${nama}"?`;
-    
-    const btnAction = document.getElementById('confirmBtnAction');
-    btnAction.onclick = async function() {
-        confirmModalInstance.hide();
-        showLoader(true, "Menghapus...");
-        try {
-            const resp = await fetch(SCRIPT_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ action: "deleteData", id: id }) 
-            });
-            const res = await resp.json();
-            if (res.success) {
-                showMessage("Data berhasil dihapus", "success", "tableMessage");
-                loadData();
-            } else {
-                showMessage("Gagal: " + res.message, "error", "tableMessage");
-            }
-        } catch (e) {
-            showMessage("Kesalahan jaringan", "error", "tableMessage");
-        } finally {
-            showLoader(false);
-        }
-    };
-    confirmModalInstance.show();
+      // Set aksi tombol "YA, HAPUS"
+      const btnAction = document.getElementById('confirmBtnAction');
+      if (btnAction) {
+          btnAction.onclick = async function() {
+              if (confirmModalInstance) confirmModalInstance.hide();
+              
+              showLoader(true, "Menghapus data...");
+              try {
+                  const resp = await fetch(SCRIPT_URL, { 
+                      method: 'POST', 
+                      body: JSON.stringify({ action: "deleteData", id: id }) 
+                  });
+                  const res = await resp.json();
+                  if (res.success) {
+                      showMessage(`Data "${nama}" berhasil dihapus`, "success", "tableMessage");
+                      loadData();
+                  } else {
+                      showMessage("Gagal menghapus: " + res.message, "error", "tableMessage");
+                  }
+              } catch (e) {
+                  showMessage("Kesalahan koneksi jaringan", "error", "tableMessage");
+              } finally {
+                  showLoader(false);
+              }
+          };
+      }
+      // Tampilkan modal konfirmasi
+      if (confirmModalInstance) {
+          confirmModalInstance.show();
+      } else {
+          // Fallback jika instance belum ada
+          confirmModalInstance = new bootstrap.Modal(document.getElementById('confirmModal'));
+          confirmModalInstance.show();
+      }
     }
 
     /************************************
