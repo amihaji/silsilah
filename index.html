@@ -44,10 +44,22 @@
     .modal-header .btn-close {
         filter: brightness(0) invert(1); /* Membuat tombol close jadi putih */
     }
-    /* Pastikan modal tampil di atas konten lain */
-    .modal {z-index: 1050; }
-    .modal-backdrop { z-index: 1040; }
-    .modal.show { display: block; }
+    /* Override untuk memastikan modal tampil */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1055;
+    }
+    .modal.show {
+        display: block !important;
+    }
+    .modal-backdrop {
+        z-index: 1050;
+    }
 
     /* Styling Pesan (Alert Custom) */
     .form-msg {
@@ -262,7 +274,7 @@
     // *************************      
     // DEKLARASI VARIABEL GLOBAL
     // **************************
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx6ThlCpzywOJVQQwG2d1XXRkhP1Q3nW80wb90eKD5DE8d-sBN5qrJVaaS7CvDkNuWv/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyU1c4SDzZE01shia9jBAEwVNnm7K_41T6owNrVZvVGnWSB1u3nbkDMREn5uYNRftFo/exec";
     let globalData = [];
     let modalInstance;
     let confirmModalInstance;
@@ -546,110 +558,81 @@
     }
 
     function viewDetail(id) {
-    console.log("viewDetail dipanggil dengan id:", id);
-    
-    try {
-        const item = globalData.find(x => String(x.id) === String(id));
-        
-        if (!item) {
-            showMessage("Data tidak ditemukan", "error", "tableMessage");
-            return;
-        }
+      try {
+          const item = globalData.find(x => String(x.id) === String(id));
+          if (!item) {
+              showMessage("Data tidak ditemukan", "error", "tableMessage");
+              return;
+          }
 
-        const viewContainer = document.getElementById('viewContent');
-        if (viewContainer) {
-            viewContainer.innerHTML = `
-                <div class="row">
-                    <div class="col-md-4 text-center mb-3">
-                        <img src="${item.foto || 'https://via.placeholder.com/150'}" 
-                            class="img-fluid rounded border shadow-sm" 
-                            style="max-height:200px; width:auto; object-fit:cover;" 
-                            onerror="this.src='https://via.placeholder.com/150'">
-                    </div>
-                    <div class="col-md-8">
-                        <table class="table table-sm table-borderless">
-                            <tr><th width="35%">Nama Lengkap</th><td>: ${item.nama || '-'}</td></tr>
-                            <tr><th>Jenis Kelamin</th><td>: ${item.jk || '-'}</td></tr>
-                            <tr><th>Tgl Lahir</th><td>: ${item.tglLahir ? new Date(item.tglLahir).toLocaleDateString('id-ID') : '-'}</td></tr>
-                            <tr><th>Status Kawin</th><td>: ${item.statusKawin || '-'}</td></tr>
-                            <tr><th>Nama Pasangan</th><td>: ${item.namaPasangan || '-'}</td></tr>
-                            <tr><th>Status Keluarga</th><td>: ${item.statusKeluarga || '-'}</td></tr>
-                            <tr><th>Nama Ayah</th><td>: ${item.ayah || '-'}</td></tr>
-                            <tr><th>Nama Ibu</th><td>: ${item.ibu || '-'}</td></tr>
-                            <tr><th>Alamat</th><td>: ${item.alamat || '-'}</td></tr>
-                            <tr><th>Kota</th><td>: ${item.kota || '-'}</td></tr>
-                        </table>
-                    </div>
-                </div>
-            `;
-        }
+          // Hapus modal dinamis jika sudah ada sebelumnya
+          const existingDynamicModal = document.getElementById('dynamicViewModal');
+          if (existingDynamicModal) {
+              existingDynamicModal.remove();
+          }
 
-        // Bersihkan backdrop lama
-        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = '';
-        
-        // Ambil element modal
-        const modalEl = document.getElementById('viewModal');
-        
-        // Reset style modal
-        modalEl.style.display = 'block';
-        modalEl.style.position = 'fixed';
-        modalEl.style.top = '0';
-        modalEl.style.left = '0';
-        modalEl.style.zIndex = '1060';
-        modalEl.style.width = '100%';
-        modalEl.style.height = '100%';
-        modalEl.style.overflowX = 'hidden';
-        modalEl.style.overflowY = 'auto';
-        modalEl.style.outline = '0';
-        
-        // Pastikan modal dialog di tengah
-        const modalDialog = modalEl.querySelector('.modal-dialog');
-        if (modalDialog) {
-            modalDialog.style.margin = '1.75rem auto';
-            modalDialog.style.position = 'relative';
-            modalDialog.style.top = '50px';
-        }
-        
-        // Tambah backdrop
-        const backdrop = document.createElement('div');
-        backdrop.className = 'modal-backdrop fade show';
-        backdrop.style.position = 'fixed';
-        backdrop.style.top = '0';
-        backdrop.style.left = '0';
-        backdrop.style.zIndex = '1040';
-        backdrop.style.width = '100vw';
-        backdrop.style.height = '100vh';
-        backdrop.style.backgroundColor = 'rgba(0,0,0,0.5)';
-        document.body.appendChild(backdrop);
-        
-        // Lock body scroll
-        document.body.style.overflow = 'hidden';
-        document.body.style.paddingRight = '0px';
-        
-        // Tambah class active ke modal
-        modalEl.classList.add('show');
-        
-        console.log("Modal harus sudah tampil sekarang");
-        
-        // Event untuk menutup modal
-        const closeButtons = modalEl.querySelectorAll('[data-bs-dismiss="modal"]');
-        closeButtons.forEach(btn => {
-            btn.onclick = function() {
-                modalEl.style.display = 'none';
-                modalEl.classList.remove('show');
-                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
-                document.body.style.overflow = '';
-                document.body.classList.remove('modal-open');
-            };
-        });
-        
-    } catch (e) {
-        console.error("View Error:", e);
-        showMessage("Gagal menampilkan detail", "error", "tableMessage");
+          // Buat struktur modal baru
+          const modalHtml = `
+              <div class="modal fade" id="dynamicViewModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
+                  <div class="modal-dialog modal-lg modal-dialog-centered">
+                      <div class="modal-content">
+                          <div class="modal-header bg-primary text-white">
+                              <h5 class="modal-title">Detail Profil Keluarga</h5>
+                              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                              <div class="row">
+                                  <div class="col-md-4 text-center mb-3">
+                                      <img src="${item.foto || 'https://via.placeholder.com/150'}" 
+                                          class="img-fluid rounded border shadow-sm" 
+                                          style="max-height:200px; width:auto; object-fit:cover;" 
+                                          onerror="this.src='https://via.placeholder.com/150'">
+                                  </div>
+                                  <div class="col-md-8">
+                                      <table class="table table-sm table-borderless">
+                                          <tr><th width="35%">Nama Lengkap</th><td>: ${item.nama || '-'}</td></tr>
+                                          <tr><th>Jenis Kelamin</th><td>: ${item.jk || '-'}</td></tr>
+                                          <tr><th>Tgl Lahir</th><td>: ${item.tglLahir ? new Date(item.tglLahir).toLocaleDateString('id-ID') : '-'}</td></tr>
+                                          <tr><th>Status Kawin</th><td>: ${item.statusKawin || '-'}</td></tr>
+                                          <tr><th>Nama Pasangan</th><td>: ${item.namaPasangan || '-'}</td></tr>
+                                          <tr><th>Status Keluarga</th><td>: ${item.statusKeluarga || '-'}</td></tr>
+                                          <tr><th>Nama Ayah</th><td>: ${item.ayah || '-'}</td></tr>
+                                          <tr><th>Nama Ibu</th><td>: ${item.ibu || '-'}</td></tr>
+                                          <tr><th>Alamat</th><td>: ${item.alamat || '-'}</td></tr>
+                                          <tr><th>Kota</th><td>: ${item.kota || '-'}</td></tr>
+                                      </table>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          `;
+
+          // Tambahkan ke body
+          document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+          // Tampilkan modal menggunakan Bootstrap
+          const modalElement = document.getElementById('dynamicViewModal');
+          const modal = new bootstrap.Modal(modalElement, {
+              backdrop: true,
+              keyboard: true
+          });
+          modal.show();
+
+          // Hapus modal setelah ditutup
+          modalElement.addEventListener('hidden.bs.modal', function() {
+              modalElement.remove();
+          });
+
+      } catch (e) {
+          console.error("View Error:", e);
+          showMessage("Gagal menampilkan detail", "error", "tableMessage");
+      }
     }
-}
 
     /**
      * REVISI: Fungsi hapusData
