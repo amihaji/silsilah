@@ -645,7 +645,45 @@
       }
     }
 
-    function hapusData(id, nama) {
+function hapusData(id, nama) {
+    console.log("hapusData dipanggil - ID:", id, "Nama:", nama);
+    
+    // Buat konfirmasi custom
+    const confirmDelete = confirm(`Apakah Anda yakin ingin menghapus data "${nama}" dari sistem?`);
+    
+    if (!confirmDelete) {
+        console.log("Penghapusan dibatalkan oleh user");
+        return;
+    }
+    
+    // Tampilkan loader
+    showLoader(true, "Menghapus data...");
+    
+    // Proses hapus
+    fetch(SCRIPT_URL, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: "deleteData", id: id.toString() }) 
+    })
+    .then(response => response.json())
+    .then(res => {
+        if (res.success) {
+            showMessage(`Data "${nama}" berhasil dihapus`, "success", "tableMessage");
+            loadData(); // Refresh tabel
+        } else {
+            showMessage("Gagal menghapus: " + (res.message || "Unknown error"), "error", "tableMessage");
+        }
+    })
+    .catch(e => {
+        console.error("Error saat hapus:", e);
+        showMessage("Kesalahan koneksi: " + e.message, "error", "tableMessage");
+    })
+    .finally(() => {
+        showLoader(false);
+    });
+}
+
+    function BACKUP_hapusData(id, nama) {
     console.log("hapusData dipanggil - ID:", id, "Nama:", nama);
       try {
           // Set judul dan teks konfirmasi
