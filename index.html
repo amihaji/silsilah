@@ -645,7 +645,95 @@
       }
     }
 
-function hapusData(id, nama) {
+    /*************************************
+     * Fungsi untuk menghapus record data
+     *************************************/
+    function hapusData(id, nama) {
+        try {
+            const item = globalData.find(x => String(x.id) === String(id));
+            if (!item) {
+                showMessage("Data tidak ditemukan", "error", "tableMessage");
+                return;
+            }
+            // Hapus modal dinamis jika sudah ada sebelumnya
+            const existingModal = document.getElementById('dynamicConfirmModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // Buat modal konfirmasi dinamis (sama persis dengan viewDetail)
+            const modalHtml = `
+                <div class="modal fade" id="dynamicConfirmModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
+                    <div class="modal-dialog modal-sm modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-body text-center p-4">
+                                <div class="mb-3"><span style="font-size: 3rem;">⚠️</span></div>
+                                <h5 class="fw-bold text-dark">Konfirmasi Hapus</h5>
+                                <p class="small text-muted mb-4">Apakah Anda yakin ingin menghapus data "<strong>${nama}</strong>" dari sistem?</p>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button type="button" class="btn btn-light btn-sm px-4 fw-bold" id="confirmBatalBtn">BATAL</button>
+                                    <button type="button" class="btn btn-danger btn-sm px-4 fw-bold" id="confirmHapusBtn">YA, HAPUS</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Tambahkan ke body
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            // Tampilkan modal
+            const modalElement = document.getElementById('dynamicConfirmModal');
+            const modal = new bootstrap.Modal(modalElement, {
+                backdrop: true,
+                keyboard: true
+            });
+            modal.show();
+            // Tombol BATAL
+            document.getElementById('confirmBatalBtn').onclick = function() {
+                modal.hide();
+                setTimeout(() => modalElement.remove(), 300);
+            };
+
+            // Tombol HAPUS
+            document.getElementById('confirmHapusBtn').onclick = async function() {
+                modal.hide();
+                // Gunakan cara yang SAMA dengan simpanData/kirimData
+                showLoader(true, "Menghapus data...");
+                try {
+                    const resp = await fetch(SCRIPT_URL, { 
+                        method: 'POST', 
+                        body: JSON.stringify({ action: "deleteData", id: id.toString() }) 
+                    });
+                    const res = await resp.json();
+                    if (res.success) {
+                        showMessage(`Data "${nama}" berhasil dihapus`, "success", "tableMessage");
+                        setTimeout(() => modalElement.remove(), 300);
+                        loadData(); // Refresh tabel
+                    } else {
+                        showMessage("Gagal menghapus: " + (res.message || "Unknown error"), "error", "tableMessage");
+                        setTimeout(() => modalElement.remove(), 300);
+                    }
+                } catch (e) {
+                    console.error("Error:", e);
+                    showMessage("Kesalahan koneksi: " + e.message, "error", "tableMessage");
+                    setTimeout(() => modalElement.remove(), 300);
+                } finally {
+                    showLoader(false);
+                }
+            };
+
+            // Hapus modal setelah ditutup
+            modalElement.addEventListener('hidden.bs.modal', function() {
+                modalElement.remove();
+            });
+        } catch (e) {
+            console.error("Error:", e);
+            showMessage("Gagal menampilkan konfirmasi", "error", "tableMessage");
+        }
+    }
+
+function BACKUP_hapusData(id, nama) {
     console.log("hapusData dipanggil - ID:", id, "Nama:", nama);
     
     // Buat konfirmasi custom
