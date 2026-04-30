@@ -627,9 +627,14 @@
             
             let fotoDisplay = '';
             if (fotoUrl) {
-                fotoDisplay = `<img src="${fotoUrl}" class="view-photo" style="width:150px; height:150px; object-fit:cover; border-radius:50%; border:3px solid #63B3ED;" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'avatar-circle avatar-circle-lg\' style=\'width:150px; height:150px; font-size:64px; margin:0 auto;\'>${initials}</div>';">`;
+                fotoDisplay = `<img src="${fotoUrl}" 
+                class="view-photo" 
+                style="width:150px; height:150px; object-fit:cover; border-radius:50%; border:3px solid #002080" 
+                onerror="this.onerror=null; 
+                this.parentElement.innerHTML='<div class=\'avatar-circle avatar-circle-lg\' style=\'width:150px; height:150px; font-size:64px; margin:0 auto;\'>${initials}</div>';">`;
             } else {
-                fotoDisplay = `<div class="avatar-circle avatar-circle-lg" style="width:150px; height:150px; font-size:64px; margin:0 auto; background-color:#1A365D;">${initials}</div>`;
+                fotoDisplay = `<div class="avatar-circle avatar-circle-lg" 
+                style="width:150px; height:150px; font-size:64px; margin:0 auto; background-color:#416eff;">${initials}</div>`;
             }
 
             // Format tanggal lahir
