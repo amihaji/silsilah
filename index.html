@@ -59,9 +59,8 @@
         background-color: #007bff !important;
         color: white !important;
     }
-    .modal-header .btn-close {
-        filter: brightness(0) invert(1); /* Membuat tombol close jadi putih */
-    }
+     /* Membuat tombol close jadi putih */
+    .modal-header .btn-close { filter: brightness(0) invert(1); }
     /* Override untuk memastikan modal tampil */
     .modal {
         display: none;
@@ -72,12 +71,8 @@
         height: 100%;
         z-index: 1055;
     }
-    .modal.show {
-        display: block !important;
-    }
-    .modal-backdrop {
-        z-index: 1050;
-    }
+    .modal.show { display: block !important; }
+    .modal-backdrop { z-index: 1050; }
 
     /* Styling Pesan (Alert Custom) */
     .form-msg {
@@ -96,6 +91,25 @@
     .msg-error { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
     .msg-warning { background-color: #fff3cd; color: #fdbf04; border: 1px solid #ffecb5; }
     .msg-info { background-color: #cff4fc; color: #055160; border: 1px solid #b6effb; }
+
+    /* Avatar bulat untuk inisial */
+    .avatar-circle {
+        width: 50px;
+        height: 50px;
+        background-color: #1A365D;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+        margin: 0 auto;
+    }
+    .avatar-circle-sm { width: 40px; height: 40px; font-size: 14px; }
+    .avatar-circle-lg { width: 150px; height: 150px; font-size: 48px; margin-bottom: 10px; }
+    /* Ganti style foto-thumb */
+    .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #63B3ED; }
 
   </style>
 </head>
@@ -499,20 +513,205 @@
       }
     }
 
+    // Fungsi untuk mendapatkan inisial dari nama
+    function getInitials(nama) {
+        if (!nama || nama === '-' || nama === '') return '?';
+        const parts = nama.trim().split(' ');
+        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    }
+
+    /**
+     * LOAD DATA - Memuat data keluarga ke dalam tabel
+     */
     async function loadData() {
-    showLoader(true, "Memuat Data Keluarga...");
+        showLoader(true, "Memuat Data Keluarga...");
+        
+        try {
+            const url = `${SCRIPT_URL}?action=getData`;
+            const response = await fetch(url);
+            
+            if (!response.ok) throw new Error("Gagal menghubungi server");
+            
+            const res = await response.json();
+            
+            console.log("Raw Response:", res);
+
+            if (res && res.data && Array.isArray(res.data)) {
+                globalData = res.data;
+            } else if (Array.isArray(res)) {
+                globalData = res;
+            } else {
+                globalData = [];
+            }
+
+            const tbody = document.getElementById('tableBody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            if (globalData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-4"><div class="text-muted">Tidak ada data ditemukan di database</div></td></tr>`;
+                return;
+            }
+
+            globalData.forEach((item) => {
+                const itemId = item.id ? String(item.id) : '';
+                const itemNama = item.nama ? item.nama : 'Tanpa Nama';
+                const itemNamaEscaped = itemNama.replace(/'/g, "\\'");
+                
+                // Handle foto atau avatar
+                const fotoUrl = item.foto && item.foto.includes('http') ? item.foto : null;
+                const initials = getInitials(item.nama);
+                
+                let fotoDisplay = '';
+                if (fotoUrl) {
+                    fotoDisplay = `<img src="${fotoUrl}" class="foto-thumb" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'avatar-circle\'>${initials}</div>';">`;
+                } else {
+                    fotoDisplay = `<div class="avatar-circle">${initials}</div>`;
+                }
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="text-center">${fotoDisplay}</td>
+                    <td><strong>${item.nama || '-'}</strong></td>
+                    <td>${item.statusKawin || '-'}</td>
+                    <td>${item.namaPasangan || '-'}</td>
+                    <td>${item.statusKeluarga || '-'}</td>
+                    <td>${item.ayah || '-'}</td>
+                    <td>${item.ibu || '-'}</td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-info btn-round" onclick="viewDetail('${itemId}')"><i class="bi bi-eye"></i></button>
+                            <button type="button" class="btn btn-warning btn-round" onclick="openForm('edit', '${itemId}')"><i class="bi bi-pencil"></i></button>
+                            <button type="button" class="btn btn-danger btn-round" onclick="hapusData('${itemId}', '${itemNamaEscaped}')"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            console.log(`Berhasil merender ${globalData.length} baris data.`);
+
+        } catch (error) {
+            console.error("Error saat loadData:", error);
+            const tbody = document.getElementById('tableBody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-4"><div class="text-danger">Gagal memuat data: ${error.message}</div></td></tr>`;
+            }
+        } finally {
+            showLoader(false);
+        }
+    }
+
+    /**
+     * VIEW DETAIL - Menampilkan detail data keluarga
+     */
+    function viewDetail(id) {
+        try {
+            const item = globalData.find(x => String(x.id) === String(id));
+            if (!item) {
+                showMessage("Data tidak ditemukan", "error", "tableMessage");
+                return;
+            }
+
+            // Hapus modal dinamis jika sudah ada sebelumnya
+            const existingDynamicModal = document.getElementById('dynamicViewModal');
+            if (existingDynamicModal) {
+                existingDynamicModal.remove();
+            }
+
+            // Handle foto atau avatar untuk view detail
+            const fotoUrl = item.foto && item.foto.includes('http') ? item.foto : null;
+            const initials = getInitials(item.nama);
+            
+            let fotoDisplay = '';
+            if (fotoUrl) {
+                fotoDisplay = `<img src="${fotoUrl}" class="view-photo" style="width:150px; height:150px; object-fit:cover; border-radius:50%; border:3px solid #63B3ED;" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'avatar-circle avatar-circle-lg\' style=\'width:150px; height:150px; font-size:64px; margin:0 auto;\'>${initials}</div>';">`;
+            } else {
+                fotoDisplay = `<div class="avatar-circle avatar-circle-lg" style="width:150px; height:150px; font-size:64px; margin:0 auto; background-color:#1A365D;">${initials}</div>`;
+            }
+
+            // Format tanggal lahir
+            let tglLahirFormatted = '-';
+            if (item.tglLahir) {
+                try {
+                    const date = new Date(item.tglLahir);
+                    tglLahirFormatted = date.toLocaleDateString('id-ID');
+                } catch(e) {
+                    tglLahirFormatted = item.tglLahir;
+                }
+            }
+
+            // Buat struktur modal baru
+            const modalHtml = `
+                <div class="modal fade" id="dynamicViewModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title">Detail Profil Keluarga</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-4 text-center mb-3">
+                                        ${fotoDisplay}
+                                    </div>
+                                    <div class="col-md-8">
+                                        <table class="table table-sm table-borderless">
+                                            <tr><th width="35%">Nama Lengkap</th><td>: ${item.nama || '-'}</td></tr>
+                                            <tr><th>Jenis Kelamin</th><td>: ${item.jk || '-'}</td></tr>
+                                            <tr><th>Tgl Lahir</th><td>: ${tglLahirFormatted}</td></tr>
+                                            <tr><th>Status Kawin</th><td>: ${item.statusKawin || '-'}</td></tr>
+                                            <tr><th>Nama Pasangan</th><td>: ${item.namaPasangan || '-'}</td></tr>
+                                            <tr><th>Status Keluarga</th><td>: ${item.statusKeluarga || '-'}</td></tr>
+                                            <tr><th>Nama Ayah</th><td>: ${item.ayah || '-'}</td></tr>
+                                            <tr><th>Nama Ibu</th><td>: ${item.ibu || '-'}</td></tr>
+                                            <tr><th>Alamat</th><td>: ${item.alamat || '-'}</td></tr>
+                                            <tr><th>Kota</th><td>: ${item.kota || '-'}</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Tambahkan ke body
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            // Tampilkan modal menggunakan Bootstrap
+            const modalElement = document.getElementById('dynamicViewModal');
+            const modal = new bootstrap.Modal(modalElement, {
+                backdrop: true,
+                keyboard: true
+            });
+            modal.show();
+
+            // Hapus modal setelah ditutup
+            modalElement.addEventListener('hidden.bs.modal', function() {
+                modalElement.remove();
+            });
+
+        } catch (e) {
+            console.error("View Error:", e);
+            showMessage("Gagal menampilkan detail: " + e.message, "error", "tableMessage");
+        }
+    }
     
+  async function BACKUP_loadData() {
+    showLoader(true, "Memuat Data Keluarga...");
       try {
           // PERBAIKAN: Ganti readData menjadi getData
           const url = `${SCRIPT_URL}?action=getData`;
           const response = await fetch(url);
-          
           if (!response.ok) throw new Error("Gagal menghubungi server");
-          
           const res = await response.json();
-          
           console.log("Raw Response:", res);
-
           if (res && res.data && Array.isArray(res.data)) {
               globalData = res.data;
           } else if (Array.isArray(res)) {
@@ -571,7 +770,7 @@
     /**********************************
      *  Menampilkan Data Secara Detail
      * ********************************/
-    function viewDetail(id) {
+    function BACKUP_viewDetail(id) {
       try {
           const item = globalData.find(x => String(x.id) === String(id));
           if (!item) {
@@ -936,6 +1135,6 @@ function BACKUP_hapusData(id, nama) {
         }, 5000);
     }
 
-  </script>
+   </script>
 </body>
 </html>
