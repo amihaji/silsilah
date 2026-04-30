@@ -36,9 +36,8 @@
         cursor: pointer !important;
     }
     .btn-round i { font-size: 16px !important; margin: 0 !important; padding: 0 !important; }
-    /*.btn-round:hover { background-color: #3d3d3d !important; transform: scale(1.05); }
+    .btn-round:hover { background-color: #3d3d3d !important; transform: scale(1.05); }
     /* Warna khusus untuk masing-masing tombol */
-    /* background-color: #e9ecef */
     .btn-round.btn-info:hover { background-color: #0dcaf0 !important; color: white !important; }
     .btn-round.btn-info { background-color: white !important; color: #0dcaf0 !important; }
     .btn-round.btn-warning:hover { background-color: #ffc107 !important; color: white !important; }
@@ -295,7 +294,7 @@
     let globalData = [];
     let modalInstance;
     let confirmModalInstance;
-
+    
     document.addEventListener('DOMContentLoaded', function() {
         // Daftarkan modal utama
         const elForm = document.getElementById('formModal');
@@ -646,55 +645,75 @@
       }
     }
 
-    /**
-     * REVISI: Fungsi hapusData
-     * Fokus: Menggunakan id="confirmModal" dan memastikan aksi tombol (Fix Hang)
-     */
     function hapusData(id, nama) {
-        try {
-            const title = document.getElementById('confirmTitle');
-            const text = document.getElementById('confirmText');
-            if (title) title.innerText = "KONFIRMASI HAPUS";
-            if (text) text.innerText = `Apakah Anda yakin ingin menghapus data "${nama}" dari sistem?`;
-
-            const btnAction = document.getElementById('confirmBtnAction');
-            if (btnAction) {
-                btnAction.onclick = async function() {
-                    const confirmEl = document.getElementById('confirmModal');
-                    if (confirmEl) {
-                        const myModal = bootstrap.Modal.getOrCreateInstance(confirmEl);
-                        myModal.hide();
-                    }
-                    
-                    showLoader(true, "Menghapus data...");
-                    try {
-                        const resp = await fetch(SCRIPT_URL, { 
-                            method: 'POST', 
-                            body: JSON.stringify({ action: "deleteData", id: id }) 
-                        });
-                        const res = await resp.json();
-                        if (res.success) {
-                            showMessage(`Data "${nama}" berhasil dihapus`, "success", "tableMessage");
-                            loadData();
-                        } else {
-                            showMessage("Gagal: " + res.message, "error", "tableMessage");
-                        }
-                    } catch (e) {
-                        showMessage("Kesalahan koneksi jaringan", "error", "tableMessage");
-                    } finally {
-                        showLoader(false);
-                    }
-                };
-            }
-
-            const confirmEl = document.getElementById('confirmModal');
-            if (confirmEl) {
-                const myModal = bootstrap.Modal.getOrCreateInstance(confirmEl);
-                myModal.show();
-            }
-        } catch (e) {
-            console.error("Delete Error:", e);
-        }
+    console.log("hapusData dipanggil - ID:", id, "Nama:", nama);
+      try {
+          // Set judul dan teks konfirmasi
+          const title = document.getElementById('confirmTitle');
+          const text = document.getElementById('confirmText');
+          
+          if (title) title.innerText = "KONFIRMASI HAPUS";
+          if (text) text.innerText = `Apakah Anda yakin ingin menghapus data "${nama}" dari sistem?`;
+          
+          // Ambil element modal
+          const confirmEl = document.getElementById('confirmModal');
+          
+          if (!confirmEl) {
+              console.error("Element confirmModal tidak ditemukan!");
+              showMessage("Error: Modal konfirmasi tidak ditemukan", "error", "tableMessage");
+              return;
+          }
+          
+          // Hapus event listener lama dengan membuat clone
+          const oldBtn = document.getElementById('confirmBtnAction');
+          if (oldBtn) {
+              const newBtn = oldBtn.cloneNode(true);
+              oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+              
+              // Pasang event listener baru
+              newBtn.onclick = async function() {
+                  console.log("Tombol konfirmasi diklik untuk hapus ID:", id);
+                  
+                  // Tutup modal konfirmasi
+                  const modalElement = document.getElementById('confirmModal');
+                  const modal = bootstrap.Modal.getInstance(modalElement);
+                  if (modal) modal.hide();
+                  
+                  // Tampilkan loader
+                  showLoader(true, "Menghapus data...");
+                  try {
+                      const resp = await fetch(SCRIPT_URL, { 
+                          method: 'POST', 
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ action: "deleteData", id: id.toString() }) 
+                      });
+                      const res = await resp.json();
+                      if (res.success) {
+                          showMessage(`Data "${nama}" berhasil dihapus`, "success", "tableMessage");
+                          loadData(); // Refresh tabel
+                      } else {
+                          showMessage("Gagal menghapus: " + (res.message || "Unknown error"), "error", "tableMessage");
+                      }
+                  } catch (e) {
+                      console.error("Error saat hapus:", e);
+                      showMessage("Kesalahan koneksi: " + e.message, "error", "tableMessage");
+                  } finally {
+                      showLoader(false);
+                  }
+              };
+          }
+          
+          // Tampilkan modal konfirmasi
+          const confirmModal = new bootstrap.Modal(confirmEl, {
+              backdrop: true,
+              keyboard: true
+          });
+          confirmModal.show();
+          
+      } catch (e) {
+          console.error("Error di hapusData:", e);
+          showMessage("Gagal menampilkan konfirmasi: " + e.message, "error", "tableMessage");
+      }
     }
 
     /************************************
