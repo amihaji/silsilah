@@ -21,23 +21,29 @@
       border: 2px solid var(--light-blue); 
     }
     
-   /* Tombol pada Tabel Data Keluarga : View, Edit dan Hapus */
+    /* Tombol bulat dengan icon pada Tabel Data Keluarga : View, Edit dan Hapus */
     .btn-round { 
-        width: 32px; 
-        height: 32px; 
-        border-radius: 50%; 
-        display: inline-flex; 
-        align-items: center; 
-        justify-content: center; 
-        padding: 0; 
-        border: none;
-        transition: 0.2s;
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 50% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        margin: 0 2px !important;
+        border: none !important;
+        transition: all 0.2s ease-in-out !important;
+        cursor: pointer !important;
     }
-    .btn-round:hover { 
-        background-color: #e0e0e0 !important; 
-        color: #000 !important; 
-    }
-    .btn-round i { font-size: 16px; }
+    .btn-round i { font-size: 16px !important; margin: 0 !important; padding: 0 !important; }
+    .btn-round:hover { background-color: #e9ecef !important; transform: scale(1.05); }
+    /* Warna khusus untuk masing-masing tombol */
+    .btn-round.btn-info { background-color: #0dcaf0 !important; color: white !important; }
+    .btn-round.btn-info:hover { background-color: #e9ecef !important; color: #0dcaf0 !important; }
+    .btn-round.btn-warning { background-color: #ffc107 !important; color: white !important; }
+    .btn-round.btn-warning:hover { background-color: #e9ecef !important; color: #ffc107 !important; }
+    .btn-round.btn-danger { background-color: #dc3545 !important; color: white !important; }
+    .btn-round.btn-danger:hover { background-color: #e9ecef !important; color: #dc3545 !important; }
 
     /* Tampilan Foto Untuk Detail Data Keluarga */
     .view-photo { 
@@ -184,8 +190,8 @@
               <div class="col-md-12">
                 <label class="form-label">Jenis Kelamin</label>
                 <select id="jk" class="form-select" onchange="togglePasangan()">
-                  <option value="Laki-laki">Laki-laki</option>
-                  <option value="Perempuan">Perempuan</option>
+                  <option value="Pria">Pria</option>
+                  <option value="Wanita">Wanita</option>
                 </select>
               </div>
               <div class="col-md-12">
@@ -414,7 +420,7 @@
         if (item) {
             document.getElementById('formId').value = item.id;
             document.getElementById('nama').value = item.nama || "";
-            document.getElementById('jk').value = item.jk || "Laki-laki";
+            document.getElementById('jk').value = item.jk || "Pria";
             document.getElementById('tglLahir').value = item.tglLahir ? new Date(item.tglLahir).toISOString().split('T')[0] : "";
             document.getElementById('statusKawin').value = item.statusKawin || "Lajang";
             document.getElementById('namaPasangan').value = item.namaPasangan || "";
@@ -518,14 +524,11 @@
           // Render tabel sama seperti kode Anda yang sudah ada
           const tbody = document.getElementById('tableBody');
           if (!tbody) return;
-
           tbody.innerHTML = '';
-
           if (globalData.length === 0) {
               tbody.innerHTML = `<tr><td colspan="8" class="text-center p-4"><div class="text-muted">Tidak ada data ditemukan di database</div></td></tr>`;
               return;
           }
-
           globalData.forEach((item, index) => {
               const tr = document.createElement('tr');
               const itemId = item.id ? String(item.id) : '';
@@ -545,17 +548,15 @@
                   <td>${item.ibu || '-'}</td>
                   <td class="text-center">
                       <div class="btn-group btn-group-sm">
-                          <button type="button" class="btn btn-info text-white" onclick="viewDetail('${itemId}')">👁️</button>
-                          <button type="button" class="btn btn-warning text-white" onclick="openForm('edit', '${itemId}')">✏️</button>
-                          <button type="button" class="btn btn-danger" onclick="hapusData('${itemId}', '${itemNama}')">🗑️</button>
+                        <button type="button" class="btn btn-info btn-round" onclick="viewDetail('${itemId}')"><i class="bi bi-eye"></i></button>
+                        <button type="button" class="btn btn-warning btn-round" onclick="openForm('edit', '${itemId}')"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-danger btn-round" onclick="hapusData('${itemId}', '${itemNama}')"><i class="bi bi-trash"></i></button>
                       </div>
                   </td>
               `;
               tbody.appendChild(tr);
           });
-
           console.log(`Berhasil merender ${globalData.length} baris data.`);
-
       } catch (error) {
           console.error("Error:", error);
           const tbody = document.getElementById('tableBody');
@@ -745,12 +746,12 @@
         const labelPasangan = document.getElementById('labelPasangan');
         
         let show = false;
-        if (jk === "Laki-laki") {
+        if (jk === "Pria") {
             if (statusKawin === "Kawin" || statusKawin === "Cerai") {
                 labelPasangan.innerText = "Nama Istri";
                 show = true;
             }
-        } else if (jk === "Perempuan") {
+        } else if (jk === "Wanita") {
             if (statusKawin === "Kawin" || statusKawin === "Cerai") {
                 labelPasangan.innerText = "Nama Suami";
                 show = true;
