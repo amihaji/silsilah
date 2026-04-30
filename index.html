@@ -59,7 +59,7 @@
         background-color: #007bff !important;
         color: white !important;
     }
-     /* Membuat tombol close jadi putih */
+    /* Membuat tombol close jadi putih */
     .modal-header .btn-close { filter: brightness(0) invert(1); }
     /* Override untuk memastikan modal tampil */
     .modal {
@@ -150,16 +150,14 @@
       </div>
     </nav>
    
-      <!-- TAMBAHKAN BARIS INI: Tempat pesan untuk aksi di tabel (Hapus) -->
+      <!-- Tampilkan pesan untuk aksi di tabel (Hapus) -->
       <div id="tableMessage" class="form-msg"></div>
-
       <div class="card p-3 shadow-sm">
         <div class="d-flex justify-content-between mb-3 align-items-center">
           <h5 class="m-0">Data Anggota Keluarga</h5>
           <button class="btn btn-primary btn-sm" onclick="openForm('add')">+ Tambah</button>
         </div>
-       
-
+  
         <div class="table-responsive">
           <table class="table table-sm table-hover align-middle">
             <thead class="table-light">
@@ -193,14 +191,17 @@
             <input type="hidden" id="formId">
             <input type="hidden" id="fotoLama">
             <div class="row g-3">
+              
               <div class="col-md-12">
                 <label class="form-label">Nama Lengkap</label>
                 <input type="text" id="nama" class="form-control" required>
               </div>
+
               <div class="col-md-12">
                 <label class="form-label">Tanggal Lahir</label>
                 <input type="date" id="tglLahir" class="form-control">
               </div>
+              
               <div class="col-md-12">
                 <label class="form-label">Jenis Kelamin</label>
                 <select id="jk" class="form-select" onchange="togglePasangan()">
@@ -208,6 +209,7 @@
                   <option value="Wanita">Wanita</option>
                 </select>
               </div>
+              
               <div class="col-md-12">
                 <label class="form-label">Status Perkawinan</label>
                 <select id="statusKawin" class="form-select" onchange="togglePasangan()">  
@@ -230,26 +232,32 @@
                   <option value="Anak">Anak</option>
                 </select>
               </div>
+              
               <div class="col-md-12">
                 <label class="form-label">Alamat Lengkap</label>
                 <textarea id="alamat" class="form-control" rows="2"></textarea>
               </div>
+              
               <div class="col-md-12">
                 <label class="form-label">Kota</label>
                 <input type="text" id="kota" class="form-control">
               </div>
+              
               <div class="col-md-12">
                 <label class="form-label">Nama Ayah</label>
                 <input type="text" id="ayah" class="form-control">
               </div>
+              
               <div class="col-md-12">
                 <label class="form-label">Nama Ibu</label>
                 <input type="text" id="ibu" class="form-control">
               </div>
+              
               <div class="col-md-12">
                 <label class="form-label">Unggah Foto</label>
                 <input type="file" id="fotoFile" class="form-control" accept="image/*">
               </div>
+            
             </div>
           </div>
           <!-- Tampilkan pesan diatas tombol -->
@@ -405,10 +413,9 @@
       });
     }
  
-    /**********************************************************
+    /***************************************
      * Untuk tampilkan form Tambah dan Edit
-     * Mengubah judul dan aktifkan kembali tombol simpan
-     *********************************************************/
+     ***************************************/
     function openForm(mode, id = null) {
     const form = document.getElementById('formKeluarga');
     if (form) form.reset();
@@ -513,7 +520,9 @@
       }
     }
 
-    // Fungsi untuk mendapatkan inisial dari nama
+    /********************************************* 
+    * Fungsi untuk mendapatkan inisial dari nama
+    **********************************************/
     function getInitials(nama) {
         if (!nama || nama === '-' || nama === '') return '?';
         const parts = nama.trim().split(' ');
@@ -521,22 +530,17 @@
         return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
     }
 
-    /**
-     * LOAD DATA - Memuat data keluarga ke dalam tabel
-     */
+    /****************************************
+     * Memuat data keluarga ke dalam tabel
+     ***************************************/
     async function loadData() {
         showLoader(true, "Memuat Data Keluarga...");
-        
         try {
             const url = `${SCRIPT_URL}?action=getData`;
             const response = await fetch(url);
-            
             if (!response.ok) throw new Error("Gagal menghubungi server");
-            
             const res = await response.json();
-            
             console.log("Raw Response:", res);
-
             if (res && res.data && Array.isArray(res.data)) {
                 globalData = res.data;
             } else if (Array.isArray(res)) {
@@ -547,9 +551,7 @@
 
             const tbody = document.getElementById('tableBody');
             if (!tbody) return;
-
             tbody.innerHTML = '';
-
             if (globalData.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" class="text-center p-4"><div class="text-muted">Tidak ada data ditemukan di database</div></td></tr>`;
                 return;
@@ -559,11 +561,9 @@
                 const itemId = item.id ? String(item.id) : '';
                 const itemNama = item.nama ? item.nama : 'Tanpa Nama';
                 const itemNamaEscaped = itemNama.replace(/'/g, "\\'");
-                
                 // Handle foto atau avatar
                 const fotoUrl = item.foto && item.foto.includes('http') ? item.foto : null;
                 const initials = getInitials(item.nama);
-                
                 let fotoDisplay = '';
                 if (fotoUrl) {
                     fotoDisplay = `<img src="${fotoUrl}" class="foto-thumb" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'avatar-circle\'>${initials}</div>';">`;
@@ -574,7 +574,7 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="text-center">${fotoDisplay}</td>
-                    <td><strong>${item.nama || '-'}</strong></td>
+                    <td>${item.nama || '-'}</td>
                     <td>${item.statusKawin || '-'}</td>
                     <td>${item.namaPasangan || '-'}</td>
                     <td>${item.statusKeluarga || '-'}</td>
@@ -590,9 +590,7 @@
                 `;
                 tbody.appendChild(tr);
             });
-
             console.log(`Berhasil merender ${globalData.length} baris data.`);
-
         } catch (error) {
             console.error("Error saat loadData:", error);
             const tbody = document.getElementById('tableBody');
@@ -604,9 +602,9 @@
         }
     }
 
-    /**
-     * VIEW DETAIL - Menampilkan detail data keluarga
-     */
+    /***********************************
+     * Menampilkan detail data keluarga
+     ***********************************/
     function viewDetail(id) {
         try {
             const item = globalData.find(x => String(x.id) === String(id));
@@ -708,147 +706,6 @@
         }
     }
     
-  async function BACKUP_loadData() {
-    showLoader(true, "Memuat Data Keluarga...");
-      try {
-          // PERBAIKAN: Ganti readData menjadi getData
-          const url = `${SCRIPT_URL}?action=getData`;
-          const response = await fetch(url);
-          if (!response.ok) throw new Error("Gagal menghubungi server");
-          const res = await response.json();
-          console.log("Raw Response:", res);
-          if (res && res.data && Array.isArray(res.data)) {
-              globalData = res.data;
-          } else if (Array.isArray(res)) {
-              globalData = res;
-          } else {
-              globalData = [];
-          }
-
-          // Render tabel sama seperti kode Anda yang sudah ada
-          const tbody = document.getElementById('tableBody');
-          if (!tbody) return;
-          tbody.innerHTML = '';
-          if (globalData.length === 0) {
-              tbody.innerHTML = `<tr><td colspan="8" class="text-center p-4"><div class="text-muted">Tidak ada data ditemukan di database</div></td></tr>`;
-              return;
-          }
-          globalData.forEach((item, index) => {
-              const tr = document.createElement('tr');
-              const itemId = item.id ? String(item.id) : '';
-              const itemNama = item.nama ? item.nama.replace(/'/g, "\\'") : 'Tanpa Nama';
-
-              tr.innerHTML = `
-                  <td class="text-center">
-                      <img src="${item.foto || 'https://via.placeholder.com/50'}" 
-                          class="foto-thumb" 
-                          onerror="this.src='https://via.placeholder.com/50'">
-                  </td>
-                  <td>${item.nama || '-'}</td>
-                  <td>${item.statusKawin || '-'}</td>
-                  <td>${item.namaPasangan || '-'}</td>
-                  <td>${item.statusKeluarga || '-'}</td>
-                  <td>${item.ayah || '-'}</td>
-                  <td>${item.ibu || '-'}</td>
-                  <td class="text-center">
-                      <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-info btn-round" onclick="viewDetail('${itemId}')"><i class="bi bi-eye"></i></button>
-                        <button type="button" class="btn btn-warning btn-round" onclick="openForm('edit', '${itemId}')"><i class="bi bi-pencil"></i></button>
-                        <button type="button" class="btn btn-danger btn-round" onclick="hapusData('${itemId}', '${itemNama}')"><i class="bi bi-trash"></i></button>
-                      </div>
-                  </td>
-              `;
-              tbody.appendChild(tr);
-          });
-          console.log(`Berhasil merender ${globalData.length} baris data.`);
-      } catch (error) {
-          console.error("Error:", error);
-          const tbody = document.getElementById('tableBody');
-          if (tbody) {
-              tbody.innerHTML = `<tr><td colspan="8" class="text-center p-4"><div class="text-danger">Gagal memuat data: ${error.message}</div></td></tr>`;
-          }
-      } finally {
-          showLoader(false);
-      }
-    }
-
-    /**********************************
-     *  Menampilkan Data Secara Detail
-     * ********************************/
-    function BACKUP_viewDetail(id) {
-      try {
-          const item = globalData.find(x => String(x.id) === String(id));
-          if (!item) {
-              showMessage("Data tidak ditemukan", "error", "tableMessage");
-              return;
-          }
-
-          // Hapus modal dinamis jika sudah ada sebelumnya
-          const existingDynamicModal = document.getElementById('dynamicViewModal');
-          if (existingDynamicModal) {
-              existingDynamicModal.remove();
-          }
-
-          // Buat struktur modal baru
-          const modalHtml = `
-              <div class="modal fade" id="dynamicViewModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
-                  <div class="modal-dialog modal-lg modal-dialog-centered">
-                      <div class="modal-content">
-                          <div class="modal-header bg-primary text-white">
-                              <h5 class="modal-title">Detail Profil Keluarga</h5>
-                              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
-                          <div class="modal-body">
-                              <div class="row">
-                                  <div class="col-md-4 text-center mb-3">
-                                      <img src="${item.foto || 'https://via.placeholder.com/150'}" 
-                                          class="img-fluid rounded border shadow-sm" 
-                                          style="max-height:200px; width:auto; object-fit:cover;" 
-                                          onerror="this.src='https://via.placeholder.com/150'">
-                                  </div>
-                                  <div class="col-md-8">
-                                      <table class="table table-sm table-borderless">
-                                          <tr><th width="35%">Nama Lengkap</th><td>: ${item.nama || '-'}</td></tr>
-                                          <tr><th>Jenis Kelamin</th><td>: ${item.jk || '-'}</td></tr>
-                                          <tr><th>Tgl Lahir</th><td>: ${item.tglLahir ? new Date(item.tglLahir).toLocaleDateString('id-ID') : '-'}</td></tr>
-                                          <tr><th>Status Kawin</th><td>: ${item.statusKawin || '-'}</td></tr>
-                                          <tr><th>Nama Pasangan</th><td>: ${item.namaPasangan || '-'}</td></tr>
-                                          <tr><th>Status Keluarga</th><td>: ${item.statusKeluarga || '-'}</td></tr>
-                                          <tr><th>Nama Ayah</th><td>: ${item.ayah || '-'}</td></tr>
-                                          <tr><th>Nama Ibu</th><td>: ${item.ibu || '-'}</td></tr>
-                                          <tr><th>Alamat</th><td>: ${item.alamat || '-'}</td></tr>
-                                          <tr><th>Kota</th><td>: ${item.kota || '-'}</td></tr>
-                                      </table>
-                                  </div>
-                              </div>
-                          </div>
-                        </div>
-                  </div>
-              </div>
-          `;
-
-          // Tambahkan ke body
-          document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-          // Tampilkan modal menggunakan Bootstrap
-          const modalElement = document.getElementById('dynamicViewModal');
-          const modal = new bootstrap.Modal(modalElement, {
-              backdrop: true,
-              keyboard: true
-          });
-          modal.show();
-
-          // Hapus modal setelah ditutup
-          modalElement.addEventListener('hidden.bs.modal', function() {
-              modalElement.remove();
-          });
-
-      } catch (e) {
-          console.error("View Error:", e);
-          showMessage("Gagal menampilkan detail", "error", "tableMessage");
-      }
-    }
-
     /*************************************
      * Fungsi untuk menghapus record data
      *************************************/
@@ -937,115 +794,6 @@
         }
     }
 
-function BACKUP_hapusData(id, nama) {
-    console.log("hapusData dipanggil - ID:", id, "Nama:", nama);
-    
-    // Buat konfirmasi custom
-    const confirmDelete = confirm(`Apakah Anda yakin ingin menghapus data "${nama}" dari sistem?`);
-    
-    if (!confirmDelete) {
-        console.log("Penghapusan dibatalkan oleh user");
-        return;
-    }
-    
-    // Tampilkan loader
-    showLoader(true, "Menghapus data...");
-    
-    // Proses hapus
-    fetch(SCRIPT_URL, { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: "deleteData", id: id.toString() }) 
-    })
-    .then(response => response.json())
-    .then(res => {
-        if (res.success) {
-            showMessage(`Data "${nama}" berhasil dihapus`, "success", "tableMessage");
-            loadData(); // Refresh tabel
-        } else {
-            showMessage("Gagal menghapus: " + (res.message || "Unknown error"), "error", "tableMessage");
-        }
-    })
-    .catch(e => {
-        console.error("Error saat hapus:", e);
-        showMessage("Kesalahan koneksi: " + e.message, "error", "tableMessage");
-    })
-    .finally(() => {
-        showLoader(false);
-    });
-}
-
-    function BACKUP_hapusData(id, nama) {
-    console.log("hapusData dipanggil - ID:", id, "Nama:", nama);
-      try {
-          // Set judul dan teks konfirmasi
-          const title = document.getElementById('confirmTitle');
-          const text = document.getElementById('confirmText');
-          
-          if (title) title.innerText = "KONFIRMASI HAPUS";
-          if (text) text.innerText = `Apakah Anda yakin ingin menghapus data "${nama}" dari sistem?`;
-          
-          // Ambil element modal
-          const confirmEl = document.getElementById('confirmModal');
-          
-          if (!confirmEl) {
-              console.error("Element confirmModal tidak ditemukan!");
-              showMessage("Error: Modal konfirmasi tidak ditemukan", "error", "tableMessage");
-              return;
-          }
-          
-          // Hapus event listener lama dengan membuat clone
-          const oldBtn = document.getElementById('confirmBtnAction');
-          if (oldBtn) {
-              const newBtn = oldBtn.cloneNode(true);
-              oldBtn.parentNode.replaceChild(newBtn, oldBtn);
-              
-              // Pasang event listener baru
-              newBtn.onclick = async function() {
-                  console.log("Tombol konfirmasi diklik untuk hapus ID:", id);
-                  
-                  // Tutup modal konfirmasi
-                  const modalElement = document.getElementById('confirmModal');
-                  const modal = bootstrap.Modal.getInstance(modalElement);
-                  if (modal) modal.hide();
-                  
-                  // Tampilkan loader
-                  showLoader(true, "Menghapus data...");
-                  try {
-                      const resp = await fetch(SCRIPT_URL, { 
-                          method: 'POST', 
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ action: "deleteData", id: id.toString() }) 
-                      });
-                      const res = await resp.json();
-                      if (res.success) {
-                          showMessage(`Data "${nama}" berhasil dihapus`, "success", "tableMessage");
-                          loadData(); // Refresh tabel
-                      } else {
-                          showMessage("Gagal menghapus: " + (res.message || "Unknown error"), "error", "tableMessage");
-                      }
-                  } catch (e) {
-                      console.error("Error saat hapus:", e);
-                      showMessage("Kesalahan koneksi: " + e.message, "error", "tableMessage");
-                  } finally {
-                      showLoader(false);
-                  }
-              };
-          }
-          
-          // Tampilkan modal konfirmasi
-          const confirmModal = new bootstrap.Modal(confirmEl, {
-              backdrop: true,
-              keyboard: true
-          });
-          confirmModal.show();
-          
-      } catch (e) {
-          console.error("Error di hapusData:", e);
-          showMessage("Gagal menampilkan konfirmasi: " + e.message, "error", "tableMessage");
-      }
-    }
-
     /************************************
      * Kirim data untuk disimpan di sheet
     ************************************/
@@ -1084,17 +832,14 @@ function BACKUP_hapusData(id, nama) {
       location.reload();
     }
 
- /***************************
-  * TAMBAHAN
-  * ***************************/
-
-    // Fungsi Baru untuk Logika Kondisional Poin 2
+    /**************************************
+    * Fungsi untuk Logika Kondisi Pasangan
+    ***************************************/
     function togglePasangan() {
         const jk = document.getElementById('jk').value;
         const statusKawin = document.getElementById('statusKawin').value;
         const divPasangan = document.getElementById('divPasangan');
         const labelPasangan = document.getElementById('labelPasangan');
-        
         let show = false;
         if (jk === "Pria") {
             if (statusKawin === "Kawin" || statusKawin === "Cerai") {
@@ -1107,7 +852,6 @@ function BACKUP_hapusData(id, nama) {
                 show = true;
             }
         }
-        
         divPasangan.style.display = show ? "block" : "none";
         if (!show) document.getElementById('namaPasangan').value = "";
     }
@@ -1121,7 +865,6 @@ function BACKUP_hapusData(id, nama) {
     function showMessage(msg, type = 'info', elementId = 'formMessage') {
         const el = document.getElementById(elementId);
         if (!el) return;
-
         // Mapping Ikon
         const icons = {
             success: '✅',
@@ -1129,11 +872,9 @@ function BACKUP_hapusData(id, nama) {
             warning: '⚠️',
             info: 'ℹ️'
         };
-
         el.className = `form-msg msg-${type}`;
         el.innerHTML = `<span>${icons[type] || '•'}</span> <span>${msg}</span>`;
         el.style.display = 'flex';
-
         // Sembunyikan otomatis dalam 5 detik
         setTimeout(() => {
             el.style.display = 'none';
