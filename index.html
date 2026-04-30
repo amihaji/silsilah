@@ -191,10 +191,9 @@
               <div class="col-md-12">
                 <label class="form-label">Status Perkawinan</label>
                 <select id="statusKawin" onchange="togglePasangan()">  
-                  <option value="Single">Single</option>
+                  <option value="Lajang">Lajang</option>
                   <option value="Kawin">Kawin</option>
-                  <option value="Duda">Duda</option>
-                  <option value="Janda">Janda</option>
+                  <option value="Cerai">Cerai</option>
                 </select>
               </div>
 
@@ -417,7 +416,7 @@
             document.getElementById('nama').value = item.nama || "";
             document.getElementById('jk').value = item.jk || "Laki-laki";
             document.getElementById('tglLahir').value = item.tglLahir ? new Date(item.tglLahir).toISOString().split('T')[0] : "";
-            document.getElementById('statusKawin').value = item.statusKawin || "Single";
+            document.getElementById('statusKawin').value = item.statusKawin || "Lajang";
             document.getElementById('namaPasangan').value = item.namaPasangan || "";
             document.getElementById('statusKeluarga').value = item.statusKeluarga || "Anak";
             document.getElementById('alamat').value = item.alamat || "";
@@ -747,12 +746,12 @@
         
         let show = false;
         if (jk === "Laki-laki") {
-            if (statusKawin === "Kawin" || statusKawin === "Duda") {
+            if (statusKawin === "Kawin" || statusKawin === "Cerai") {
                 labelPasangan.innerText = "Nama Istri";
                 show = true;
             }
         } else if (jk === "Perempuan") {
-            if (statusKawin === "Kawin" || statusKawin === "Janda") {
+            if (statusKawin === "Kawin" || statusKawin === "Cerai") {
                 labelPasangan.innerText = "Nama Suami";
                 show = true;
             }
