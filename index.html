@@ -155,10 +155,23 @@
       <!-- Tampilkan pesan untuk aksi di tabel -->
       <div id="tableMessage" class="form-msg"></div>
       <div class="card p-3 shadow-sm">
+        <!---
         <div class="d-flex justify-content-between mb-3 align-items-center">
           <h5 class="m-0">Data Anggota Keluarga</h5>
-          <button class="btn btn-primary btn-sm" style="float:right margin-right=20px" onclick="openForm('add')"><i class='fas fa-plus'> Tambah</i></button>
-          <button class="btn btn-outline-primary btn-sm" style="float:right" onclick="openDiagram('buatDiagram')"><i class='fas fa-sitemap'> Diagram</i></button>
+          <button class="btn btn-primary btn-sm" onclick="openForm('add')"><i class='fas fa-plus'> Tambah</i></button>
+          <button class="btn btn-outline-primary btn-sm" onclick="openDiagram('buatDiagram')"><i class='fas fa-sitemap'> Diagram</i></button>
+        </div>
+        --->
+        <div class="d-flex justify-content-between mb-3 align-items-center">
+            <h5 class="m-0">Data Anggota Keluarga</h5>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary btn-sm" onclick="openForm('add')">
+                    <i class='fas fa-plus'></i> <span>Tambah</span>
+                </button>
+                <button class="btn btn-outline-primary btn-sm" onclick="openDiagram('buatDiagram')">
+                    <i class='fas fa-sitemap'></i> <span>Diagram</span>
+                </button>
+            </div>
         </div>
   
         <div class="table-responsive">
