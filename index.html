@@ -114,54 +114,171 @@
     .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #023a7a; }
 
     /* Styling untuk diagram pohon */
-    .tree {
-        margin: 0;
-        padding: 0;
-        list-style: none;
+    .tree-diagram {
+        font-family: 'Segoe UI', sans-serif;
+        padding: 20px;
+        background: #f0f4f8;
+        border-radius: 10px;
     }
-    .tree ul {
-        padding-left: 30px;
-        margin: 0;
+
+    .tree-root, .tree-children {
         list-style: none;
+        padding-left: 0;
+        margin: 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
     }
-    .tree li {
+
+    .tree-root {
+        display: flex;
+        justify-content: center;
+    }
+
+    .tree-children {
+        padding-left: 20px;
+        margin-top: 15px;
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .tree-diagram li {
+        list-style: none;
+        text-align: center;
         position: relative;
-        padding: 10px 0 0 20px;
-        margin: 0;
-        list-style: none;
+        padding: 0 10px;
     }
-    .tree li::before {
+
+    /* Node diagram */
+    .diagram-node {
+        background: white;
+        border-radius: 12px;
+        padding: 12px;
+        margin: 8px;
+        min-width: 100px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+        text-align: center;
+    }
+
+    .diagram-node:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .diagram-root {
+        background: linear-gradient(135deg, #1A365D, #2c5282);
+        color: white;
+    }
+
+    .diagram-parent {
+        background: linear-gradient(135deg, #2c5282, #4299e1);
+        color: white;
+    }
+
+    .diagram-child {
+        background: linear-gradient(135deg, #4299e1, #63b3ed);
+        color: white;
+    }
+
+    /* Foto/avatar diagram */
+    .diagram-foto {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid white;
+        margin-bottom: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .diagram-avatar {
+        width: 60px;
+        height: 60px;
+        background-color: #416eff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 20px;
+        margin: 0 auto 8px auto;
+        border: 3px solid white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .diagram-name {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 3px;
+        word-break: break-word;
+        max-width: 100px;
+    }
+
+    .diagram-year {
+        font-size: 11px;
+        opacity: 0.8;
+        font-weight: normal;
+    }
+
+    /* Garis penghubung */
+    .tree-children {
+        position: relative;
+    }
+
+    .tree-children::before {
         content: '';
         position: absolute;
         top: 0;
-        left: 0;
-        border-left: 1px solid #ccc;
-        border-bottom: 1px solid #ccc;
-        width: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
         height: 20px;
+        background: #cbd5e0;
     }
-    .tree li:last-child::before {
-        border-left: none;
+
+    .tree-children li {
+        position: relative;
     }
-    .tree .node {
-        display: inline-block;
-        background: #1A365D;
-        color: white;
-        padding: 8px 15px;
-        border-radius: 20px;
-        margin: 5px 0;
-        font-size: 14px;
-        min-width: 150px;
-        text-align: center;
+
+    .tree-children li::before {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 20px;
+        background: #cbd5e0;
     }
-    .tree .node-root {
-        background: #1A365D;
+
+    .tree-children li:first-child::before {
+        left: 50%;
     }
-    .tree .node-child {
-        background: #2c5282;
+
+    .tree-children li:last-child::before {
+        left: 50%;
     }
-    .tree .node-grandchild {
-        background: #4299e1;
+
+    /* Responsif */
+    @media (max-width: 768px) {
+        .diagram-node {
+            min-width: 80px;
+            padding: 8px;
+        }
+        .diagram-foto, .diagram-avatar {
+            width: 45px;
+            height: 45px;
+            font-size: 16px;
+        }
+        .diagram-name {
+            font-size: 11px;
+        }
+        .diagram-year {
+            font-size: 9px;
+        }
     }
 
   </style>
@@ -914,9 +1031,27 @@
                 existingModal.remove();
             }
             
-            // Isi dropdown options dari globalData
-            let dropdownOptions = '<option value="">-- Pilih Nama --</option>';
+            // Ambil daftar unik Nama Ayah (untuk dropdown keluarga)
+            const ayahList = [];
             if (globalData && globalData.length > 0) {
+                globalData.forEach(item => {
+                    if (item.ayah && item.ayah.trim() !== '' && !ayahList.includes(item.ayah)) {
+                        ayahList.push(item.ayah);
+                    }
+                });
+                // Urutkan berdasarkan abjad
+                ayahList.sort();
+            }
+            
+            // Isi dropdown options dari daftar Ayah
+            let dropdownOptions = '<option value="">-- Pilih Keluarga (Nama Ayah) --</option>';
+            ayahList.forEach(ayah => {
+                dropdownOptions += `<option value="${ayah.replace(/"/g, '&quot;')}">${ayah}</option>`;
+            });
+            
+            // Jika tidak ada data ayah, tambahkan opsi berdasarkan nama
+            if (ayahList.length === 0 && globalData && globalData.length > 0) {
+                dropdownOptions = '<option value="">-- Pilih Nama --</option>';
                 globalData.forEach(item => {
                     dropdownOptions += `<option value="${item.id}">${item.nama}</option>`;
                 });
@@ -934,22 +1069,22 @@
                             <div class="modal-body">
                                 <div class="row mb-3">
                                     <div class="col-md-12 d-flex gap-2 align-items-center flex-wrap">
-                                        <select id="pilihNamaDiagram" class="form-select" style="flex:2; min-width:200px;">
+                                        <select id="pilihNamaDiagram" class="form-select" style="flex:2; min-width:250px;">
                                             ${dropdownOptions}
                                         </select>
-                                        <button class="btn btn-outline-primary btn-sm" id="btnBuatDiagram" title="Buat Diagram">
-                                            <i class="fas fa-sitemap"></i> Buat
+                                        <button class="btn btn-primary" id="btnBuatDiagram" title="Buat Diagram">
+                                            <i class="fas fa-sitemap"></i> Diagram
                                         </button>
-                                        <button class="btn btn-outline-secondary btn-sm" id="btnDownloadPdf" title="Download PDF">
+                                        <button class="btn btn-success" id="btnDownloadPdf" title="Download PDF">
                                             <i class="fas fa-file-pdf"></i> PDF
                                         </button>
-                                        <button class="btn btn-outline-secondary btn-sm" id="btnDownloadExcel" title="Download Excel">
+                                        <button class="btn btn-info" id="btnDownloadExcel" title="Download Excel">
                                             <i class="fas fa-file-excel"></i> Excel
                                         </button>
                                     </div>
                                 </div>
-                                <div id="diagramContainer" style="min-height: 400px; max-height: 500px; overflow: auto; border: 1px solid #ddd; padding: 15px; background: white; border-radius: 8px;">
-                                    <div class="text-center text-muted p-5">Silakan pilih nama dan klik tombol Diagram</div>
+                                <div id="diagramContainer" style="min-height: 450px; max-height: 550px; overflow: auto; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+                                    <div class="text-center text-muted p-5">Silakan pilih keluarga (Nama Ayah) dan klik tombol Diagram</div>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -1006,51 +1141,142 @@
         }
     }
 
-    // Membangun struktur tree berdasarkan ID yang dipilih
-    function buildFamilyTree(startId) {
-        const treeMap = {};
-        
-        // Buat mapping semua data berdasarkan ID
-        globalData.forEach(item => {
-            treeMap[item.id] = {
-                ...item,
-                children: []
-            };
-        });
-        
-        // Bangun relasi parent-child (berdasarkan ayah/ibu)
-        globalData.forEach(item => {
-            if (item.ayah) {
-                const parent = Object.values(treeMap).find(p => p.nama === item.ayah);
-                if (parent && parent.id !== item.id && parent.id) {
-                    if (!parent.children.find(c => c.id === item.id)) {
-                        parent.children.push(treeMap[item.id]);
-                    }
-                }
-            }
-            if (item.ibu) {
-                const parent = Object.values(treeMap).find(p => p.nama === item.ibu);
-                if (parent && parent.id !== item.id && parent.id) {
-                    if (!parent.children.find(c => c.id === item.id)) {
-                        parent.children.push(treeMap[item.id]);
-                    }
-                }
-            }
-        });
-        
-        return treeMap[startId] || null;
+    // Mendapatkan tahun lahir dari tglLahir
+    function getBirthYear(tglLahir) {
+        if (!tglLahir) return '';
+        try {
+            const date = new Date(tglLahir);
+            return date.getFullYear();
+        } catch(e) {
+            return '';
+        }
     }
 
-    // Render tree ke HTML
-    function renderTree(node, level = 0) {
+    // Mendapatkan foto atau avatar untuk diagram
+    function getFotoForDiagram(item) {
+        const initials = getInitials(item.nama);
+        const birthYear = getBirthYear(item.tglLahir);
+        
+        if (item.foto && item.foto.includes('http')) {
+            return `<img src="${item.foto}" class="diagram-foto" onerror="this.onerror=null; this.parentElement.innerHTML=this.parentElement.innerHTML='<div class=\'diagram-avatar\'>${initials}</div><div class=\'diagram-name\'>${item.nama || '-'}</div><div class=\'diagram-year\'>${birthYear}</div>';">`;
+        } else {
+            return `<div class="diagram-avatar">${initials}</div>`;
+        }
+    }
+
+    // Membangun struktur tree berdasarkan Nama Ayah
+    function buildFamilyTreeByAyah(ayahName) {
+        if (!ayahName) return null;
+        
+        // Cari semua anggota yang memiliki ayah dengan nama tersebut
+        const familyMembers = globalData.filter(item => item.ayah === ayahName);
+        
+        if (familyMembers.length === 0) return null;
+        
+        // Buat node root (Ayah)
+        const ayahData = globalData.find(item => item.nama === ayahName);
+        
+        const rootNode = {
+            id: ayahData ? ayahData.id : 'root',
+            nama: ayahName,
+            jk: ayahData ? ayahData.jk : 'Pria',
+            tglLahir: ayahData ? ayahData.tglLahir : '',
+            foto: ayahData ? ayahData.foto : '',
+            statusKeluarga: 'Kepala Keluarga',
+            children: []
+        };
+        
+        // Tambahkan istri (pasangan dari ayah)
+        if (ayahData && ayahData.namaPasangan) {
+            const wifeData = globalData.find(item => item.nama === ayahData.namaPasangan);
+            if (wifeData && wifeData.id !== rootNode.id) {
+                const wifeNode = {
+                    id: wifeData.id,
+                    nama: wifeData.nama,
+                    jk: wifeData.jk,
+                    tglLahir: wifeData.tglLahir,
+                    foto: wifeData.foto,
+                    statusKeluarga: 'Istri',
+                    children: []
+                };
+                rootNode.children.push(wifeNode);
+            }
+        }
+        
+        // Tambahkan anak-anak
+        familyMembers.forEach(child => {
+            if (child.nama !== ayahName) {
+                const childNode = {
+                    id: child.id,
+                    nama: child.nama,
+                    jk: child.jk,
+                    tglLahir: child.tglLahir,
+                    foto: child.foto,
+                    statusKeluarga: child.statusKeluarga || 'Anak',
+                    children: []
+                };
+                
+                // Cari pasangan dari anak (menantu)
+                if (child.namaPasangan && child.namaPasangan.trim() !== '') {
+                    const spouseData = globalData.find(item => item.nama === child.namaPasangan);
+                    if (spouseData && spouseData.id !== child.id) {
+                        const spouseNode = {
+                            id: spouseData.id,
+                            nama: spouseData.nama,
+                            jk: spouseData.jk,
+                            tglLahir: spouseData.tglLahir,
+                            foto: spouseData.foto,
+                            statusKeluarga: child.jk === 'Pria' ? 'Istri' : 'Suami',
+                            children: []
+                        };
+                        childNode.children.push(spouseNode);
+                    }
+                }
+                
+                // Cari cucu (anak dari anak)
+                const grandchildren = globalData.filter(item => item.ayah === child.nama || item.ibu === child.nama);
+                grandchildren.forEach(grandchild => {
+                    if (grandchild.nama !== child.nama) {
+                        const grandchildNode = {
+                            id: grandchild.id,
+                            nama: grandchild.nama,
+                            jk: grandchild.jk,
+                            tglLahir: grandchild.tglLahir,
+                            foto: grandchild.foto,
+                            statusKeluarga: 'Cucu',
+                            children: []
+                        };
+                        childNode.children.push(grandchildNode);
+                    }
+                });
+                
+                rootNode.children.push(childNode);
+            }
+        });
+        
+        return rootNode;
+    }
+
+    // Render tree ke HTML dengan foto, nama, dan tahun lahir
+    function renderTreeDiagram(node, level = 0) {
         if (!node) return '';
         
-        let html = `<li><div class="node ${level === 0 ? 'node-root' : (level === 1 ? 'node-child' : 'node-grandchild')}">${node.nama || '-'}<br><small>${node.statusKeluarga || ''}</small></div>`;
+        const birthYear = getBirthYear(node.tglLahir);
+        const fotoHtml = getFotoForDiagram(node);
+        
+        let html = `<li class="tree-level-${level}">`;
+        html += `<div class="diagram-node ${level === 0 ? 'diagram-root' : (level === 1 ? 'diagram-parent' : 'diagram-child')}">`;
+        html += `<div class="diagram-foto-wrapper">${fotoHtml}</div>`;
+        html += `<div class="diagram-name">${node.nama || '-'}</div>`;
+        if (birthYear) {
+            html += `<div class="diagram-year">${birthYear}</div>`;
+        }
+        html += `</div>`;
         
         if (node.children && node.children.length > 0) {
-            html += '<ul>';
+            html += '<ul class="tree-children">';
             node.children.forEach(child => {
-                html += renderTree(child, level + 1);
+                html += renderTreeDiagram(child, level + 1);
             });
             html += '</ul>';
         }
@@ -1058,7 +1284,7 @@
         return html;
     }
 
-    // Generate Diagram
+    // Generate Diagram berdasarkan keluarga
     function generateDiagram() {
         const selectElement = document.getElementById('pilihNamaDiagram');
         if (!selectElement) {
@@ -1066,31 +1292,42 @@
             return;
         }
         
-        const selectId = selectElement.value;
-        if (!selectId) {
-            showMessage("Silakan pilih nama terlebih dahulu!", "warning", "tableMessage");
+        const selectedValue = selectElement.value;
+        if (!selectedValue) {
+            showMessage("Silakan pilih keluarga (Nama Ayah) terlebih dahulu!", "warning", "tableMessage");
             return;
         }
         
         showLoader(true, "Membuat diagram pohon...");
         
         try {
-            const rootNode = buildFamilyTree(selectId);
+            let rootNode;
+            
+            // Cek apakah selection adalah Nama Ayah atau ID
+            const isAyahName = globalData.some(item => item.ayah === selectedValue);
+            
+            if (isAyahName) {
+                rootNode = buildFamilyTreeByAyah(selectedValue);
+            } else {
+                // Fallback ke build berdasarkan ID
+                rootNode = buildFamilyTree(selectedValue);
+            }
+            
             const container = document.getElementById('diagramContainer');
             
             if (container) {
                 if (rootNode) {
                     const treeHtml = `
-                        <div class="tree">
-                            <ul>
-                                ${renderTree(rootNode)}
+                        <div class="tree-diagram">
+                            <ul class="tree-root">
+                                ${renderTreeDiagram(rootNode)}
                             </ul>
                         </div>
                     `;
                     container.innerHTML = treeHtml;
                     showMessage("Diagram berhasil dibuat", "success", "tableMessage");
                 } else {
-                    container.innerHTML = '<div class="text-center text-danger p-5">Tidak dapat membangun diagram pohon untuk nama yang dipilih</div>';
+                    container.innerHTML = '<div class="text-center text-danger p-5">Tidak dapat membangun diagram pohon untuk keluarga yang dipilih</div>';
                 }
             }
         } catch (error) {
@@ -1100,6 +1337,7 @@
             showLoader(false);
         }
     }
+  
 
     // Download sebagai PDF
     function downloadDiagramPDF() {
