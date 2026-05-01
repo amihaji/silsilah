@@ -114,10 +114,23 @@
     .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #023a7a; }
 
     /* Styling untuk diagram pohon */
-    .tree { margin: 0; padding: 0; list-style: none; }
-    .tree ul { padding-left: 30px; margin: 0; list-style: none; position: relative; }
-    .tree li { position: relative; padding: 10px 0 0 20px; margin: 0; }
-    .tree li::before { 
+    .tree {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    .tree ul {
+        padding-left: 30px;
+        margin: 0;
+        list-style: none;
+    }
+    .tree li {
+        position: relative;
+        padding: 10px 0 0 20px;
+        margin: 0;
+        list-style: none;
+    }
+    .tree li::before {
         content: '';
         position: absolute;
         top: 0;
@@ -127,8 +140,9 @@
         width: 20px;
         height: 20px;
     }
-    .tree li::after { content: ''; position: absolute; top: 0; left: 0; }
-    .tree li:last-child::before { border-left: none; }
+    .tree li:last-child::before {
+        border-left: none;
+    }
     .tree .node {
         display: inline-block;
         background: #1A365D;
@@ -140,8 +154,15 @@
         min-width: 150px;
         text-align: center;
     }
-    .tree .node-child { background: #2c5282; }
-    .tree .node-grandchild { background: #4299e1; }
+    .tree .node-root {
+        background: #1A365D;
+    }
+    .tree .node-child {
+        background: #2c5282;
+    }
+    .tree .node-grandchild {
+        background: #4299e1;
+    }
 
   </style>
 </head>
@@ -913,40 +934,118 @@
     }
     }
     
-    /***************************************
+     /***************************************
      * FUNGSI DIAGRAM POHON KELUARGA
      ***************************************/
 
-    // Buka modal diagram
+    // Buka modal diagram (dinamis - sama seperti viewDetail)
     function openDiagram() {
-        // Isi dropdown dengan data dari globalData
-        const select = document.getElementById('pilihNamaDiagram');
-        if (select && globalData.length > 0) {
-            select.innerHTML = '<option value="">-- Pilih Nama --</option>';
-            globalData.forEach(item => {
-                select.innerHTML += `<option value="${item.id}">${item.nama}</option>`;
+        try {
+            // Hapus modal dinamis jika sudah ada sebelumnya
+            const existingModal = document.getElementById('dynamicDiagramModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Isi dropdown options dari globalData
+            let dropdownOptions = '<option value="">-- Pilih Nama --</option>';
+            if (globalData && globalData.length > 0) {
+                globalData.forEach(item => {
+                    dropdownOptions += `<option value="${item.id}">${item.nama}</option>`;
+                });
+            }
+            
+            // Buat modal diagram dinamis
+            const modalHtml = `
+                <div class="modal fade" id="dynamicDiagramModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
+                    <div class="modal-dialog modal-xl modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title">Buat Diagram Pohon</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-12 d-flex gap-2 align-items-center flex-wrap">
+                                        <select id="pilihNamaDiagram" class="form-select" style="flex:2; min-width:200px;">
+                                            ${dropdownOptions}
+                                        </select>
+                                        <button class="btn btn-primary" id="btnBuatDiagram" title="Buat Diagram">
+                                            <i class="fas fa-sitemap"></i> Diagram
+                                        </button>
+                                        <button class="btn btn-success" id="btnDownloadPdf" title="Download PDF">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </button>
+                                        <button class="btn btn-info" id="btnDownloadExcel" title="Download Excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="diagramContainer" style="min-height: 400px; max-height: 500px; overflow: auto; border: 1px solid #ddd; padding: 15px; background: white; border-radius: 8px;">
+                                    <div class="text-center text-muted p-5">Silakan pilih nama dan klik tombol Diagram</div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Tambahkan ke body
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Tampilkan modal
+            const modalElement = document.getElementById('dynamicDiagramModal');
+            const modal = new bootstrap.Modal(modalElement, {
+                backdrop: true,
+                keyboard: true
             });
+            modal.show();
+            
+            // Hapus modal setelah ditutup
+            modalElement.addEventListener('hidden.bs.modal', function() {
+                modalElement.remove();
+            });
+            
+            // Event listener untuk tombol Diagram
+            const btnBuat = document.getElementById('btnBuatDiagram');
+            if (btnBuat) {
+                btnBuat.onclick = function() {
+                    generateDiagram();
+                };
+            }
+            
+            // Event listener untuk tombol PDF
+            const btnPdf = document.getElementById('btnDownloadPdf');
+            if (btnPdf) {
+                btnPdf.onclick = function() {
+                    downloadDiagramPDF();
+                };
+            }
+            
+            // Event listener untuk tombol Excel
+            const btnExcel = document.getElementById('btnDownloadExcel');
+            if (btnExcel) {
+                btnExcel.onclick = function() {
+                    downloadDiagramExcel();
+                };
+            }
+            
+        } catch (e) {
+            console.error("Error openDiagram:", e);
+            showMessage("Gagal membuka diagram: " + e.message, "error", "tableMessage");
         }
-        
-        // Reset container
-        const container = document.getElementById('diagramContainer');
-        if (container) {
-            container.innerHTML = '<div class="text-center text-muted p-5">Silakan pilih nama dan klik tombol Diagram</div>';
-        }
-        
-        // Tampilkan modal
-        const modalEl = document.getElementById('diagramModal');
-        const modal = new bootstrap.Modal(modalEl);
-        modal.show();
     }
 
     // Membangun struktur tree berdasarkan ID yang dipilih
     function buildFamilyTree(startId) {
-        const tree = {};
+        const treeMap = {};
         
         // Buat mapping semua data berdasarkan ID
         globalData.forEach(item => {
-            tree[item.id] = {
+            treeMap[item.id] = {
                 ...item,
                 children: []
             };
@@ -955,30 +1054,31 @@
         // Bangun relasi parent-child (berdasarkan ayah/ibu)
         globalData.forEach(item => {
             if (item.ayah) {
-                const parent = Object.values(tree).find(p => p.nama === item.ayah);
-                if (parent && parent.id !== item.id) {
-                    parent.children.push(tree[item.id]);
+                const parent = Object.values(treeMap).find(p => p.nama === item.ayah);
+                if (parent && parent.id !== item.id && parent.id) {
+                    if (!parent.children.find(c => c.id === item.id)) {
+                        parent.children.push(treeMap[item.id]);
+                    }
                 }
             }
             if (item.ibu) {
-                const parent = Object.values(tree).find(p => p.nama === item.ibu);
-                if (parent && parent.id !== item.id) {
-                    // Cek apakah sudah ada di children
+                const parent = Object.values(treeMap).find(p => p.nama === item.ibu);
+                if (parent && parent.id !== item.id && parent.id) {
                     if (!parent.children.find(c => c.id === item.id)) {
-                        parent.children.push(tree[item.id]);
+                        parent.children.push(treeMap[item.id]);
                     }
                 }
             }
         });
         
-        return tree[startId] || null;
+        return treeMap[startId] || null;
     }
 
     // Render tree ke HTML
     function renderTree(node, level = 0) {
-        if (!node) return '<div class="text-center text-danger">Data tidak ditemukan</div>';
+        if (!node) return '';
         
-        let html = `<li><div class="node">${node.nama || '-'}<br><small>${node.statusKeluarga || ''}</small></div>`;
+        let html = `<li><div class="node ${level === 0 ? 'node-root' : (level === 1 ? 'node-child' : 'node-grandchild')}">${node.nama || '-'}<br><small>${node.statusKeluarga || ''}</small></div>`;
         
         if (node.children && node.children.length > 0) {
             html += '<ul>';
@@ -992,8 +1092,14 @@
     }
 
     // Generate Diagram
-    async function generateDiagram() {
-        const selectId = document.getElementById('pilihNamaDiagram').value;
+    function generateDiagram() {
+        const selectElement = document.getElementById('pilihNamaDiagram');
+        if (!selectElement) {
+            showMessage("Error: Dropdown tidak ditemukan", "error", "tableMessage");
+            return;
+        }
+        
+        const selectId = selectElement.value;
         if (!selectId) {
             showMessage("Silakan pilih nama terlebih dahulu!", "warning", "tableMessage");
             return;
@@ -1005,20 +1111,23 @@
             const rootNode = buildFamilyTree(selectId);
             const container = document.getElementById('diagramContainer');
             
-            if (rootNode) {
-                const treeHtml = `
-                    <div class="tree">
-                        <ul>
-                            ${renderTree(rootNode)}
-                        </ul>
-                    </div>
-                `;
-                container.innerHTML = treeHtml;
-            } else {
-                container.innerHTML = '<div class="text-center text-danger">Tidak dapat membangun diagram pohon</div>';
+            if (container) {
+                if (rootNode) {
+                    const treeHtml = `
+                        <div class="tree">
+                            <ul>
+                                ${renderTree(rootNode)}
+                            </ul>
+                        </div>
+                    `;
+                    container.innerHTML = treeHtml;
+                    showMessage("Diagram berhasil dibuat", "success", "tableMessage");
+                } else {
+                    container.innerHTML = '<div class="text-center text-danger p-5">Tidak dapat membangun diagram pohon untuk nama yang dipilih</div>';
+                }
             }
         } catch (error) {
-            console.error("Error:", error);
+            console.error("Error generateDiagram:", error);
             showMessage("Gagal membuat diagram: " + error.message, "error", "tableMessage");
         } finally {
             showLoader(false);
@@ -1027,8 +1136,8 @@
 
     // Download sebagai PDF
     function downloadDiagramPDF() {
-        const element = document.getElementById('diagramContainer');
-        if (!element || element.innerHTML.includes('Silakan pilih')) {
+        const container = document.getElementById('diagramContainer');
+        if (!container || container.innerHTML.includes('Silakan pilih') || container.innerHTML.includes('Tidak dapat membangun')) {
             showMessage("Tidak ada diagram untuk diunduh. Buat diagram terlebih dahulu.", "warning", "tableMessage");
             return;
         }
@@ -1043,12 +1152,13 @@
             jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
         };
         
-        html2pdf().set(opt).from(element).save().then(() => {
+        html2pdf().set(opt).from(container).save().then(() => {
             showLoader(false);
             showMessage("PDF berhasil diunduh", "success", "tableMessage");
         }).catch(err => {
+            console.error("PDF Error:", err);
             showLoader(false);
-            showMessage("Gagal membuat PDF: " + err, "error", "tableMessage");
+            showMessage("Gagal membuat PDF: " + err.message, "error", "tableMessage");
         });
     }
 
@@ -1062,7 +1172,6 @@
         showLoader(true, "Menyiapkan Excel...");
         
         try {
-            // Siapkan data untuk Excel
             const excelData = globalData.map(item => ({
                 'ID': item.id,
                 'Nama': item.nama,
@@ -1085,11 +1194,11 @@
             showLoader(false);
             showMessage("File Excel berhasil diunduh", "success", "tableMessage");
         } catch (error) {
+            console.error("Excel Error:", error);
             showLoader(false);
             showMessage("Gagal membuat Excel: " + error.message, "error", "tableMessage");
         }
     }
-
 
     /***********************************
     * Fungsi Untuk logout dari aplikasi
