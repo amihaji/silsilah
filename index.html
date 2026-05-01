@@ -113,6 +113,36 @@
     /* Ganti style foto-thumb */
     .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #023a7a; }
 
+    /* Styling untuk diagram pohon */
+    .tree { margin: 0; padding: 0; list-style: none; }
+    .tree ul { padding-left: 30px; margin: 0; list-style: none; position: relative; }
+    .tree li { position: relative; padding: 10px 0 0 20px; margin: 0; }
+    .tree li::before { 
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-left: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        width: 20px;
+        height: 20px;
+    }
+    .tree li::after { content: ''; position: absolute; top: 0; left: 0; }
+    .tree li:last-child::before { border-left: none; }
+    .tree .node {
+        display: inline-block;
+        background: #1A365D;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        margin: 5px 0;
+        font-size: 14px;
+        min-width: 150px;
+        text-align: center;
+    }
+    .tree .node-child { background: #2c5282; }
+    .tree .node-grandchild { background: #4299e1; }
+
   </style>
 </head>
 <body>
@@ -318,7 +348,45 @@
     </div>
   </div>
 
+  <!-- MODAL DIAGRAM POHON -->
+  <div class="modal fade" id="diagramModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+          <div class="modal-content">
+              <div class="modal-header bg-primary text-white">
+                  <h5 class="modal-title">Buat Diagram Pohon</h5>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  <div class="row mb-3">
+                      <div class="col-md-6 d-flex gap-2 align-items-center">
+                          <select id="pilihNamaDiagram" class="form-select" style="flex:1;">
+                              <option value="">-- Pilih Nama --</option>
+                          </select>
+                          <button class="btn btn-primary" id="btnBuatDiagram" title="Buat Diagram">
+                              <i class="fas fa-sitemap"></i> Buat
+                          </button>
+                          <button class="btn btn-success" id="btnDownloadPdf" title="Download PDF">
+                              <i class="fas fa-file-pdf"></i> PDF
+                          </button>
+                          <button class="btn btn-info" id="btnDownloadExcel" title="Download Excel">
+                              <i class="fas fa-file-excel"></i> Excel
+                          </button>
+                      </div>
+                  </div>
+                  <div id="diagramContainer" style="min-height: 400px; max-height: 500px; overflow: auto; border: 1px solid #ddd; padding: 15px; background: white;">
+                      <div class="text-center text-muted p-5">Silakan pilih nama dan klik tombol Buat</div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" 
+          integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" 
+          crossorigin="anonymous" referrerpolicy="no-referrer">
+  </script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
   <script>
     // *************************      
     // DEKLARASI VARIABEL GLOBAL
@@ -345,8 +413,17 @@
         
         const fKeluarga = document.getElementById('formKeluarga');
         if (fKeluarga) fKeluarga.onsubmit = simpanData;
+
+        // Event untuk diagram
+        const btnBuatDiagram   = document.getElementById('btnBuatDiagram');
+        const btnDownloadPdf   = document.getElementById('btnDownloadPdf');
+        const btnDownloadExcel = document.getElementById('btnDownloadExcel');
+        if (btnBuatDiagram) btnBuatDiagram.onclick = generateDiagram;
+        if (btnDownloadPdf) btnDownloadPdf.onclick = downloadDiagramPDF;
+        if (btnDownloadExcel) btnDownloadExcel.onclick = downloadDiagramExcel;
     });
-    /***********************
+
+     /***********************
      * Tampilan showloader 
      ***********************/
     function showLoader(show, text = "Memproses...") {
@@ -836,6 +913,184 @@
     }
     }
     
+    /***************************************
+     * FUNGSI DIAGRAM POHON KELUARGA
+     ***************************************/
+
+    // Buka modal diagram
+    function openDiagram() {
+        // Isi dropdown dengan data dari globalData
+        const select = document.getElementById('pilihNamaDiagram');
+        if (select && globalData.length > 0) {
+            select.innerHTML = '<option value="">-- Pilih Nama --</option>';
+            globalData.forEach(item => {
+                select.innerHTML += `<option value="${item.id}">${item.nama}</option>`;
+            });
+        }
+        
+        // Reset container
+        const container = document.getElementById('diagramContainer');
+        if (container) {
+            container.innerHTML = '<div class="text-center text-muted p-5">Silakan pilih nama dan klik tombol Diagram</div>';
+        }
+        
+        // Tampilkan modal
+        const modalEl = document.getElementById('diagramModal');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+
+    // Membangun struktur tree berdasarkan ID yang dipilih
+    function buildFamilyTree(startId) {
+        const tree = {};
+        
+        // Buat mapping semua data berdasarkan ID
+        globalData.forEach(item => {
+            tree[item.id] = {
+                ...item,
+                children: []
+            };
+        });
+        
+        // Bangun relasi parent-child (berdasarkan ayah/ibu)
+        globalData.forEach(item => {
+            if (item.ayah) {
+                const parent = Object.values(tree).find(p => p.nama === item.ayah);
+                if (parent && parent.id !== item.id) {
+                    parent.children.push(tree[item.id]);
+                }
+            }
+            if (item.ibu) {
+                const parent = Object.values(tree).find(p => p.nama === item.ibu);
+                if (parent && parent.id !== item.id) {
+                    // Cek apakah sudah ada di children
+                    if (!parent.children.find(c => c.id === item.id)) {
+                        parent.children.push(tree[item.id]);
+                    }
+                }
+            }
+        });
+        
+        return tree[startId] || null;
+    }
+
+    // Render tree ke HTML
+    function renderTree(node, level = 0) {
+        if (!node) return '<div class="text-center text-danger">Data tidak ditemukan</div>';
+        
+        let html = `<li><div class="node">${node.nama || '-'}<br><small>${node.statusKeluarga || ''}</small></div>`;
+        
+        if (node.children && node.children.length > 0) {
+            html += '<ul>';
+            node.children.forEach(child => {
+                html += renderTree(child, level + 1);
+            });
+            html += '</ul>';
+        }
+        html += '</li>';
+        return html;
+    }
+
+    // Generate Diagram
+    async function generateDiagram() {
+        const selectId = document.getElementById('pilihNamaDiagram').value;
+        if (!selectId) {
+            showMessage("Silakan pilih nama terlebih dahulu!", "warning", "tableMessage");
+            return;
+        }
+        
+        showLoader(true, "Membuat diagram pohon...");
+        
+        try {
+            const rootNode = buildFamilyTree(selectId);
+            const container = document.getElementById('diagramContainer');
+            
+            if (rootNode) {
+                const treeHtml = `
+                    <div class="tree">
+                        <ul>
+                            ${renderTree(rootNode)}
+                        </ul>
+                    </div>
+                `;
+                container.innerHTML = treeHtml;
+            } else {
+                container.innerHTML = '<div class="text-center text-danger">Tidak dapat membangun diagram pohon</div>';
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            showMessage("Gagal membuat diagram: " + error.message, "error", "tableMessage");
+        } finally {
+            showLoader(false);
+        }
+    }
+
+    // Download sebagai PDF
+    function downloadDiagramPDF() {
+        const element = document.getElementById('diagramContainer');
+        if (!element || element.innerHTML.includes('Silakan pilih')) {
+            showMessage("Tidak ada diagram untuk diunduh. Buat diagram terlebih dahulu.", "warning", "tableMessage");
+            return;
+        }
+        
+        showLoader(true, "Menyiapkan PDF...");
+        
+        const opt = {
+            margin: [0.5, 0.5, 0.5, 0.5],
+            filename: 'family_tree.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, logging: false },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+        };
+        
+        html2pdf().set(opt).from(element).save().then(() => {
+            showLoader(false);
+            showMessage("PDF berhasil diunduh", "success", "tableMessage");
+        }).catch(err => {
+            showLoader(false);
+            showMessage("Gagal membuat PDF: " + err, "error", "tableMessage");
+        });
+    }
+
+    // Download sebagai Excel
+    function downloadDiagramExcel() {
+        if (!globalData || globalData.length === 0) {
+            showMessage("Tidak ada data untuk diekspor", "warning", "tableMessage");
+            return;
+        }
+        
+        showLoader(true, "Menyiapkan Excel...");
+        
+        try {
+            // Siapkan data untuk Excel
+            const excelData = globalData.map(item => ({
+                'ID': item.id,
+                'Nama': item.nama,
+                'Jenis Kelamin': item.jk,
+                'Tanggal Lahir': item.tglLahir ? new Date(item.tglLahir).toLocaleDateString('id-ID') : '-',
+                'Status Kawin': item.statusKawin,
+                'Nama Pasangan': item.namaPasangan,
+                'Status Keluarga': item.statusKeluarga,
+                'Ayah': item.ayah,
+                'Ibu': item.ibu,
+                'Alamat': item.alamat,
+                'Kota': item.kota
+            }));
+            
+            const ws = XLSX.utils.json_to_sheet(excelData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Data Keluarga");
+            XLSX.writeFile(wb, "data_keluarga.xlsx");
+            
+            showLoader(false);
+            showMessage("File Excel berhasil diunduh", "success", "tableMessage");
+        } catch (error) {
+            showLoader(false);
+            showMessage("Gagal membuat Excel: " + error.message, "error", "tableMessage");
+        }
+    }
+
+
     /***********************************
     * Fungsi Untuk logout dari aplikasi
     ************************************/
