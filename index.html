@@ -1005,9 +1005,14 @@ function openDiagram() {
         const ayahSet = new Set();
         if (globalData && globalData.length > 0) {
             globalData.forEach(item => {
-                // Ambil dari field "ayah" yang terisi
                 if (item.ayah && item.ayah.trim() !== '') {
                     ayahSet.add(item.ayah.trim());
+                }
+            });
+            // JUGA tambahkan nama-nama yang memiliki pasangan (sebagai kepala keluarga)
+            globalData.forEach(item => {
+                if (item.nama && item.nama.trim() !== '' && (item.statusKeluarga === 'Suami' || item.statusKeluarga === 'Kepala Keluarga')) {
+                    ayahSet.add(item.nama.trim());
                 }
             });
         }
@@ -1142,19 +1147,51 @@ function getFotoForDiagram(item) {
 }
 
 // Membangun struktur tree berdasarkan Nama Ayah (case insensitive & flexible)
-// Membangun struktur tree berdasarkan Nama Ayah
+// Membangun struktur tree berdasarkan Nama Ayah (case insensitive & partial match)
 function buildFamilyTreeByAyah(ayahName) {
     if (!ayahName) return null;
 
     console.log("Mencari ayah dengan nama:", ayahName);
     
-    // Cari data ayah - cocokkan persis dengan field nama
+    // Fungsi normalisasi untuk membandingkan
+    const normalize = (str) => {
+        if (!str) return '';
+        return str.toString().toLowerCase().trim().replace(/\s+/g, ' ');
+    };
+    
+    const normalizedSearch = normalize(ayahName);
+    
+    // Cari data ayah - cocokkan dengan flexibel
     let ayahData = null;
     for (let item of globalData) {
-        if (item.nama === ayahName) {
+        const normalizedNama = normalize(item.nama);
+        // Coba berbagai metode pencocokan
+        if (normalizedNama === normalizedSearch ||
+            normalizedNama.includes(normalizedSearch) ||
+            normalizedSearch.includes(normalizedNama)) {
             ayahData = item;
-            console.log("Ayah ditemukan:", ayahData.nama);
+            console.log("Ayah ditemukan:", ayahData.nama, "dengan ID:", ayahData.id);
             break;
+        }
+    }
+    
+    // Jika tidak ditemukan, coba cari di field ayah dari data lain
+    if (!ayahData) {
+        for (let item of globalData) {
+            const normalizedAyah = normalize(item.ayah);
+            if (normalizedAyah === normalizedSearch ||
+                normalizedAyah.includes(normalizedSearch)) {
+                // Ambil data berdasarkan nama ayah yang ditemukan di field ayah
+                const foundAyahName = item.ayah;
+                for (let person of globalData) {
+                    if (normalize(person.nama) === normalize(foundAyahName)) {
+                        ayahData = person;
+                        console.log("Ayah ditemukan melalui field ayah:", ayahData.nama);
+                        break;
+                    }
+                }
+                if (ayahData) break;
+            }
         }
     }
     
@@ -1166,8 +1203,9 @@ function buildFamilyTreeByAyah(ayahName) {
     // Cari pasangan ayah (istri)
     let spouse = null;
     if (ayahData.namaPasangan && ayahData.namaPasangan.trim() !== '') {
+        const normalizedSpouse = normalize(ayahData.namaPasangan);
         for (let item of globalData) {
-            if (item.nama === ayahData.namaPasangan && item.id !== ayahData.id) {
+            if (normalize(item.nama) === normalizedSpouse && item.id !== ayahData.id) {
                 spouse = item;
                 console.log("Pasangan ditemukan:", spouse.nama);
                 break;
@@ -1178,7 +1216,7 @@ function buildFamilyTreeByAyah(ayahName) {
     // Cari semua anak dari ayah ini - berdasarkan field ayah
     const anakList = [];
     for (let item of globalData) {
-        if (item.ayah === ayahName && item.id !== ayahData.id) {
+        if (normalize(item.ayah) === normalize(ayahData.nama) && item.id !== ayahData.id) {
             anakList.push(item);
             console.log("Anak ditemukan:", item.nama);
         }
@@ -1190,7 +1228,7 @@ function buildFamilyTreeByAyah(ayahName) {
         let anakSpouse = null;
         if (anak.namaPasangan && anak.namaPasangan.trim() !== '') {
             for (let item of globalData) {
-                if (item.nama === anak.namaPasangan && item.id !== anak.id) {
+                if (normalize(item.nama) === normalize(anak.namaPasangan) && item.id !== anak.id) {
                     anakSpouse = item;
                     break;
                 }
@@ -1200,7 +1238,8 @@ function buildFamilyTreeByAyah(ayahName) {
         // Cari cucu dari anak ini
         const cucuList = [];
         for (let item of globalData) {
-            if ((item.ayah === anak.nama || item.ibu === anak.nama) && item.id !== anak.id) {
+            if ((normalize(item.ayah) === normalize(anak.nama) || normalize(item.ibu) === normalize(anak.nama)) && 
+                item.id !== anak.id) {
                 cucuList.push(item);
                 console.log("Cucu ditemukan untuk", anak.nama, ":", item.nama);
             }
@@ -1210,7 +1249,7 @@ function buildFamilyTreeByAyah(ayahName) {
             let cucuSpouse = null;
             if (cucu.namaPasangan && cucu.namaPasangan.trim() !== '') {
                 for (let item of globalData) {
-                    if (item.nama === cucu.namaPasangan && item.id !== cucu.id) {
+                    if (normalize(item.nama) === normalize(cucu.namaPasangan) && item.id !== cucu.id) {
                         cucuSpouse = item;
                         break;
                     }
@@ -1230,13 +1269,13 @@ function buildFamilyTreeByAyah(ayahName) {
         };
     });
 
-    // Node root (ayah) dengan pasangan dan anak-anak
     return {
         ...ayahData,
         spouse: spouse,
         children: anakNodes
     };
 }
+
 
 // Render tree ke HTML: pasangan selevel, anak di bawah, cucu di bawah anak
 function renderTreeDiagram(node) {
