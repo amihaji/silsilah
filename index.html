@@ -992,124 +992,6 @@
      ***************************************/
 
 // Buka modal diagram (dinamis - sama seperti viewDetail)
-// Buka modal diagram (dinamis - sama seperti viewDetail)
-function openDiagram() {
-    try {
-        // Hapus modal dinamis jika sudah ada sebelumnya
-        const existingModal = document.getElementById('dynamicDiagramModal');
-        if (existingModal) {
-            existingModal.remove();
-        }
-        
-        // Di dalam fungsi openDiagram(), ganti bagian yang membuat ayahSet
-        // Ambil daftar unik Nama Ayah dari field "ayah" di database (yang benar-benar seorang ayah)
-        const ayahSet = new Set();
-        if (globalData && globalData.length > 0) {
-            globalData.forEach(item => {
-                // Hanya ambil nama yang muncul sebagai "ayah" di data lain
-                if (item.ayah && item.ayah.trim() !== '') {
-                    ayahSet.add(item.ayah.trim());
-                }
-            });
-        }
-        
-        // Konversi ke array dan urutkan
-        const ayahList = Array.from(ayahSet).sort();
-        
-        // Isi dropdown options dari daftar Ayah
-        let dropdownOptions = '<option value="">-- Pilih Keluarga (Nama Ayah) --</option>';
-        ayahList.forEach(ayah => {
-            dropdownOptions += `<option value="${ayah.replace(/"/g, '&quot;')}">${ayah}</option>`;
-        });
-        
-        // Jika tidak ada data ayah, beri pesan
-        if (ayahList.length === 0) {
-            dropdownOptions = '<option value="">-- Tidak ada data ayah --</option>';
-        }
-        
-        // Buat modal diagram dinamis
-        const modalHtml = `
-            <div class="modal fade" id="dynamicDiagramModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
-                <div class="modal-dialog modal-xl modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-primary text-white">
-                            <h5 class="modal-title">Buat Diagram Pohon</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row mb-3">
-                                <div class="col-md-12 d-flex gap-2 align-items-center flex-wrap">
-                                    <select id="pilihNamaDiagram" class="form-select" style="flex:2; min-width:250px;">
-                                        ${dropdownOptions}
-                                    </select>
-                                    <button class="btn btn-primary" id="btnBuatDiagram" title="Buat Diagram">
-                                        <i class="fas fa-sitemap"></i> Diagram
-                                    </button>
-                                    <button class="btn btn-success" id="btnDownloadPdf" title="Download PDF">
-                                        <i class="fas fa-file-pdf"></i> PDF
-                                    </button>
-                                    <button class="btn btn-info" id="btnDownloadExcel" title="Download Excel">
-                                        <i class="fas fa-file-excel"></i> Excel
-                                    </button>
-                                </div>
-                            </div>
-                            <div id="diagramContainer" style="min-height: 450px; max-height: 550px; overflow: auto; padding: 15px; background: #f5f5f5; border-radius: 8px;">
-                                <div class="text-center text-muted p-5">Silakan pilih keluarga (Nama Ayah) dan klik tombol Diagram</div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Tambahkan ke body
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-        // Tampilkan modal
-        const modalElement = document.getElementById('dynamicDiagramModal');
-        const modal = new bootstrap.Modal(modalElement, {
-            backdrop: true,
-            keyboard: true
-        });
-        modal.show();
-        
-        // Hapus modal setelah ditutup
-        modalElement.addEventListener('hidden.bs.modal', function() {
-            modalElement.remove();
-        });
-        
-        // Event listener untuk tombol Diagram
-        const btnBuat = document.getElementById('btnBuatDiagram');
-        if (btnBuat) {
-            btnBuat.onclick = function() {
-                generateDiagram();
-            };
-        }
-        
-        // Event listener untuk tombol PDF
-        const btnPdf = document.getElementById('btnDownloadPdf');
-        if (btnPdf) {
-            btnPdf.onclick = function() {
-                downloadDiagramPDF();
-            };
-        }
-        
-        // Event listener untuk tombol Excel
-        const btnExcel = document.getElementById('btnDownloadExcel');
-        if (btnExcel) {
-            btnExcel.onclick = function() {
-                downloadDiagramExcel();
-            };
-        }
-        
-    } catch (e) {
-        console.error("Error openDiagram:", e);
-        showMessage("Gagal membuka diagram: " + e.message, "error", "tableMessage");
-    }
-}
 
    // Fungsi untuk mendapatkan inisial dari nama
 function getInitials(nama) {
@@ -1253,43 +1135,143 @@ function renderTreeDiagram(node) {
     `;
 }
 
-    // Fungsi untuk membangun tree berdasarkan Nama Ayah (langsung dari dropdown)
+// Buka modal diagram (dinamis - sama seperti viewDetail)
+function openDiagram() {
+    try {
+        // Hapus modal dinamis jika sudah ada sebelumnya
+        const existingModal = document.getElementById('dynamicDiagramModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Ambil daftar unik Nama Ayah dari field "ayah" di database (Langsung dari nilai yang tersimpan)
+        const ayahSet = new Set();
+        if (globalData && globalData.length > 0) {
+            globalData.forEach(item => {
+                // Ambil dari field "ayah" yang terisi di setiap data
+                if (item.ayah && item.ayah.trim() !== '') {
+                    ayahSet.add(item.ayah.trim()); // Tambahkan persis seperti di database
+                }
+            });
+        }
+        
+        // Konversi ke array dan urutkan
+        const ayahList = Array.from(ayahSet).sort();
+        
+        // Isi dropdown options dari daftar Ayah
+        let dropdownOptions = '<option value="">-- Pilih Keluarga (Nama Ayah) --</option>';
+        ayahList.forEach(ayah => {
+            // Gunakan nilai asli dari database (misal: "abdulhaji dg lau")
+            dropdownOptions += `<option value="${ayah.replace(/"/g, '&quot;')}">${ayah}</option>`;
+        });
+        
+        // Jika tidak ada data ayah, beri pesan
+        if (ayahList.length === 0) {
+            dropdownOptions = '<option value="">-- Tidak ada data ayah --</option>';
+        }
+        
+        // Buat modal diagram dinamis (sama seperti sebelumnya)
+        const modalHtml = `
+            <div class="modal fade" id="dynamicDiagramModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">Buat Diagram Pohon</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-3">
+                                <div class="col-md-12 d-flex gap-2 align-items-center flex-wrap">
+                                    <select id="pilihNamaDiagram" class="form-select" style="flex:2; min-width:250px;">
+                                        ${dropdownOptions}
+                                    </select>
+                                    <button class="btn btn-primary" id="btnBuatDiagram" title="Buat Diagram">
+                                        <i class="fas fa-sitemap"></i> Diagram
+                                    </button>
+                                    <button class="btn btn-success" id="btnDownloadPdf" title="Download PDF">
+                                        <i class="fas fa-file-pdf"></i> PDF
+                                    </button>
+                                    <button class="btn btn-info" id="btnDownloadExcel" title="Download Excel">
+                                        <i class="fas fa-file-excel"></i> Excel
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="diagramContainer" style="min-height: 450px; max-height: 550px; overflow: auto; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+                                <div class="text-center text-muted p-5">Silakan pilih keluarga (Nama Ayah) dan klik tombol Diagram</div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        const modalElement = document.getElementById('dynamicDiagramModal');
+        const modal = new bootstrap.Modal(modalElement, {
+            backdrop: true,
+            keyboard: true
+        });
+        modal.show();
+        
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            modalElement.remove();
+        });
+        
+        const btnBuat = document.getElementById('btnBuatDiagram');
+        if (btnBuat) {
+            btnBuat.onclick = function() {
+                generateDiagram();
+            };
+        }
+        
+        const btnPdf = document.getElementById('btnDownloadPdf');
+        if (btnPdf) {
+            btnPdf.onclick = function() {
+                downloadDiagramPDF();
+            };
+        }
+        
+        const btnExcel = document.getElementById('btnDownloadExcel');
+        if (btnExcel) {
+            btnExcel.onclick = function() {
+                downloadDiagramExcel();
+            };
+        }
+        
+    } catch (e) {
+        console.error("Error openDiagram:", e);
+        showMessage("Gagal membuka diagram: " + e.message, "error", "tableMessage");
+    }
+}
+
+// Membangun struktur tree berdasarkan Nama Ayah (cocokkan persis dengan nilai di database)
 function buildFamilyTreeByAyah(ayahName) {
     if (!ayahName) return null;
 
     console.log("Mencari data untuk ayah:", ayahName);
     
-    // Normalisasi: hilangkan spasi ganda, trim, dan kecilkan semua huruf
-    const normalize = (str) => (str || "").toLowerCase().trim().replace(/\s+/g, " ");
-    const targetName = normalize(ayahName);
-    
-    // 1. Cari data orang yang menjadi ayah (bisa dari kolom 'nama' atau 'ayah')
+    // Langsung cari data yang memiliki nama persis sama dengan ayahName
     let ayahData = null;
-    
-    // Cari berdasarkan kolom 'nama' (dengan normalisasi)
     for (let item of globalData) {
-        if (normalize(item.nama) === targetName) {
+        if (item.nama === ayahName) {
             ayahData = item;
+            console.log("Ayah ditemukan (nama persis):", ayahData.nama);
             break;
         }
     }
     
-    // Jika tidak ketemu, cari dari referensi 'ayah' di data lain (ambil nama ayah yang paling umum)
+    // Jika tidak ditemukan, coba case insensitive
     if (!ayahData) {
-        let possibleName = null;
+        const lowerSearch = ayahName.toLowerCase();
         for (let item of globalData) {
-            if (normalize(item.ayah) === targetName) {
-                possibleName = item.ayah; // Simpan nama asli ayah (format asli dari database)
+            if (item.nama && item.nama.toLowerCase() === lowerSearch) {
+                ayahData = item;
+                console.log("Ayah ditemukan (case insensitive):", ayahData.nama);
                 break;
-            }
-        }
-        if (possibleName) {
-            // Cari lagi berdasarkan nama asli ayah
-            for (let item of globalData) {
-                if (normalize(item.nama) === normalize(possibleName)) {
-                    ayahData = item;
-                    break;
-                }
             }
         }
     }
@@ -1299,57 +1281,50 @@ function buildFamilyTreeByAyah(ayahName) {
         return null;
     }
 
-    console.log("Ayah ditemukan:", ayahData.nama, ayahData.id);
-    
-    // 2. Cari pasangan (spouse) dari ayah (berdasarkan namaPasangan)
+    // Cari pasangan (spouse) dari ayah
     let spouse = null;
-    if (ayahData.namaPasangan) {
-        const spouseNameNorm = normalize(ayahData.namaPasangan);
+    if (ayahData.namaPasangan && ayahData.namaPasangan.trim() !== '') {
         for (let item of globalData) {
-            if (normalize(item.nama) === spouseNameNorm && item.id !== ayahData.id) {
+            if (item.nama === ayahData.namaPasangan && item.id !== ayahData.id) {
                 spouse = item;
                 break;
             }
         }
     }
     
-    // 3. Cari semua anak (yang memiliki ayah ini)
+    // Cari semua anak (yang memiliki ayah ini) - cocokkan persis
     const anakList = [];
     for (let item of globalData) {
-        if (normalize(item.ayah) === targetName && item.id !== ayahData.id) {
+        if (item.ayah === ayahName && item.id !== ayahData.id) {
             anakList.push(item);
+            console.log("Anak ditemukan:", item.nama);
         }
     }
     
-    // 4. Bangun struktur untuk anak dan cucu
+    // Bangun struktur untuk anak dan cucu (sama seperti kode sebelumnya)
     const anakNodes = anakList.map(anak => {
-        // Pasangan anak
         let anakSpouse = null;
-        if (anak.namaPasangan) {
-            const spouseNameNorm = normalize(anak.namaPasangan);
+        if (anak.namaPasangan && anak.namaPasangan.trim() !== '') {
             for (let item of globalData) {
-                if (normalize(item.nama) === spouseNameNorm && item.id !== anak.id) {
+                if (item.nama === anak.namaPasangan && item.id !== anak.id) {
                     anakSpouse = item;
                     break;
                 }
             }
         }
         
-        // Cucu (anak dari anak)
         const cucuList = [];
         for (let item of globalData) {
-            if ((normalize(item.ayah) === normalize(anak.nama) || normalize(item.ibu) === normalize(anak.nama)) &&
-                item.id !== anak.id) {
+            if ((item.ayah === anak.nama || item.ibu === anak.nama) && item.id !== anak.id) {
                 cucuList.push(item);
             }
         }
         
         const cucuNodes = cucuList.map(cucu => {
             let cucuSpouse = null;
-            if (cucu.namaPasangan) {
-                const spouseNorm = normalize(cucu.namaPasangan);
+            if (cucu.namaPasangan && cucu.namaPasangan.trim() !== '') {
                 for (let item of globalData) {
-                    if (normalize(item.nama) === spouseNorm && item.id !== cucu.id) {
+                    if (item.nama === cucu.namaPasangan && item.id !== cucu.id) {
                         cucuSpouse = item;
                         break;
                     }
