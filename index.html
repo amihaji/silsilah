@@ -992,6 +992,7 @@
      ***************************************/
 
 // Buka modal diagram (dinamis - sama seperti viewDetail)
+// Buka modal diagram (dinamis - sama seperti viewDetail)
 function openDiagram() {
     try {
         // Hapus modal dinamis jika sudah ada sebelumnya
@@ -1000,14 +1001,13 @@ function openDiagram() {
             existingModal.remove();
         }
         
-        // Ambil daftar unik Nama Ayah (bersihkan spasi dan case)
+        // Ambil daftar unik Nama Ayah dari field "ayah" di database
         const ayahSet = new Set();
         if (globalData && globalData.length > 0) {
             globalData.forEach(item => {
+                // Ambil dari field "ayah" yang terisi
                 if (item.ayah && item.ayah.trim() !== '') {
-                    // Bersihkan nama ayah
-                    const cleanAyah = item.ayah.trim().replace(/\s+/g, ' ');
-                    ayahSet.add(cleanAyah);
+                    ayahSet.add(item.ayah.trim());
                 }
             });
         }
@@ -1015,18 +1015,15 @@ function openDiagram() {
         // Konversi ke array dan urutkan
         const ayahList = Array.from(ayahSet).sort();
         
-        // Isi dropdown options dari daftar Ayah yang sudah dibersihkan
+        // Isi dropdown options dari daftar Ayah
         let dropdownOptions = '<option value="">-- Pilih Keluarga (Nama Ayah) --</option>';
         ayahList.forEach(ayah => {
             dropdownOptions += `<option value="${ayah.replace(/"/g, '&quot;')}">${ayah}</option>`;
         });
         
-        // Jika tidak ada data ayah, tambahkan opsi berdasarkan nama
-        if (ayahList.length === 0 && globalData && globalData.length > 0) {
-            dropdownOptions = '<option value="">-- Pilih Nama --</option>';
-            globalData.forEach(item => {
-                dropdownOptions += `<option value="${item.id}">${item.nama}</option>`;
-            });
+        // Jika tidak ada data ayah, beri pesan
+        if (ayahList.length === 0) {
+            dropdownOptions = '<option value="">-- Tidak ada data ayah --</option>';
         }
         
         // Buat modal diagram dinamis
@@ -1145,25 +1142,18 @@ function getFotoForDiagram(item) {
 }
 
 // Membangun struktur tree berdasarkan Nama Ayah (case insensitive & flexible)
+// Membangun struktur tree berdasarkan Nama Ayah
 function buildFamilyTreeByAyah(ayahName) {
     if (!ayahName) return null;
 
-    // Fungsi normalisasi yang lebih fleksibel
-    const normalize = (str) => {
-        if (!str) return '';
-        return str.toString().toLowerCase().trim().replace(/\s+/g, ' ');
-    };
+    console.log("Mencari ayah dengan nama:", ayahName);
     
-    const normalizedAyah = normalize(ayahName);
-    
-    // Cari data ayah - lebih fleksibel dengan includes
+    // Cari data ayah - cocokkan persis dengan field nama
     let ayahData = null;
     for (let item of globalData) {
-        const normalizedNama = normalize(item.nama);
-        if (normalizedNama === normalizedAyah || 
-            normalizedNama.includes(normalizedAyah) || 
-            normalizedAyah.includes(normalizedNama)) {
+        if (item.nama === ayahName) {
             ayahData = item;
+            console.log("Ayah ditemukan:", ayahData.nama);
             break;
         }
     }
@@ -1176,21 +1166,21 @@ function buildFamilyTreeByAyah(ayahName) {
     // Cari pasangan ayah (istri)
     let spouse = null;
     if (ayahData.namaPasangan && ayahData.namaPasangan.trim() !== '') {
-        const normalizedSpouse = normalize(ayahData.namaPasangan);
         for (let item of globalData) {
-            if (normalize(item.nama) === normalizedSpouse && item.id !== ayahData.id) {
+            if (item.nama === ayahData.namaPasangan && item.id !== ayahData.id) {
                 spouse = item;
+                console.log("Pasangan ditemukan:", spouse.nama);
                 break;
             }
         }
     }
 
-    // Cari semua anak dari ayah ini - berdasarkan ayah field
+    // Cari semua anak dari ayah ini - berdasarkan field ayah
     const anakList = [];
     for (let item of globalData) {
-        const normalizedAyahField = normalize(item.ayah);
-        if (normalizedAyahField === normalizedAyah && item.id !== ayahData.id) {
+        if (item.ayah === ayahName && item.id !== ayahData.id) {
             anakList.push(item);
+            console.log("Anak ditemukan:", item.nama);
         }
     }
 
@@ -1199,9 +1189,8 @@ function buildFamilyTreeByAyah(ayahName) {
         // Cari pasangan anak
         let anakSpouse = null;
         if (anak.namaPasangan && anak.namaPasangan.trim() !== '') {
-            const normalizedAnakSpouse = normalize(anak.namaPasangan);
             for (let item of globalData) {
-                if (normalize(item.nama) === normalizedAnakSpouse && item.id !== anak.id) {
+                if (item.nama === anak.namaPasangan && item.id !== anak.id) {
                     anakSpouse = item;
                     break;
                 }
@@ -1211,21 +1200,17 @@ function buildFamilyTreeByAyah(ayahName) {
         // Cari cucu dari anak ini
         const cucuList = [];
         for (let item of globalData) {
-            const normalizedAyahAnak = normalize(item.ayah);
-            const normalizedIbuAnak = normalize(item.ibu);
-            const normalizedNamaAnak = normalize(anak.nama);
-            if ((normalizedAyahAnak === normalizedNamaAnak || normalizedIbuAnak === normalizedNamaAnak) && 
-                item.id !== anak.id) {
+            if ((item.ayah === anak.nama || item.ibu === anak.nama) && item.id !== anak.id) {
                 cucuList.push(item);
+                console.log("Cucu ditemukan untuk", anak.nama, ":", item.nama);
             }
         }
 
         const cucuNodes = cucuList.map(cucu => {
             let cucuSpouse = null;
             if (cucu.namaPasangan && cucu.namaPasangan.trim() !== '') {
-                const normalizedCucuSpouse = normalize(cucu.namaPasangan);
                 for (let item of globalData) {
-                    if (normalize(item.nama) === normalizedCucuSpouse && item.id !== cucu.id) {
+                    if (item.nama === cucu.namaPasangan && item.id !== cucu.id) {
                         cucuSpouse = item;
                         break;
                     }
