@@ -1142,130 +1142,6 @@ function getFotoForDiagram(item) {
     }
 }
 
-// Membangun struktur tree berdasarkan Nama Ayah (case insensitive, tanpa partial match)
-function buildFamilyTreeByAyah(ayahName) {
-    if (!ayahName) return null;
-
-    console.log("Mencari ayah dengan nama:", ayahName);
-    
-    // Fungsi normalisasi untuk membandingkan
-    const normalize = (str) => {
-        if (!str) return '';
-        return str.toString().toLowerCase().trim().replace(/\s+/g, ' ');
-    };
-    
-    const normalizedSearch = normalize(ayahName);
-    
-    // Cari data ayah - hanya cocokkan dengan NAMA PERSIS (bukan includes)
-    let ayahData = null;
-    for (let item of globalData) {
-        const normalizedNama = normalize(item.nama);
-        if (normalizedNama === normalizedSearch) {
-            ayahData = item;
-            console.log("Ayah ditemukan (nama persis):", ayahData.nama, "dengan ID:", ayahData.id);
-            break;
-        }
-    }
-    
-    // Jika tidak ditemukan, coba cari berdasarkan field "ayah" dari data lain (untuk kasus nama ayah tidak ada di kolom nama)
-    if (!ayahData) {
-        for (let item of globalData) {
-            const normalizedAyah = normalize(item.ayah);
-            if (normalizedAyah === normalizedSearch) {
-                // Ambil data berdasarkan nama ayah yang ditemukan di field ayah
-                const foundAyahName = item.ayah;
-                for (let person of globalData) {
-                    if (normalize(person.nama) === normalize(foundAyahName)) {
-                        ayahData = person;
-                        console.log("Ayah ditemukan melalui field ayah (nama persis):", ayahData.nama);
-                        break;
-                    }
-                }
-                if (ayahData) break;
-            }
-        }
-    }
-    
-    if (!ayahData) {
-        console.log("Ayah tidak ditemukan untuk:", ayahName);
-        return null;
-    }
-
-    // Cari pasangan ayah (istri)
-    let spouse = null;
-    if (ayahData.namaPasangan && ayahData.namaPasangan.trim() !== '') {
-        const normalizedSpouse = normalize(ayahData.namaPasangan);
-        for (let item of globalData) {
-            if (normalize(item.nama) === normalizedSpouse && item.id !== ayahData.id) {
-                spouse = item;
-                console.log("Pasangan ditemukan:", spouse.nama);
-                break;
-            }
-        }
-    }
-
-    // Cari semua anak dari ayah ini - berdasarkan field ayah
-    const anakList = [];
-    for (let item of globalData) {
-        if (normalize(item.ayah) === normalize(ayahData.nama) && item.id !== ayahData.id) {
-            anakList.push(item);
-            console.log("Anak ditemukan:", item.nama);
-        }
-    }
-
-    // Bangun node untuk setiap anak
-    const anakNodes = anakList.map(anak => {
-        // Cari pasangan anak
-        let anakSpouse = null;
-        if (anak.namaPasangan && anak.namaPasangan.trim() !== '') {
-            for (let item of globalData) {
-                if (normalize(item.nama) === normalize(anak.namaPasangan) && item.id !== anak.id) {
-                    anakSpouse = item;
-                    break;
-                }
-            }
-        }
-
-        // Cari cucu dari anak ini
-        const cucuList = [];
-        for (let item of globalData) {
-            if ((normalize(item.ayah) === normalize(anak.nama) || normalize(item.ibu) === normalize(anak.nama)) && 
-                item.id !== anak.id) {
-                cucuList.push(item);
-                console.log("Cucu ditemukan untuk", anak.nama, ":", item.nama);
-            }
-        }
-
-        const cucuNodes = cucuList.map(cucu => {
-            let cucuSpouse = null;
-            if (cucu.namaPasangan && cucu.namaPasangan.trim() !== '') {
-                for (let item of globalData) {
-                    if (normalize(item.nama) === normalize(cucu.namaPasangan) && item.id !== cucu.id) {
-                        cucuSpouse = item;
-                        break;
-                    }
-                }
-            }
-            return {
-                ...cucu,
-                spouse: cucuSpouse,
-                children: []
-            };
-        });
-
-        return {
-            ...anak,
-            spouse: anakSpouse,
-            children: cucuNodes
-        };
-    });
-
-    return {
-        ...ayahData,
-        spouse: spouse,
-        children: anakNodes
-    };
-}
 
 // Render tree ke HTML: pasangan selevel, anak di bawah, cucu di bawah anak
 function renderTreeDiagram(node) {
@@ -1377,15 +1253,130 @@ function renderTreeDiagram(node) {
     `;
 }
 
-    // Generate Diagram berdasarkan keluarga (case insensitive)
-    function generateDiagram() {
-    const selectElement = document.getElementById('pilihNamaDiagram');
-    if (!selectElement) {
+    // Fungsi untuk membangun tree berdasarkan Nama Ayah (langsung dari dropdown)
+function buildFamilyTreeByAyah(ayahName) {
+    if (!ayahName) return null;
+
+    console.log("Mencari data untuk ayah:", ayahName);
+    
+    // Normalisasi: hilangkan spasi ganda, trim, dan kecilkan semua huruf
+    const normalize = (str) => (str || "").toLowerCase().trim().replace(/\s+/g, " ");
+    const targetName = normalize(ayahName);
+    
+    // 1. Cari data orang yang menjadi ayah (bisa dari kolom 'nama' atau 'ayah')
+    let ayahData = null;
+    
+    // Cari berdasarkan kolom 'nama' (dengan normalisasi)
+    for (let item of globalData) {
+        if (normalize(item.nama) === targetName) {
+            ayahData = item;
+            break;
+        }
+    }
+    
+    // Jika tidak ketemu, cari dari referensi 'ayah' di data lain (ambil nama ayah yang paling umum)
+    if (!ayahData) {
+        let possibleName = null;
+        for (let item of globalData) {
+            if (normalize(item.ayah) === targetName) {
+                possibleName = item.ayah; // Simpan nama asli ayah (format asli dari database)
+                break;
+            }
+        }
+        if (possibleName) {
+            // Cari lagi berdasarkan nama asli ayah
+            for (let item of globalData) {
+                if (normalize(item.nama) === normalize(possibleName)) {
+                    ayahData = item;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!ayahData) {
+        console.error(`Ayah dengan nama "${ayahName}" tidak ditemukan.`);
+        return null;
+    }
+
+    console.log("Ayah ditemukan:", ayahData.nama, ayahData.id);
+    
+    // 2. Cari pasangan (spouse) dari ayah (berdasarkan namaPasangan)
+    let spouse = null;
+    if (ayahData.namaPasangan) {
+        const spouseNameNorm = normalize(ayahData.namaPasangan);
+        for (let item of globalData) {
+            if (normalize(item.nama) === spouseNameNorm && item.id !== ayahData.id) {
+                spouse = item;
+                break;
+            }
+        }
+    }
+    
+    // 3. Cari semua anak (yang memiliki ayah ini)
+    const anakList = [];
+    for (let item of globalData) {
+        if (normalize(item.ayah) === targetName && item.id !== ayahData.id) {
+            anakList.push(item);
+        }
+    }
+    
+    // 4. Bangun struktur untuk anak dan cucu
+    const anakNodes = anakList.map(anak => {
+        // Pasangan anak
+        let anakSpouse = null;
+        if (anak.namaPasangan) {
+            const spouseNameNorm = normalize(anak.namaPasangan);
+            for (let item of globalData) {
+                if (normalize(item.nama) === spouseNameNorm && item.id !== anak.id) {
+                    anakSpouse = item;
+                    break;
+                }
+            }
+        }
+        
+        // Cucu (anak dari anak)
+        const cucuList = [];
+        for (let item of globalData) {
+            if ((normalize(item.ayah) === normalize(anak.nama) || normalize(item.ibu) === normalize(anak.nama)) &&
+                item.id !== anak.id) {
+                cucuList.push(item);
+            }
+        }
+        
+        const cucuNodes = cucuList.map(cucu => {
+            let cucuSpouse = null;
+            if (cucu.namaPasangan) {
+                const spouseNorm = normalize(cucu.namaPasangan);
+                for (let item of globalData) {
+                    if (normalize(item.nama) === spouseNorm && item.id !== cucu.id) {
+                        cucuSpouse = item;
+                        break;
+                    }
+                }
+            }
+            return { ...cucu, spouse: cucuSpouse, children: [] };
+        });
+        
+        return { ...anak, spouse: anakSpouse, children: cucuNodes };
+    });
+    
+    return {
+        ...ayahData,
+        spouse: spouse,
+        children: anakNodes
+    };
+}
+
+// Generate Diagram (memanggil buildFamilyTreeByAyah)
+function generateDiagram() {
+    const selectEl = document.getElementById('pilihNamaDiagram');
+    if (!selectEl) {
         showMessage("Error: Dropdown tidak ditemukan", "error", "tableMessage");
         return;
     }
     
-    const selectedValue = selectElement.value;
+    const selectedValue = selectEl.value;
     if (!selectedValue) {
         showMessage("Silakan pilih keluarga (Nama Ayah) terlebih dahulu!", "warning", "tableMessage");
         return;
@@ -1394,9 +1385,7 @@ function renderTreeDiagram(node) {
     showLoader(true, "Membuat diagram pohon...");
     
     try {
-        // Langsung gunakan nilai yang dipilih sebagai ayahName
         const rootNode = buildFamilyTreeByAyah(selectedValue);
-        
         const container = document.getElementById('diagramContainer');
         
         if (container) {
@@ -1411,17 +1400,21 @@ function renderTreeDiagram(node) {
                 container.innerHTML = treeHtml;
                 showMessage("Diagram berhasil dibuat", "success", "tableMessage");
             } else {
-                container.innerHTML = '<div class="text-center text-danger p-5">Tidak dapat membangun diagram pohon untuk keluarga yang dipilih. Pastikan data ayah sudah terisi dengan benar.</div>';
-                console.log("Gagal build tree untuk:", selectedValue);
+                container.innerHTML = `<div class="text-center text-danger p-5">
+                    <i class="fas fa-exclamation-triangle"></i> Tidak dapat membangun diagram pohon untuk keluarga yang dipilih.<br>
+                    Pastikan data dengan nama "${selectedValue}" tersedia sebagai seorang Ayah di database.
+                </div>`;
+                console.warn("Gagal build tree untuk:", selectedValue);
             }
         }
-    } catch (error) {
-        console.error("Error generateDiagram:", error);
-        showMessage("Gagal membuat diagram: " + error.message, "error", "tableMessage");
+    } catch (err) {
+        console.error("Error generateDiagram:", err);
+        showMessage("Gagal membuat diagram: " + err.message, "error", "tableMessage");
     } finally {
         showLoader(false);
     }
 }
+
 
     // Download sebagai PDF
     function downloadDiagramPDF() {
