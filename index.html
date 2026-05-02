@@ -1001,18 +1001,14 @@ function openDiagram() {
             existingModal.remove();
         }
         
-        // Ambil daftar unik Nama Ayah dari field "ayah" di database
+        // Di dalam fungsi openDiagram(), ganti bagian yang membuat ayahSet
+        // Ambil daftar unik Nama Ayah dari field "ayah" di database (yang benar-benar seorang ayah)
         const ayahSet = new Set();
         if (globalData && globalData.length > 0) {
             globalData.forEach(item => {
+                // Hanya ambil nama yang muncul sebagai "ayah" di data lain
                 if (item.ayah && item.ayah.trim() !== '') {
                     ayahSet.add(item.ayah.trim());
-                }
-            });
-            // JUGA tambahkan nama-nama yang memiliki pasangan (sebagai kepala keluarga)
-            globalData.forEach(item => {
-                if (item.nama && item.nama.trim() !== '' && (item.statusKeluarga === 'Suami' || item.statusKeluarga === 'Kepala Keluarga')) {
-                    ayahSet.add(item.nama.trim());
                 }
             });
         }
@@ -1146,8 +1142,7 @@ function getFotoForDiagram(item) {
     }
 }
 
-// Membangun struktur tree berdasarkan Nama Ayah (case insensitive & flexible)
-// Membangun struktur tree berdasarkan Nama Ayah (case insensitive & partial match)
+// Membangun struktur tree berdasarkan Nama Ayah (case insensitive, tanpa partial match)
 function buildFamilyTreeByAyah(ayahName) {
     if (!ayahName) return null;
 
@@ -1161,32 +1156,28 @@ function buildFamilyTreeByAyah(ayahName) {
     
     const normalizedSearch = normalize(ayahName);
     
-    // Cari data ayah - cocokkan dengan flexibel
+    // Cari data ayah - hanya cocokkan dengan NAMA PERSIS (bukan includes)
     let ayahData = null;
     for (let item of globalData) {
         const normalizedNama = normalize(item.nama);
-        // Coba berbagai metode pencocokan
-        if (normalizedNama === normalizedSearch ||
-            normalizedNama.includes(normalizedSearch) ||
-            normalizedSearch.includes(normalizedNama)) {
+        if (normalizedNama === normalizedSearch) {
             ayahData = item;
-            console.log("Ayah ditemukan:", ayahData.nama, "dengan ID:", ayahData.id);
+            console.log("Ayah ditemukan (nama persis):", ayahData.nama, "dengan ID:", ayahData.id);
             break;
         }
     }
     
-    // Jika tidak ditemukan, coba cari di field ayah dari data lain
+    // Jika tidak ditemukan, coba cari berdasarkan field "ayah" dari data lain (untuk kasus nama ayah tidak ada di kolom nama)
     if (!ayahData) {
         for (let item of globalData) {
             const normalizedAyah = normalize(item.ayah);
-            if (normalizedAyah === normalizedSearch ||
-                normalizedAyah.includes(normalizedSearch)) {
+            if (normalizedAyah === normalizedSearch) {
                 // Ambil data berdasarkan nama ayah yang ditemukan di field ayah
                 const foundAyahName = item.ayah;
                 for (let person of globalData) {
                     if (normalize(person.nama) === normalize(foundAyahName)) {
                         ayahData = person;
-                        console.log("Ayah ditemukan melalui field ayah:", ayahData.nama);
+                        console.log("Ayah ditemukan melalui field ayah (nama persis):", ayahData.nama);
                         break;
                     }
                 }
@@ -1275,7 +1266,6 @@ function buildFamilyTreeByAyah(ayahName) {
         children: anakNodes
     };
 }
-
 
 // Render tree ke HTML: pasangan selevel, anak di bawah, cucu di bawah anak
 function renderTreeDiagram(node) {
