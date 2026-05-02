@@ -113,200 +113,169 @@
     /* Ganti style foto-thumb */
     .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #023a7a; }
 
-    /* Styling untuk diagram pohon */
-  /* Styling untuk diagram pohon keluarga - versi minimalis */
-.tree-diagram {
-    font-family: 'Segoe UI', sans-serif;
-    padding: 20px;
-    background: transparent;
-    overflow-x: auto;
-}
-
-.tree-root {
-    list-style: none;
-    padding-left: 0;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-}
-
-.tree-children {
-    list-style: none;
-    padding-left: 0;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    flex-wrap: wrap;
-    position: relative;
-}
-
-.tree-diagram li {
-    list-style: none;
-    text-align: center;
-    position: relative;
-    padding: 0 10px;
-}
-
-/* Garis penghubung vertikal dari parent ke children */
-.tree-children {
-    position: relative;
-    margin-top: 20px;
-    padding-top: 20px;
-}
-
-.tree-children::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 2px;
-    height: 20px;
-    background: #aaa;
-}
-
-.tree-children li {
-    position: relative;
-}
-
-.tree-children li::before {
-    content: '';
-    position: absolute;
-    top: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 2px;
-    height: 20px;
-    background: #aaa;
-}
-
-/* Node diagram - tanpa kotak background */
-.diagram-node {
-    text-align: center;
-    margin: 8px;
-    transition: transform 0.2s;
-}
-
-.diagram-node:hover {
-    transform: translateY(-3px);
-}
-
-/* Foto/avatar diagram */
-.diagram-foto {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 2px solid #1A365D;
-    margin-bottom: 5px;
-    background: white;
-}
-
-.diagram-avatar {
-    width: 60px;
-    height: 60px;
-    background-color: #1A365D;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    font-size: 20px;
-    margin: 0 auto 5px auto;
-    border: 2px solid #1A365D;
-}
-
-.diagram-name {
-    font-size: 12px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 2px;
-    word-break: break-word;
-    max-width: 100px;
-}
-
-.diagram-year {
-    font-size: 10px;
-    color: #666;
-    font-weight: normal;
-}
-
-/* Pasangan (spouse) ditampilkan bersebelahan */
-.spouse-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    position: relative;
-}
-
-.spouse-container .diagram-node {
-    margin: 5px;
-}
-
-.spouse-connector {
-    font-size: 14px;
-    color: #999;
-    margin: 0 2px;
-}
-
-/* Container untuk keluarga (orang tua + anak-anak) */
-.family-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.parents-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.children-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    position: relative;
-    padding-top: 15px;
-}
-
-.children-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 2px;
-    height: 15px;
-    background: #aaa;
-}
-
-/* Responsif */
-@media (max-width: 768px) {
-    .diagram-foto, .diagram-avatar {
-        width: 45px;
-        height: 45px;
-        font-size: 16px;
+    /* Styling untuk diagram pohon keluarga - versi minimalis */
+    .tree-diagram {
+        font-family: 'Segoe UI', sans-serif;
+        padding: 20px;
+        background: transparent;
+        overflow-x: auto;
     }
+
+    .tree-root {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+    }
+
+    .tree-diagram li {
+        list-style: none;
+        text-align: center;
+        position: relative;
+    }
+
+    /* Container untuk pasangan (suami & istri selevel) */
+    .couple-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        position: relative;
+    }
+
+    .couple-connector {
+        font-size: 18px;
+        color: #999;
+    }
+
+    /* Container untuk orang tua */
+    .parents-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+
+    /* Container untuk anak-anak (di bawah) */
+    .children-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        gap: 30px;
+        flex-wrap: wrap;
+        position: relative;
+        margin-top: 20px;
+        padding-top: 20px;
+    }
+
+    /* Garis penghubung dari orang tua ke anak-anak */
+    .children-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 20px;
+        background: #aaa;
+    }
+
+    /* Garis vertikal untuk setiap anak */
+    .children-container > li {
+        position: relative;
+    }
+
+    .children-container > li::before {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 20px;
+        background: #aaa;
+    }
+
+    /* Node diagram - tanpa kotak background */
+    .diagram-node {
+        text-align: center;
+        margin: 5px;
+        transition: transform 0.2s;
+    }
+
+    .diagram-node:hover {
+        transform: translateY(-3px);
+    }
+
+    /* Foto/avatar diagram */
+    .diagram-foto {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 2px solid #1A365D;
+        margin-bottom: 5px;
+        background: white;
+    }
+
+    .diagram-avatar {
+        width: 60px;
+        height: 60px;
+        background-color: #1A365D;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 20px;
+        margin: 0 auto 5px auto;
+        border: 2px solid #1A365D;
+    }
+
     .diagram-name {
-        font-size: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 2px;
+        word-break: break-word;
+        max-width: 100px;
     }
+
     .diagram-year {
-        font-size: 8px;
+        font-size: 9px;
+        color: #888;
+        font-weight: normal;
     }
-    .tree-children {
-        gap: 15px;
+
+    /* Container untuk grup keluarga */
+    .family-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
-}  
-  
+
+    /* Responsif */
+    @media (max-width: 768px) {
+        .diagram-foto, .diagram-avatar {
+            width: 45px;
+            height: 45px;
+            font-size: 16px;
+        }
+        .diagram-name {
+            font-size: 9px;
+        }
+        .diagram-year {
+            font-size: 8px;
+        }
+        .children-container {
+            gap: 15px;
+        }
+        .couple-container {
+            gap: 10px;
+        }
+    }  
   </style>
 </head>
 <body>
@@ -1307,7 +1276,7 @@
         return rootNode;
     }
 
-    // Render tree ke HTML dengan pasangan disamping
+    // Render tree ke HTML - Pasangan selevel, anak di bawah
     function renderTreeDiagram(node, level = 0) {
         if (!node) return '';
         
@@ -1315,7 +1284,7 @@
         const fotoHtml = getFotoForDiagram(node);
         
         // Node utama (suami/istri)
-        let nodeHtml = `
+        let mainNodeHtml = `
             <div class="diagram-node">
                 <div class="diagram-foto-wrapper">${fotoHtml}</div>
                 <div class="diagram-name">${node.nama || '-'}</div>
@@ -1323,27 +1292,41 @@
             </div>
         `;
         
-        // Jika ada pasangan, tampilkan disamping
+        // Jika ada pasangan, tampilkan SELEVEL (bersamaan)
+        let spouseHtml = '';
+        let hasSpouse = false;
+        
         if (node.spouse) {
+            hasSpouse = true;
             const spouseYear = getBirthYear(node.spouse.tglLahir);
-            const spouseFotoHtml = node.spouse.foto && node.spouse.foto.includes('http') ? 
-                `<img src="${node.spouse.foto}" class="diagram-foto" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'diagram-avatar\\'>${getInitials(node.spouse.nama)}</div>';">` :
-                `<div class="diagram-avatar">${getInitials(node.spouse.nama)}</div>`;
+            const spouseInitials = getInitials(node.spouse.nama);
+            let spouseFotoHtml = '';
             
-            nodeHtml = `
-                <div class="spouse-container">
-                    ${nodeHtml}
-                    <div class="spouse-connector">+</div>
-                    <div class="diagram-node">
-                        <div class="diagram-foto-wrapper">${spouseFotoHtml}</div>
-                        <div class="diagram-name">${node.spouse.nama || '-'}</div>
-                        <div class="diagram-year">${spouseYear}</div>
-                    </div>
+            if (node.spouse.foto && node.spouse.foto.includes('http')) {
+                spouseFotoHtml = `<img src="${node.spouse.foto}" class="diagram-foto" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'diagram-avatar\\'>${spouseInitials}</div>';">`;
+            } else {
+                spouseFotoHtml = `<div class="diagram-avatar">${spouseInitials}</div>`;
+            }
+            
+            spouseHtml = `
+                <div class="diagram-node">
+                    <div class="diagram-foto-wrapper">${spouseFotoHtml}</div>
+                    <div class="diagram-name">${node.spouse.nama || '-'}</div>
+                    <div class="diagram-year">${spouseYear}</div>
                 </div>
             `;
         }
         
-        // Jika ada anak-anak
+        // Gabungkan pasangan dalam satu baris (selevel)
+        const coupleHtml = hasSpouse ? 
+            `<div class="couple-container">
+                ${mainNodeHtml}
+                <div class="couple-connector"></div>
+                ${spouseHtml}
+            </div>` : 
+            mainNodeHtml;
+        
+        // Jika ada anak-anak, tampilkan di BAWAH dengan garis penghubung
         if (node.children && node.children.length > 0) {
             let childrenHtml = '';
             node.children.forEach(child => {
@@ -1352,7 +1335,9 @@
             
             return `
                 <li class="family-group">
-                    ${nodeHtml}
+                    <div class="parents-container">
+                        ${coupleHtml}
+                    </div>
                     <div class="children-container">
                         ${childrenHtml}
                     </div>
@@ -1360,9 +1345,8 @@
             `;
         }
         
-        return `<li>${nodeHtml}</li>`;
+        return `<li>${coupleHtml}</li>`;
     }
-
     // Generate Diagram berdasarkan keluarga (case insensitive)
     function generateDiagram() {
         const selectElement = document.getElementById('pilihNamaDiagram');
