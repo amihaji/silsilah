@@ -114,11 +114,14 @@
     .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #023a7a; }
 
     /* Styling untuk diagram pohon keluarga - versi minimalis */
+/* Styling Utama Diagram */
 .tree-diagram {
     font-family: 'Segoe UI', sans-serif;
     padding: 20px;
     background: transparent;
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 550px;
 }
 .tree-root {
     list-style: none;
@@ -132,29 +135,39 @@
     text-align: center;
     position: relative;
 }
-/* Pasangan selevel */
-.couple-container {
+/* Grup Pasangan (Suami + Istri) */
+.couple-group {
     display: flex;
     flex-direction: row;
-    align-items: center;
     justify-content: center;
-    gap: 15px;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 10px;
+    position: relative;
 }
+/* Titik Pemisah Pasangan */
 .couple-connector {
-    width: 20px;
-    height: 2px;
-    background: #aaa;
+    font-size: 18px;
+    color: #999;
 }
-/* Anak-anak container (garis vertikal dari orang tua) */
+/* Node Individu */
+.diagram-node {
+    text-align: center;
+    margin: 5px;
+    transition: transform 0.2s;
+}
+/* Container Anak (di bawah pasangan) */
 .children-container {
     display: flex;
     flex-direction: row;
     justify-content: center;
-    gap: 30px;
-    margin-top: 30px;
-    padding-top: 20px;
+    gap: 40px;
+    flex-wrap: wrap;
     position: relative;
+    margin-top: 20px;
+    padding-top: 20px;
 }
+/* Garis Vertikal dari Pasangan ke Anak */
 .children-container::before {
     content: '';
     position: absolute;
@@ -165,9 +178,14 @@
     height: 20px;
     background: #aaa;
 }
+/* Container per Anak (Individu + Pasangan) */
 .child-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     position: relative;
 }
+/* Garis Horizontal untuk Setiap Anak */
 .child-item::before {
     content: '';
     position: absolute;
@@ -178,33 +196,8 @@
     height: 20px;
     background: #aaa;
 }
-/* Cucu container (garis dari anak ke cucu) */
-.grandchildren-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 20px;
-    padding-top: 15px;
-    position: relative;
-}
-.grandchildren-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 2px;
-    height: 15px;
-    background: #aaa;
-}
-/* Node individu */
-.diagram-node {
-    text-align: center;
-    margin: 5px;
-    transition: transform 0.2s;
-}
-.diagram-foto, .diagram-avatar {
+/* Foto/ Avatar Diagram */
+.diagram-foto {
     width: 60px;
     height: 60px;
     object-fit: cover;
@@ -213,16 +206,31 @@
     margin-bottom: 5px;
     background: white;
 }
+.diagram-avatar {
+    width: 60px;
+    height: 60px;
+    background-color: #1A365D;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    margin: 0 auto 5px auto;
+    border: 2px solid #1A365D;
+}
 .diagram-name {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     color: #333;
+    margin-bottom: 2px;
+    max-width: 100px;
 }
 .diagram-year {
-    font-size: 9px;
-    color: #888;
+    font-size: 10px;
+    color: #666;
 }
-
     /* Container untuk grup keluarga */
     .family-group {
         display: flex;
@@ -1024,118 +1032,65 @@ function getFotoForDiagram(item) {
     }
 }
 
-
 // Render tree ke HTML: pasangan selevel, anak di bawah, cucu di bawah anak
+// Render Diagram: Pasangan Selevel, Anak di Bawah
 function renderTreeDiagram(node) {
+    // Jika node tidak valid, kembalikan string kosong
     if (!node) return '';
-
-    const birthYear = (y) => getBirthYear(y);
-    const fotoHtml = (person) => {
+    // Ambil tahun lahir
+    const getYear = (dateStr) => { if (!dateStr) return ''; try { return new Date(dateStr).getFullYear(); } catch(e) { return ''; } };
+    // Fungsi untuk membuat tampilan foto atau avatar
+    const renderFoto = (person) => {
+        const initials = getInitials(person.nama);
         if (person.foto && person.foto.includes('http')) {
-            return `<img src="${person.foto}" class="diagram-foto" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'diagram-avatar\\'>${getInitials(person.nama)}</div>';">`;
+            return `<img src="${person.foto}" class="diagram-foto" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'diagram-avatar\'>${initials}</div>';">`;
         } else {
-            return `<div class="diagram-avatar">${getInitials(person.nama)}</div>`;
+            return `<div class="diagram-avatar">${initials}</div>`;
         }
     };
-
-    // Node untuk suami dan istri (jika ada)
-    const husbandNode = `
+    // Buat node untuk Suami
+    const suamiHtml = `
         <div class="diagram-node">
-            ${fotoHtml(node)}
+            ${renderFoto(node)}
             <div class="diagram-name">${node.nama || '-'}</div>
-            <div class="diagram-year">${birthYear(node.tglLahir)}</div>
+            <div class="diagram-year">${getYear(node.tglLahir)}</div>
         </div>
     `;
-
-    let wifeNode = '';
-    if (node.spouse) {
-        wifeNode = `
+    let istriHtml = '';
+    // Jika node memiliki pasangan, buat node untuk Istri
+    if (node.spouse && node.spouse.nama) {
+        istriHtml = `
             <div class="diagram-node">
-                ${fotoHtml(node.spouse)}
+                ${renderFoto(node.spouse)}
                 <div class="diagram-name">${node.spouse.nama || '-'}</div>
-                <div class="diagram-year">${birthYear(node.spouse.tglLahir)}</div>
+                <div class="diagram-year">${getYear(node.spouse.tglLahir)}</div>
             </div>
         `;
     }
-
-    // Pasangan dalam satu baris (couple-container)
+    // Gabungkan Suami dan Istri dalam satu grup (selevel)
     const coupleHtml = `
-        <div class="couple-container">
-            ${husbandNode}
-            ${wifeNode ? `<div class="couple-connector"></div>${wifeNode}` : ''}
+        <div class="couple-group">
+            ${suamiHtml}
+            ${istriHtml ? `<div class="couple-connector">+</div>${istriHtml}` : ''}
         </div>
     `;
-
-    // Jika tidak ada anak, langsung return couple
-    if (!node.children || node.children.length === 0) {
-        return `<li class="family-group">${coupleHtml}</li>`;
-    }
-
-    // Render semua anak (dan cucu di dalamnya)
+    // Jika tidak memiliki anak, langsung kembalikan grup pasangan
+    if (!node.children || node.children.length === 0) return `<li>${coupleHtml}</li>`;
+    // Proses setiap anak (dan cucu di dalamnya) secara rekursif
     let childrenHtml = '';
     node.children.forEach(child => {
-        // Render anak dan cucunya (rekursif)
-        const childBirthYear = birthYear(child.tglLahir);
-        const childFoto = fotoHtml(child);
-
-        let childSpouseHtml = '';
-        if (child.spouse) {
-            childSpouseHtml = `
-                <div class="diagram-node">
-                    ${fotoHtml(child.spouse)}
-                    <div class="diagram-name">${child.spouse.nama}</div>
-                    <div class="diagram-year">${birthYear(child.spouse.tglLahir)}</div>
-                </div>
-            `;
-        }
-
-        const childCoupleHtml = `
-            <div class="couple-container">
-                <div class="diagram-node">
-                    ${childFoto}
-                    <div class="diagram-name">${child.nama}</div>
-                    <div class="diagram-year">${childBirthYear}</div>
-                </div>
-                ${childSpouseHtml ? `<div class="couple-connector"></div>${childSpouseHtml}` : ''}
-            </div>
-        `;
-
-        // Render cucu jika ada
-        let grandChildrenHtml = '';
-        if (child.children && child.children.length > 0) {
-            let gcHtml = '';
-            child.children.forEach(gc => {
-                gcHtml += `
-                    <div class="diagram-node">
-                        ${fotoHtml(gc)}
-                        <div class="diagram-name">${gc.nama}</div>
-                        <div class="diagram-year">${birthYear(gc.tglLahir)}</div>
-                    </div>
-                `;
-            });
-            grandChildrenHtml = `<div class="grandchildren-container">${gcHtml}</div>`;
-        }
-
-        childrenHtml += `
-            <li class="child-item">
-                ${childCoupleHtml}
-                ${grandChildrenHtml}
-            </li>
-        `;
+        // Gunakan fungsi ini lagi untuk memproses anak (dan cucunya)
+        childrenHtml += renderTreeDiagram(child);
     });
-
-    // Gabungkan semua: orang tua -> anak-anak (dengan garis)
-    return `
-        <li class="family-group">
-            ${coupleHtml}
-            <div class="children-container">
-                ${childrenHtml}
-            </div>
-        </li>
-    `;
+    // Bungkus dengan container anak dan garis penghubung
+    return `<li class="child-item">
+                ${coupleHtml}
+                <div class="children-container">
+                    ${childrenHtml}
+                </div>
+            </li>`;
 }
 
-// Buka modal diagram (dinamis - sama seperti viewDetail)
 // Buka modal diagram (dinamis - sama seperti viewDetail)
 function openDiagram() {
     try {
@@ -1256,15 +1211,12 @@ function openDiagram() {
 }
 
 // Membangun struktur tree berdasarkan Nama Ayah (cocokkan persis dengan nilai di database)
-// Membangun struktur tree berdasarkan Nama Ayah (dengan node virtual jika tidak ada record)
+// Membangun struktur tree berdasarkan Nama Ayah
 function buildFamilyTreeByAyah(ayahName) {
     if (!ayahName) return null;
-    
-    console.log("Mencari data untuk ayah:", ayahName);
     const normalize = (str) => (str || "").toLowerCase().trim().replace(/\s+/g, " ");
     const targetNorm = normalize(ayahName);
-    
-    // 1. Cari apakah ada record dengan nama persis ayahName
+    // Cari apakah ada data untuk ayah ini
     let ayahRecord = null;
     for (let item of globalData) {
         if (normalize(item.nama) === targetNorm) {
@@ -1272,129 +1224,68 @@ function buildFamilyTreeByAyah(ayahName) {
             break;
         }
     }
-    
-    // 2. Jika tidak ada record, buat node virtual untuk ayah
+    // Jika tidak ada, buat node virtual untuk ayah
     let ayahData;
     if (ayahRecord) {
         ayahData = { ...ayahRecord };
     } else {
         ayahData = {
-            id: "virtual-" + Date.now() + "-" + Math.random(),
+            id: `virtual-${Date.now()}`,
             nama: ayahName,
             jk: "Pria",
             tglLahir: "",
             foto: "",
             namaPasangan: "",
             statusKeluarga: "Kepala Keluarga",
-            alamat: "",
-            kota: "",
-            ayah: "",
-            ibu: ""
+            alamat: "", kota: "", ayah: "", ibu: ""
         };
-        console.log("Ayah tidak punya record, membuat node virtual:", ayahName);
     }
-    
-    // 3. Cari pasangan (istri) dari ayah
+    // Cari pasangan ayah (istri), cari dari data yang memiliki namaPasangan = ayahName
     let spouse = null;
-    
-    // 3a. Cari dari data yang memiliki namaPasangan = ayahName
     for (let item of globalData) {
         if (normalize(item.namaPasangan) === targetNorm && item.id !== ayahData.id) {
             spouse = item;
-            console.log("Pasangan ditemukan dari namaPasangan:", spouse.nama);
             break;
         }
     }
-    
-    // 3b. Jika belum, cari dari field Ibu pada anak-anak (ambil yang paling umum)
-    if (!spouse) {
-        const ibuSet = new Set();
-        for (let item of globalData) {
-            if (normalize(item.ayah) === targetNorm && item.ibu && item.ibu.trim()) {
-                ibuSet.add(item.ibu.trim());
-            }
-        }
-        if (ibuSet.size === 1) {
-            const ibuName = Array.from(ibuSet)[0];
-            // Cari record ibu
-            for (let item of globalData) {
-                if (normalize(item.nama) === normalize(ibuName)) {
-                    spouse = item;
-                    break;
-                }
-            }
-            if (!spouse && ibuName) {
-                spouse = {
-                    id: "virtual-spouse",
-                    nama: ibuName,
-                    jk: "Wanita",
-                    tglLahir: "",
-                    foto: "",
-                    statusKeluarga: "Istri"
-                };
-            }
-            console.log("Pasangan ditemukan dari field Ibu anak:", spouse ? spouse.nama : "tidak ada");
-        }
-    }
-    
-    // 4. Cari anak-anak (yang memiliki ayah ini)
+    // Cari semua anak dari ayah ini
     const anakList = [];
     for (let item of globalData) {
         if (normalize(item.ayah) === targetNorm && item.id !== ayahData.id) {
             anakList.push(item);
         }
     }
-    console.log(`Ditemukan ${anakList.length} anak`);
-    
-    // 5. Bangun node untuk setiap anak dan cucu
+    // Bangun node untuk setiap anak dan cucu
     const anakNodes = anakList.map(anak => {
-        // Cari pasangan anak
+        // Cari pasangan anak (menantu)
         let anakSpouse = null;
-        if (anak.namaPasangan && anak.namaPasangan.trim() !== "") {
-            const spouseNorm = normalize(anak.namaPasangan);
-            for (let item of globalData) {
-                if (normalize(item.nama) === spouseNorm && item.id !== anak.id) {
-                    anakSpouse = item;
-                    break;
-                }
+        for (let item of globalData) {
+            if (normalize(item.nama) === normalize(anak.namaPasangan) && item.id !== anak.id) {
+                anakSpouse = item;
+                break;
             }
         }
-        
         // Cari cucu (anak dari anak ini)
         const cucuList = [];
-        const anakNorm = normalize(anak.nama);
         for (let item of globalData) {
-            const ayahNorm = normalize(item.ayah);
-            const ibuNorm = normalize(item.ibu);
-            if ((ayahNorm === anakNorm || ibuNorm === anakNorm) && item.id !== anak.id) {
+            if ((normalize(item.ayah) === normalize(anak.nama) || normalize(item.ibu) === normalize(anak.nama)) && item.id !== anak.id) {
                 cucuList.push(item);
             }
         }
-        
         const cucuNodes = cucuList.map(cucu => {
             let cucuSpouse = null;
-            if (cucu.namaPasangan && cucu.namaPasangan.trim() !== "") {
-                const spouseNorm = normalize(cucu.namaPasangan);
-                for (let item of globalData) {
-                    if (normalize(item.nama) === spouseNorm && item.id !== cucu.id) {
-                        cucuSpouse = item;
-                        break;
-                    }
+            for (let item of globalData) {
+                if (normalize(item.nama) === normalize(cucu.namaPasangan) && item.id !== cucu.id) {
+                    cucuSpouse = item;
+                    break;
                 }
             }
             return { ...cucu, spouse: cucuSpouse, children: [] };
         });
-        
         return { ...anak, spouse: anakSpouse, children: cucuNodes };
     });
-    
-    return {
-        ...ayahData,
-        spouse: spouse,
-        children: anakNodes
-    };
+    return { ...ayahData, spouse: spouse, children: anakNodes };
 }
-
 
 // Generate Diagram (memanggil buildFamilyTreeByAyah)
 function generateDiagram() {
