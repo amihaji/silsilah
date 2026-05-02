@@ -992,123 +992,36 @@
      ***************************************/
 
     // Buka modal diagram (dinamis - sama seperti viewDetail)
-    function openDiagram() {
-        try {
-            // Hapus modal dinamis jika sudah ada sebelumnya
-            const existingModal = document.getElementById('dynamicDiagramModal');
-            if (existingModal) {
-                existingModal.remove();
-            }
-            
-            // Ambil daftar unik Nama Ayah (untuk dropdown keluarga)
-            const ayahList = [];
-            if (globalData && globalData.length > 0) {
-                globalData.forEach(item => {
-                    if (item.ayah && item.ayah.trim() !== '' && !ayahList.includes(item.ayah)) {
-                        ayahList.push(item.ayah);
-                    }
-                });
-                // Urutkan berdasarkan abjad
-                ayahList.sort();
-            }
-            
-            // Isi dropdown options dari daftar Ayah
-            let dropdownOptions = '<option value="">Pilih Keluarga (Nama Ayah)</option>';
-            ayahList.forEach(ayah => {
-                dropdownOptions += `<option value="${ayah.replace(/"/g, '&quot;')}">${ayah}</option>`;
-            });
-            
-            // Jika tidak ada data ayah, tambahkan opsi berdasarkan nama
-            if (ayahList.length === 0 && globalData && globalData.length > 0) {
-                dropdownOptions = '<option value="">-- Pilih Nama --</option>';
-                globalData.forEach(item => {
-                    dropdownOptions += `<option value="${item.id}">${item.nama}</option>`;
-                });
-            }
-            
-            // Buat modal diagram dinamis
-            const modalHtml = `
-                <div class="modal fade" id="dynamicDiagramModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
-                    <div class="modal-dialog modal-xl modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header bg-primary text-white">
-                                <h5 class="modal-title">Buat Diagram Pohon</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="row mb-3">
-                                    <div class="col-md-12 d-flex gap-2 align-items-center flex-wrap">
-                                        <select id="pilihNamaDiagram" class="form-select" style="flex:2; min-width:250px;">
-                                            ${dropdownOptions}
-                                        </select>
-                                        <button class="btn btn-outline-primary" id="btnBuatDiagram" title="Buat Diagram">
-                                            <i class="fas fa-sitemap"></i> Buat
-                                        </button>
-                                        <button class="btn btn-outline-secondary" id="btnDownloadPdf" title="Download PDF">
-                                            <i class="fas fa-file-pdf"></i> PDF
-                                        </button>
-                                        <button class="btn btn-outline-secondary" id="btnDownloadExcel" title="Download Excel">
-                                            <i class="fas fa-file-excel"></i> Excel
-                                        </button>
-                                    </div>
-                                </div>
-                                <div id="diagramContainer" style="min-height: 450px; max-height: 550px; overflow: auto; padding: 15px; background: #f5f5f5; border-radius: 8px;">
-                                    <div class="text-center text-muted p-5">Silakan pilih keluarga (Nama Ayah) dan klik tombol Diagram</div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Tambahkan ke body
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-            
-            // Tampilkan modal
-            const modalElement = document.getElementById('dynamicDiagramModal');
-            const modal = new bootstrap.Modal(modalElement, {
-                backdrop: true,
-                keyboard: true
-            });
-            modal.show();
-            
-            // Hapus modal setelah ditutup
-            modalElement.addEventListener('hidden.bs.modal', function() {
-                modalElement.remove();
-            });
-            
-            // Event listener untuk tombol Diagram
-            const btnBuat = document.getElementById('btnBuatDiagram');
-            if (btnBuat) {
-                btnBuat.onclick = function() {
-                    generateDiagram();
-                };
-            }
-            
-            // Event listener untuk tombol PDF
-            const btnPdf = document.getElementById('btnDownloadPdf');
-            if (btnPdf) {
-                btnPdf.onclick = function() {
-                    downloadDiagramPDF();
-                };
-            }
-            
-            // Event listener untuk tombol Excel
-            const btnExcel = document.getElementById('btnDownloadExcel');
-            if (btnExcel) {
-                btnExcel.onclick = function() {
-                    downloadDiagramExcel();
-                };
-            }
-            
-        } catch (e) {
-            console.error("Error openDiagram:", e);
-            showMessage("Gagal membuka diagram: " + e.message, "error", "tableMessage");
-        }
+   // Fungsi untuk mendapatkan inisial dari nama
+function getInitials(nama) {
+    if (!nama || nama === '-' || nama === '') return '?';
+    const parts = nama.trim().split(' ');
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
+
+// Mendapatkan tahun lahir dari tglLahir
+function getBirthYear(tglLahir) {
+    if (!tglLahir) return '';
+    try {
+        const date = new Date(tglLahir);
+        return date.getFullYear();
+    } catch(e) {
+        return '';
     }
+}
+
+// Mendapatkan foto atau avatar untuk diagram
+function getFotoForDiagram(item) {
+    const initials = getInitials(item.nama);
+    const birthYear = getBirthYear(item.tglLahir);
+    
+    if (item.foto && item.foto.includes('http')) {
+        return `<img src="${item.foto}" class="diagram-foto" onerror="this.onerror=null; this.parentElement.innerHTML=this.parentElement.innerHTML='<div class=\'diagram-avatar\'>${initials}</div><div class=\'diagram-name\'>${item.nama || '-'}</div><div class=\'diagram-year\'>${birthYear}</div>';">`;
+    } else {
+        return `<div class="diagram-avatar">${initials}</div>`;
+    }
+}
 
     // Mendapatkan tahun lahir dari tglLahir
     function getBirthYear(tglLahir) {
@@ -1134,43 +1047,92 @@
     }
 
     // Membangun struktur tree berdasarkan Nama Ayah (case insensitive)
+// Membangun struktur tree berdasarkan Nama Ayah (case insensitive & flexible)
 function buildFamilyTreeByAyah(ayahName) {
     if (!ayahName) return null;
 
-    const normalize = (str) => (str || '').toLowerCase().trim();
+    // Fungsi normalisasi yang lebih fleksibel
+    const normalize = (str) => {
+        if (!str) return '';
+        return str.toString().toLowerCase().trim().replace(/\s+/g, ' ');
+    };
+    
     const normalizedAyah = normalize(ayahName);
-
-    // Cari data ayah
-    const ayahData = globalData.find(item => normalize(item.nama) === normalizedAyah);
-    if (!ayahData) return null;
-
-    // Cari pasangan ayah (istri) - berdasarkan namaPasangan dari ayahData
-    let spouse = null;
-    if (ayahData.namaPasangan) {
-        spouse = globalData.find(item => normalize(item.nama) === normalize(ayahData.namaPasangan));
+    
+    // Cari data ayah - lebih fleksibel dengan includes
+    let ayahData = null;
+    for (let item of globalData) {
+        const normalizedNama = normalize(item.nama);
+        if (normalizedNama === normalizedAyah || 
+            normalizedNama.includes(normalizedAyah) || 
+            normalizedAyah.includes(normalizedNama)) {
+            ayahData = item;
+            break;
+        }
+    }
+    
+    if (!ayahData) {
+        console.log("Ayah tidak ditemukan untuk:", ayahName);
+        return null;
     }
 
-    // Cari semua anak dari ayah ini (case insensitive)
-    const anakList = globalData.filter(item => normalize(item.ayah) === normalizedAyah && item.id !== ayahData.id);
+    // Cari pasangan ayah (istri)
+    let spouse = null;
+    if (ayahData.namaPasangan && ayahData.namaPasangan.trim() !== '') {
+        const normalizedSpouse = normalize(ayahData.namaPasangan);
+        for (let item of globalData) {
+            if (normalize(item.nama) === normalizedSpouse && item.id !== ayahData.id) {
+                spouse = item;
+                break;
+            }
+        }
+    }
 
-    // Bangun node untuk setiap anak, termasuk pasangan dan cucu
+    // Cari semua anak dari ayah ini - berdasarkan ayah field
+    const anakList = [];
+    for (let item of globalData) {
+        const normalizedAyahField = normalize(item.ayah);
+        if (normalizedAyahField === normalizedAyah && item.id !== ayahData.id) {
+            anakList.push(item);
+        }
+    }
+
+    // Bangun node untuk setiap anak
     const anakNodes = anakList.map(anak => {
         // Cari pasangan anak
         let anakSpouse = null;
-        if (anak.namaPasangan) {
-            anakSpouse = globalData.find(item => normalize(item.nama) === normalize(anak.namaPasangan));
+        if (anak.namaPasangan && anak.namaPasangan.trim() !== '') {
+            const normalizedAnakSpouse = normalize(anak.namaPasangan);
+            for (let item of globalData) {
+                if (normalize(item.nama) === normalizedAnakSpouse && item.id !== anak.id) {
+                    anakSpouse = item;
+                    break;
+                }
+            }
         }
 
-        // Cari cucu dari anak ini (berdasarkan ayah/ibu)
-        const cucuList = globalData.filter(item =>
-            (normalize(item.ayah) === normalize(anak.nama) || normalize(item.ibu) === normalize(anak.nama)) &&
-            item.id !== anak.id
-        );
+        // Cari cucu dari anak ini
+        const cucuList = [];
+        for (let item of globalData) {
+            const normalizedAyahAnak = normalize(item.ayah);
+            const normalizedIbuAnak = normalize(item.ibu);
+            const normalizedNamaAnak = normalize(anak.nama);
+            if ((normalizedAyahAnak === normalizedNamaAnak || normalizedIbuAnak === normalizedNamaAnak) && 
+                item.id !== anak.id) {
+                cucuList.push(item);
+            }
+        }
 
         const cucuNodes = cucuList.map(cucu => {
             let cucuSpouse = null;
-            if (cucu.namaPasangan) {
-                cucuSpouse = globalData.find(item => normalize(item.nama) === normalize(cucu.namaPasangan));
+            if (cucu.namaPasangan && cucu.namaPasangan.trim() !== '') {
+                const normalizedCucuSpouse = normalize(cucu.namaPasangan);
+                for (let item of globalData) {
+                    if (normalize(item.nama) === normalizedCucuSpouse && item.id !== cucu.id) {
+                        cucuSpouse = item;
+                        break;
+                    }
+                }
             }
             return {
                 ...cucu,
@@ -1306,60 +1268,49 @@ function renderTreeDiagram(node) {
 
     // Generate Diagram berdasarkan keluarga (case insensitive)
     function generateDiagram() {
-        const selectElement = document.getElementById('pilihNamaDiagram');
-        if (!selectElement) {
-            showMessage("Error: Dropdown tidak ditemukan", "error", "tableMessage");
-            return;
-        }
-        
-        const selectedValue = selectElement.value;
-        if (!selectedValue) {
-            showMessage("Silakan pilih keluarga (Nama Ayah) terlebih dahulu!", "warning", "tableMessage");
-            return;
-        }
-        
-        showLoader(true, "Membuat diagram pohon...");
-        
-        try {
-            // Cek apakah selection adalah Nama Ayah (case insensitive)
-            const normalizeSelected = selectedValue.toLowerCase().trim();
-            const isAyahName = globalData.some(item => 
-                item.ayah && item.ayah.toLowerCase().trim() === normalizeSelected
-            );
-            
-            let rootNode;
-            
-            if (isAyahName) {
-                rootNode = buildFamilyTreeByAyah(selectedValue);
-            } else {
-                // Fallback: cari berdasarkan ID
-                rootNode = buildFamilyTree(selectedValue);
-            }
-            
-            const container = document.getElementById('diagramContainer');
-            
-            if (container) {
-                if (rootNode) {
-                    const treeHtml = `
-                        <div class="tree-diagram">
-                            <ul class="tree-root">
-                                ${renderTreeDiagram(rootNode)}
-                            </ul>
-                        </div>
-                    `;
-                    container.innerHTML = treeHtml;
-                    showMessage("Diagram berhasil dibuat", "success", "tableMessage");
-                } else {
-                    container.innerHTML = '<div class="text-center text-danger p-5">Tidak dapat membangun diagram pohon untuk keluarga yang dipilih</div>';
-                }
-            }
-        } catch (error) {
-            console.error("Error generateDiagram:", error);
-            showMessage("Gagal membuat diagram: " + error.message, "error", "tableMessage");
-        } finally {
-            showLoader(false);
-        }
+    const selectElement = document.getElementById('pilihNamaDiagram');
+    if (!selectElement) {
+        showMessage("Error: Dropdown tidak ditemukan", "error", "tableMessage");
+        return;
     }
+    
+    const selectedValue = selectElement.value;
+    if (!selectedValue) {
+        showMessage("Silakan pilih keluarga (Nama Ayah) terlebih dahulu!", "warning", "tableMessage");
+        return;
+    }
+    
+    showLoader(true, "Membuat diagram pohon...");
+    
+    try {
+        // Langsung gunakan nilai yang dipilih sebagai ayahName
+        const rootNode = buildFamilyTreeByAyah(selectedValue);
+        
+        const container = document.getElementById('diagramContainer');
+        
+        if (container) {
+            if (rootNode) {
+                const treeHtml = `
+                    <div class="tree-diagram">
+                        <ul class="tree-root">
+                            ${renderTreeDiagram(rootNode)}
+                        </ul>
+                    </div>
+                `;
+                container.innerHTML = treeHtml;
+                showMessage("Diagram berhasil dibuat", "success", "tableMessage");
+            } else {
+                container.innerHTML = '<div class="text-center text-danger p-5">Tidak dapat membangun diagram pohon untuk keluarga yang dipilih. Pastikan data ayah sudah terisi dengan benar.</div>';
+                console.log("Gagal build tree untuk:", selectedValue);
+            }
+        }
+    } catch (error) {
+        console.error("Error generateDiagram:", error);
+        showMessage("Gagal membuat diagram: " + error.message, "error", "tableMessage");
+    } finally {
+        showLoader(false);
+    }
+}
 
     // Download sebagai PDF
     function downloadDiagramPDF() {
