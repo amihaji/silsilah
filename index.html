@@ -1136,6 +1136,7 @@ function renderTreeDiagram(node) {
 }
 
 // Buka modal diagram (dinamis - sama seperti viewDetail)
+// Buka modal diagram (dinamis - sama seperti viewDetail)
 function openDiagram() {
     try {
         // Hapus modal dinamis jika sudah ada sebelumnya
@@ -1144,13 +1145,12 @@ function openDiagram() {
             existingModal.remove();
         }
         
-        // Ambil daftar unik Nama Ayah dari field "ayah" di database (Langsung dari nilai yang tersimpan)
+        // Ambil daftar unik Nama Ayah dari field "ayah" di database
         const ayahSet = new Set();
         if (globalData && globalData.length > 0) {
             globalData.forEach(item => {
-                // Ambil dari field "ayah" yang terisi di setiap data
                 if (item.ayah && item.ayah.trim() !== '') {
-                    ayahSet.add(item.ayah.trim()); // Tambahkan persis seperti di database
+                    ayahSet.add(item.ayah.trim());
                 }
             });
         }
@@ -1161,8 +1161,9 @@ function openDiagram() {
         // Isi dropdown options dari daftar Ayah
         let dropdownOptions = '<option value="">-- Pilih Keluarga (Nama Ayah) --</option>';
         ayahList.forEach(ayah => {
-            // Gunakan nilai asli dari database (misal: "abdulhaji dg lau")
-            dropdownOptions += `<option value="${ayah.replace(/"/g, '&quot;')}">${ayah}</option>`;
+            // Gunakan nilai asli, hindari karakter kutip bermasalah
+            const safeAyah = ayah.replace(/"/g, '&quot;');
+            dropdownOptions += `<option value="${safeAyah}">${ayah}</option>`;
         });
         
         // Jika tidak ada data ayah, beri pesan
@@ -1170,7 +1171,7 @@ function openDiagram() {
             dropdownOptions = '<option value="">-- Tidak ada data ayah --</option>';
         }
         
-        // Buat modal diagram dinamis (sama seperti sebelumnya)
+        // Buat modal diagram dinamis
         const modalHtml = `
             <div class="modal fade" id="dynamicDiagramModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
                 <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -1208,8 +1209,10 @@ function openDiagram() {
             </div>
         `;
         
+        // Tambahkan ke body
         document.body.insertAdjacentHTML('beforeend', modalHtml);
         
+        // Tampilkan modal
         const modalElement = document.getElementById('dynamicDiagramModal');
         const modal = new bootstrap.Modal(modalElement, {
             backdrop: true,
@@ -1217,10 +1220,12 @@ function openDiagram() {
         });
         modal.show();
         
+        // Hapus modal setelah ditutup
         modalElement.addEventListener('hidden.bs.modal', function() {
             modalElement.remove();
         });
         
+        // Event listener untuk tombol Diagram
         const btnBuat = document.getElementById('btnBuatDiagram');
         if (btnBuat) {
             btnBuat.onclick = function() {
@@ -1228,6 +1233,7 @@ function openDiagram() {
             };
         }
         
+        // Event listener untuk tombol PDF
         const btnPdf = document.getElementById('btnDownloadPdf');
         if (btnPdf) {
             btnPdf.onclick = function() {
@@ -1235,6 +1241,7 @@ function openDiagram() {
             };
         }
         
+        // Event listener untuk tombol Excel
         const btnExcel = document.getElementById('btnDownloadExcel');
         if (btnExcel) {
             btnExcel.onclick = function() {
@@ -1249,82 +1256,127 @@ function openDiagram() {
 }
 
 // Membangun struktur tree berdasarkan Nama Ayah (cocokkan persis dengan nilai di database)
+// Membangun struktur tree berdasarkan Nama Ayah (dengan node virtual jika tidak ada record)
 function buildFamilyTreeByAyah(ayahName) {
     if (!ayahName) return null;
-
-    console.log("Mencari data untuk ayah:", ayahName);
     
-    // Langsung cari data yang memiliki nama persis sama dengan ayahName
-    let ayahData = null;
+    console.log("Mencari data untuk ayah:", ayahName);
+    const normalize = (str) => (str || "").toLowerCase().trim().replace(/\s+/g, " ");
+    const targetNorm = normalize(ayahName);
+    
+    // 1. Cari apakah ada record dengan nama persis ayahName
+    let ayahRecord = null;
     for (let item of globalData) {
-        if (item.nama === ayahName) {
-            ayahData = item;
-            console.log("Ayah ditemukan (nama persis):", ayahData.nama);
+        if (normalize(item.nama) === targetNorm) {
+            ayahRecord = item;
             break;
         }
     }
     
-    // Jika tidak ditemukan, coba case insensitive
-    if (!ayahData) {
-        const lowerSearch = ayahName.toLowerCase();
-        for (let item of globalData) {
-            if (item.nama && item.nama.toLowerCase() === lowerSearch) {
-                ayahData = item;
-                console.log("Ayah ditemukan (case insensitive):", ayahData.nama);
-                break;
-            }
-        }
+    // 2. Jika tidak ada record, buat node virtual untuk ayah
+    let ayahData;
+    if (ayahRecord) {
+        ayahData = { ...ayahRecord };
+    } else {
+        ayahData = {
+            id: "virtual-" + Date.now() + "-" + Math.random(),
+            nama: ayahName,
+            jk: "Pria",
+            tglLahir: "",
+            foto: "",
+            namaPasangan: "",
+            statusKeluarga: "Kepala Keluarga",
+            alamat: "",
+            kota: "",
+            ayah: "",
+            ibu: ""
+        };
+        console.log("Ayah tidak punya record, membuat node virtual:", ayahName);
     }
-
-    if (!ayahData) {
-        console.error(`Ayah dengan nama "${ayahName}" tidak ditemukan.`);
-        return null;
-    }
-
-    // Cari pasangan (spouse) dari ayah
+    
+    // 3. Cari pasangan (istri) dari ayah
     let spouse = null;
-    if (ayahData.namaPasangan && ayahData.namaPasangan.trim() !== '') {
-        for (let item of globalData) {
-            if (item.nama === ayahData.namaPasangan && item.id !== ayahData.id) {
-                spouse = item;
-                break;
-            }
+    
+    // 3a. Cari dari data yang memiliki namaPasangan = ayahName
+    for (let item of globalData) {
+        if (normalize(item.namaPasangan) === targetNorm && item.id !== ayahData.id) {
+            spouse = item;
+            console.log("Pasangan ditemukan dari namaPasangan:", spouse.nama);
+            break;
         }
     }
     
-    // Cari semua anak (yang memiliki ayah ini) - cocokkan persis
+    // 3b. Jika belum, cari dari field Ibu pada anak-anak (ambil yang paling umum)
+    if (!spouse) {
+        const ibuSet = new Set();
+        for (let item of globalData) {
+            if (normalize(item.ayah) === targetNorm && item.ibu && item.ibu.trim()) {
+                ibuSet.add(item.ibu.trim());
+            }
+        }
+        if (ibuSet.size === 1) {
+            const ibuName = Array.from(ibuSet)[0];
+            // Cari record ibu
+            for (let item of globalData) {
+                if (normalize(item.nama) === normalize(ibuName)) {
+                    spouse = item;
+                    break;
+                }
+            }
+            if (!spouse && ibuName) {
+                spouse = {
+                    id: "virtual-spouse",
+                    nama: ibuName,
+                    jk: "Wanita",
+                    tglLahir: "",
+                    foto: "",
+                    statusKeluarga: "Istri"
+                };
+            }
+            console.log("Pasangan ditemukan dari field Ibu anak:", spouse ? spouse.nama : "tidak ada");
+        }
+    }
+    
+    // 4. Cari anak-anak (yang memiliki ayah ini)
     const anakList = [];
     for (let item of globalData) {
-        if (item.ayah === ayahName && item.id !== ayahData.id) {
+        if (normalize(item.ayah) === targetNorm && item.id !== ayahData.id) {
             anakList.push(item);
-            console.log("Anak ditemukan:", item.nama);
         }
     }
+    console.log(`Ditemukan ${anakList.length} anak`);
     
-    // Bangun struktur untuk anak dan cucu (sama seperti kode sebelumnya)
+    // 5. Bangun node untuk setiap anak dan cucu
     const anakNodes = anakList.map(anak => {
+        // Cari pasangan anak
         let anakSpouse = null;
-        if (anak.namaPasangan && anak.namaPasangan.trim() !== '') {
+        if (anak.namaPasangan && anak.namaPasangan.trim() !== "") {
+            const spouseNorm = normalize(anak.namaPasangan);
             for (let item of globalData) {
-                if (item.nama === anak.namaPasangan && item.id !== anak.id) {
+                if (normalize(item.nama) === spouseNorm && item.id !== anak.id) {
                     anakSpouse = item;
                     break;
                 }
             }
         }
         
+        // Cari cucu (anak dari anak ini)
         const cucuList = [];
+        const anakNorm = normalize(anak.nama);
         for (let item of globalData) {
-            if ((item.ayah === anak.nama || item.ibu === anak.nama) && item.id !== anak.id) {
+            const ayahNorm = normalize(item.ayah);
+            const ibuNorm = normalize(item.ibu);
+            if ((ayahNorm === anakNorm || ibuNorm === anakNorm) && item.id !== anak.id) {
                 cucuList.push(item);
             }
         }
         
         const cucuNodes = cucuList.map(cucu => {
             let cucuSpouse = null;
-            if (cucu.namaPasangan && cucu.namaPasangan.trim() !== '') {
+            if (cucu.namaPasangan && cucu.namaPasangan.trim() !== "") {
+                const spouseNorm = normalize(cucu.namaPasangan);
                 for (let item of globalData) {
-                    if (item.nama === cucu.namaPasangan && item.id !== cucu.id) {
+                    if (normalize(item.nama) === spouseNorm && item.id !== cucu.id) {
                         cucuSpouse = item;
                         break;
                     }
@@ -1342,6 +1394,7 @@ function buildFamilyTreeByAyah(ayahName) {
         children: anakNodes
     };
 }
+
 
 // Generate Diagram (memanggil buildFamilyTreeByAyah)
 function generateDiagram() {
