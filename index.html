@@ -168,49 +168,49 @@
         justify-content: center;
         gap: 40px;
         position: relative;
-        margin-top: 30px;   /* ruang atas lebih besar untuk garis panjang */
-        padding-top: 25px;  /* ruang untuk garis vertikal */
+        margin-top: 30px;
+        padding-top: 20px;
     }
-    /* Garis Vertikal dari Orang Tua ke Garis Horizontal */
+
+    /* Garis vertikal dari pasangan ke garis horizontal (bagian bawah T) */
     .children-container::before {
         content: '';
         position: absolute;
-        top: -25px;         /* naik ke atas container */
+        top: -20px;          /* naik ke atas container */
         left: 50%;
         transform: translateX(-50%);
         width: 2px;
-        height: 25px;       /* panjang garis vertikal (bisa disesuaikan) */
+        height: 20px;
         background: #aaa;
     }
-    /* Garis Horizontal penghubung antar anak */
+
+    /* Garis horizontal (bagian atas T) */
     .children-container::after {
         content: '';
         position: absolute;
-        top: -25px;         /* sejajar dengan ujung bawah garis vertikal */
+        top: -20px;          /* sejajar dengan ujung atas garis vertikal */
         left: 0;
         right: 0;
         height: 2px;
         background: #aaa;
-        z-index: 0;
     }
+
     /* Container Setiap Anak */
     .child-item {
         display: inline-block;
         vertical-align: top;
         position: relative;
-        background: transparent;
-        z-index: 1;         /* memastikan node di atas garis */
     }
 
-    /* Garis Vertikal dari garis horizontal ke setiap anak */
+    /* Garis vertikal dari garis horizontal ke anak */
     .child-item::before {
         content: '';
         position: absolute;
-        top: -25px;         /* mulai dari garis horizontal */
+        top: -20px;          /* dari posisi garis horizontal */
         left: 50%;
         transform: translateX(-50%);
         width: 2px;
-        height: 25px;       /* panjang garis ke node anak */
+        height: 20px;
         background: #aaa;
     }
     /* Foto/ Avatar Diagram */
