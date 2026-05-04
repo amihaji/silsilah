@@ -114,148 +114,147 @@
     .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #023a7a; }
 
     /* Styling untuk diagram pohon keluarga - versi minimalis */
-    .tree-diagram {
-        font-family: 'Segoe UI', sans-serif;
-        padding: 20px;
-        background: transparent;
-        overflow-x: auto;
-        overflow-y: auto;
-        max-height: 550px;
-    }
-    .tree-root {
-        list-style: none;
-        padding-left: 0;
-        margin: 0;
-        display: flex;
-        justify-content: center;
-    }
-    .tree-diagram li {
-        list-style: none;
-        text-align: center;
-        position: relative;
-    }
-    /* Grup Pasangan (Suami + Istri) SELEVEL */
-    .couple-group {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-        gap: 20px;
-        margin-bottom: 10px;
-        position: relative;
-    }
-    /* Penghubung Pasangan */
-    .couple-connector {
-        font-size: 18px;
-        color: #999;
-    }
-    /* Node Individu */
-    .diagram-node {
-        text-align: center;
-        margin: 5px;
-        transition: transform 0.2s;
-    }
-    /* Container Anak (di bawah pasangan) */
-    .children-container {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        gap: 40px;
-        flex-wrap: wrap;
-        position: relative;
-        margin-top: 20px;
-        padding-top: 20px;
-    }
-    /* GARIS VERTIKAL dari Orang Tua ke Anak-Anak */
-    .children-container::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 2px;
-        height: 20px;
-        background: #aaa;
-    }
-    /* Container Setiap Anak */
-    .child-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        position: relative;
-    }
-    /* GARIS VERTIKAL ke Setiap Anak */
-    .child-item::before {
-        content: '';
-        position: absolute;
-        top: -20px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 2px;
-        height: 20px;
-        background: #aaa;
-    }
-    /* Foto/ Avatar Diagram */
-    .diagram-foto {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border-radius: 50%;
-        border: 2px solid #1A365D;
-        margin-bottom: 5px;
-        background: white;
-    }
-    .diagram-avatar {
-        width: 60px;
-        height: 60px;
-        background-color: #1A365D;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: 20px;
-        margin: 0 auto 5px auto;
-        border: 2px solid #1A365D;
+   /* Styling untuk diagram pohon horizontal */
+.tree-diagram {
+    font-family: 'Segoe UI', sans-serif;
+    padding: 20px;
+    background: transparent;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 550px;
+    white-space: nowrap; /* Mencegah anak pindah ke baris baru */
+    text-align: center;
+}
+.tree-root {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+    display: inline-flex; /* Mengubah menjadi inline-flex */
+    flex-direction: row; /* Menyusun anak secara horizontal */
+    justify-content: center;
+    gap: 40px;
+}
+.tree-root > li {
+    list-style: none;
+    text-align: center;
+    position: relative;
+    display: inline-block; /* Menampilkan setiap pasangan secara horizontal */
+    vertical-align: top;
+}
+/* Grup Pasangan (Suami + Istri) */
+.couple-group {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    position: relative;
+}
+.couple-connector {
+    font-size: 16px;
+    color: #999;
+    margin: 0 5px;
+}
+.diagram-node {
+    text-align: center;
+    margin: 5px;
+    transition: transform 0.2s;
+    display: inline-block;
+}
+/* Container Anak (di bawah pasangan) */
+.children-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 40px;
+    position: relative;
+    margin-top: 20px;
+    padding-top: 20px;
+}
+/* GARIS VERTIKAL dari Orang Tua ke Anak-Anak */
+.children-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 20px;
+    background: #aaa;
+}
+/* Container Setiap Anak */
+.child-item {
+    display: inline-block; /* Menampilkan setiap pasangan anak secara horizontal */
+    vertical-align: top;
+    position: relative;
+}
+/* GARIS VERTIKAL ke Setiap Anak */
+.child-item::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 20px;
+    background: #aaa;
+}
+/* Foto/ Avatar Diagram */
+.diagram-foto {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #1A365D;
+    margin-bottom: 5px;
+    background: white;
+}
+.diagram-avatar {
+    width: 60px;
+    height: 60px;
+    background-color: #1A365D;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    margin: 0 auto 5px auto;
+    border: 2px solid #1A365D;
+}
+.diagram-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+    max-width: 100px;
+}
+.diagram-year {
+    font-size: 10px;
+    color: #666;
+}
+/* Responsif */
+@media (max-width: 768px) {
+    .diagram-foto, .diagram-avatar {
+        width: 45px;
+        height: 45px;
+        font-size: 16px;
     }
     .diagram-name {
-        font-size: 12px;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 2px;
-        max-width: 100px;
+        font-size: 10px;
     }
     .diagram-year {
-        font-size: 10px;
-        color: #666;
+        font-size: 8px;
     }
-    /* Container untuk grup keluarga (untuk kompatibilitas, mungkin tidak digunakan) */
-    .family-group {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+    .children-container {
+        gap: 20px;
     }
-    /* Responsif */
-    @media (max-width: 768px) {
-        .diagram-foto, .diagram-avatar {
-            width: 45px;
-            height: 45px;
-            font-size: 16px;
-        }
-        .diagram-name {
-            font-size: 9px;
-        }
-        .diagram-year {
-            font-size: 8px;
-        }
-        .children-container {
-            gap: 15px;
-        }
-        .couple-group {
-            gap: 10px;
-        }
-}  
+    .couple-group {
+        gap: 5px;
+    }
+}
   </style>
 </head>
 <body>
@@ -1031,13 +1030,14 @@ function getFotoForDiagram(item) {
 }
 
 // Render Diagram: Pasangan Selevel, Anak di Bawah (Rekursif)
+// Render Diagram Horisontal: Pasangan Selevel, Anak di Bawah
 function renderTreeDiagram(node) {
     if (!node) return '';
 
-    const getYear = (dateStr) => { 
-        if (!dateStr) return ''; 
-        try { return new Date(dateStr).getFullYear(); } 
-        catch(e) { return ''; } 
+    const getYear = (dateStr) => {
+        if (!dateStr) return '';
+        try { return new Date(dateStr).getFullYear(); }
+        catch(e) { return ''; }
     };
 
     const renderFoto = (person) => {
@@ -1070,7 +1070,7 @@ function renderTreeDiagram(node) {
         `;
     }
 
-    // Gabungkan pasangan dalam satu baris (selevel)
+    // Gabungkan pasangan dalam satu grup (selevel)
     const coupleHtml = `
         <div class="couple-group">
             ${suamiHtml}
@@ -1078,26 +1078,25 @@ function renderTreeDiagram(node) {
         </div>
     `;
 
-    // Jika tidak punya anak, kembalikan hanya pasangan
-    if (!node.children || node.children.length === 0) {
-        return `<li>${coupleHtml}</li>`;
-    }
-
     // Proses anak-anak secara rekursif
     let childrenHtml = '';
-    node.children.forEach(child => {
-        childrenHtml += renderTreeDiagram(child);
-    });
-
-    // Bungkus dengan container anak dan garis penghubung
-    return `
-        <li class="child-item">
-            ${coupleHtml}
-            <div class="children-container">
-                ${childrenHtml}
+    if (node.children && node.children.length > 0) {
+        node.children.forEach(child => {
+            childrenHtml += renderTreeDiagram(child);
+        });
+        // Bungkus dengan container anak dan garis penghubung
+        return `
+            <div class="child-item">
+                ${coupleHtml}
+                <div class="children-container">
+                    ${childrenHtml}
+                </div>
             </div>
-        </li>
-    `;
+        `;
+    }
+
+    // Jika tidak punya anak, kembalikan hanya pasangan
+    return `<div class="child-item">${coupleHtml}</div>`;
 }
 
 // Buka modal diagram (dinamis - sama seperti viewDetail)
