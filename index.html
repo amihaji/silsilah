@@ -113,7 +113,8 @@
     /* Ganti style foto-thumb */
     .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #023a7a; }
 
-    /* Styling untuk diagram pohon keluarga - versi minimalis */
+
+    /* Diagram pohon horizontal dengan garis T terbalik */
     .tree-diagram {
         font-family: 'Segoe UI', sans-serif;
         padding: 20px;
@@ -121,133 +122,134 @@
         overflow-x: auto;
         overflow-y: auto;
         max-height: 550px;
-        white-space: nowrap; /* Mencegah anak pindah ke baris baru */
         text-align: center;
     }
+
     .tree-root {
         list-style: none;
-        padding-left: 0;
+        padding: 0;
         margin: 0;
-        display: inline-flex; /* Mengubah menjadi inline-flex */
-        flex-direction: row; /* Menyusun anak secara horizontal */
+        display: inline-flex;
+        flex-direction: row;
         justify-content: center;
         gap: 40px;
     }
-    .tree-root > li {
+    .tree-root, .tree-root li {
         list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .family-node {
+        display: inline-block;
+        vertical-align: top;
         text-align: center;
         position: relative;
-        display: inline-block; /* Menampilkan setiap pasangan secara horizontal */
-        vertical-align: top;
     }
-    /* Grup Pasangan (Suami + Istri) */
+
     .couple-group {
         display: flex;
         flex-direction: row;
         justify-content: center;
         align-items: center;
-        gap: 10px;
-        margin-bottom: 20px;
-        position: relative;
+        gap: 15px;
+        margin-bottom: 30px; /* ruang untuk garis */
     }
-    .couple-connector {
-        font-size: 16px;
-        color: #999;
-        margin: 0 5px;
-    }
+
     .diagram-node {
         text-align: center;
         margin: 5px;
-        transition: transform 0.2s;
-        display: inline-block;
-    }
-    /* Container Anak (di bawah pasangan) */
-    .children-container {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        gap: 40px;
-        position: relative;
-        margin-top: 30px;
-        padding-top: 20px;
     }
 
-    /* Garis vertikal dari pasangan ke garis horizontal (bagian bawah T) */
-    .children-container::before {
-        content: '';
-        position: absolute;
-        top: -20px;          /* naik ke atas container */
-        left: 50%;
-        transform: translateX(-50%);
-        width: 2px;
-        height: 20px;
-        background: #aaa;
-    }
-
-    /* Garis horizontal (bagian atas T) */
-    .children-container::after {
-        content: '';
-        position: absolute;
-        top: -20px;          /* sejajar dengan ujung atas garis vertikal */
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: #aaa;
-    }
-
-    /* Container Setiap Anak */
-    .child-item {
-        display: inline-block;
-        vertical-align: top;
-        position: relative;
-    }
-
-    /* Garis vertikal dari garis horizontal ke anak */
-    .child-item::before {
-        content: '';
-        position: absolute;
-        top: -20px;          /* dari posisi garis horizontal */
-        left: 50%;
-        transform: translateX(-50%);
-        width: 2px;
-        height: 20px;
-        background: #aaa;
-    }
-    /* Foto/ Avatar Diagram */
     .diagram-foto {
         width: 60px;
         height: 60px;
         object-fit: cover;
         border-radius: 50%;
         border: 2px solid #1A365D;
-        margin-bottom: 5px;
         background: white;
     }
+
     .diagram-avatar {
         width: 60px;
         height: 60px;
         background-color: #1A365D;
         border-radius: 50%;
-        display: inline-flex;
+        display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-weight: bold;
         font-size: 20px;
-        margin: 0 auto 5px auto;
-        border: 2px solid #1A365D;
+        margin: 0 auto;
     }
+
     .diagram-name {
         font-size: 12px;
         font-weight: 600;
         color: #333;
-        margin-bottom: 2px;
-        max-width: 100px;
+        margin-top: 5px;
     }
+
     .diagram-year {
         font-size: 10px;
         color: #666;
     }
+
+    /* ========= GARIS T TERBALIK ========= */
+    .children-connector {
+        position: relative;
+        margin-top: 5px;
+    }
+
+    /* Garis vertikal dari orang tua ke horizontal */
+    .children-connector::before {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 20px;
+        background: #aaa;
+    }
+
+    /* Garis horizontal di atas anak-anak */
+    .children-connector::after {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #aaa;
+    }
+
+    .children-wrapper {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        gap: 40px;
+        position: relative;
+        padding-top: 20px;
+    }
+
+    /* Garis vertikal ke setiap anak */
+    .family-node {
+        position: relative;
+    }
+
+    .family-node::before {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 20px;
+        background: #aaa;
+    }
+
     /* Responsif */
     @media (max-width: 768px) {
         .diagram-foto, .diagram-avatar {
@@ -255,18 +257,10 @@
             height: 45px;
             font-size: 16px;
         }
-        .diagram-name {
-            font-size: 10px;
-        }
-        .diagram-year {
-            font-size: 8px;
-        }
-        .children-container {
-            gap: 20px;
-        }
-        .couple-group {
-            gap: 5px;
-        }
+        .diagram-name { font-size: 10px; }
+        .diagram-year { font-size: 8px; }
+        .children-wrapper { gap: 20px; }
+        .couple-group { gap: 8px; }
     }
   </style>
 </head>
@@ -1043,7 +1037,7 @@ function getFotoForDiagram(item) {
 }
 
 // Render Diagram: Pasangan Selevel, Anak di Bawah (Rekursif)
-// Render Diagram Horisontal: Pasangan Selevel, Anak di Bawah
+// Render Diagram Horizontal dengan Garis T Terbalik
 function renderTreeDiagram(node) {
     if (!node) return '';
 
@@ -1072,7 +1066,6 @@ function renderTreeDiagram(node) {
     `;
 
     let istriHtml = '';
-    // Jika ada pasangan, buat node Istri
     if (node.spouse && node.spouse.nama) {
         istriHtml = `
             <div class="diagram-node">
@@ -1083,7 +1076,6 @@ function renderTreeDiagram(node) {
         `;
     }
 
-    // Gabungkan pasangan dalam satu grup (selevel)
     const coupleHtml = `
         <div class="couple-group">
             ${suamiHtml}
@@ -1091,25 +1083,28 @@ function renderTreeDiagram(node) {
         </div>
     `;
 
+    // Jika tidak punya anak
+    if (!node.children || node.children.length === 0) {
+        return `<div class="family-node">${coupleHtml}</div>`;
+    }
+
     // Proses anak-anak secara rekursif
     let childrenHtml = '';
-    if (node.children && node.children.length > 0) {
-        node.children.forEach(child => {
-            childrenHtml += renderTreeDiagram(child);
-        });
-        // Bungkus dengan container anak dan garis penghubung
-        return `
-            <div class="child-item">
-                ${coupleHtml}
-                <div class="children-container">
+    node.children.forEach(child => {
+        childrenHtml += renderTreeDiagram(child);
+    });
+
+    // Bungkus dengan container khusus untuk garis T terbalik
+    return `
+        <div class="family-node">
+            ${coupleHtml}
+            <div class="children-connector">
+                <div class="children-wrapper">
                     ${childrenHtml}
                 </div>
             </div>
-        `;
-    }
-
-    // Jika tidak punya anak, kembalikan hanya pasangan
-    return `<div class="child-item">${coupleHtml}</div>`;
+        </div>
+    `;
 }
 
 // Buka modal diagram (dinamis - sama seperti viewDetail)
