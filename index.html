@@ -147,14 +147,13 @@
         margin-bottom: 5px;  /* 30px jarak antara pasangan dan garis horizontal */
     }
     .couple-connector {
-        
         font-size: 24px;      /* Ukuran siombol "x" dan "+" */
         font-weight: bold;
         display: inline-flex;
         align-items:center;
         justify-content: center;
         min-width: 10px;     /* kurangi dari 40px = untuk mengatur jarak suami dan istri */
-        margin: 0 100 2px;       /* kurangi margin samping = untuk mengatur jarak suami dan istri */
+        margin: 0 2px;       /* kurangi margin samping = untuk mengatur jarak suami dan istri */
         color: #2c3e66;
     }
 
@@ -201,7 +200,7 @@
         left: 50%;
         transform: translateX(-50%);
         width: 2px;
-        height: 20px;
+        height: 40px;   /* 20 */
         background-color: #555;
         z-index: 1;
     }
@@ -240,6 +239,8 @@
         font-size: 10px;
         color: #666;
     }
+
+    /* Untuk mobile device */
     @media (max-width: 768px) {
         .diagram-foto, .diagram-avatar { width: 45px; height: 45px; font-size: 16px; }
         .diagram-name { font-size: 10px; }
@@ -1081,7 +1082,7 @@ function renderTreeDiagram(node) {
     node.children.forEach(child => {
         childrenHtml += renderTreeDiagram(child);
     });
-    // Bungkus dengan container khusus untuk garis T terbalik
+    // Bungkus dengan container khusus untuk garis "⊥"
     return `
         <div class="family-node">
             ${coupleHtml}
