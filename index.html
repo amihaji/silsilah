@@ -138,6 +138,16 @@
         vertical-align: top;
         text-align: center;
     }
+    .couple-connector {
+        font-size: 24px;      /* perbesar simbol */
+        font-weight: bold;
+        margin: 0 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 40px;
+        color: #2c3e66;
+    }
     .couple-group {
         display: flex;
         flex-direction: row;
@@ -1009,8 +1019,56 @@ function getFotoForDiagram(item) {
 }
 
 // Render Diagram: Pasangan Selevel, Anak di Bawah (Rekursif)
-// Render Diagram Horizontal dengan Garis T Terbalik
 function renderTreeDiagram(node) {
+    if (!node) return '';
+    const getYear = (dateStr) => {
+        if (!dateStr) return '';
+        try { return new Date(dateStr).getFullYear(); }
+        catch(e) { return ''; }
+    };
+
+    const renderFoto = (person) => {
+        const initials = getInitials(person.nama);
+        if (person.foto && person.foto.includes('http')) {
+            return `<img src="${person.foto}" class="diagram-foto" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\"diagram-avatar\">${initials}</div>';">`;
+        } else {
+            return `<div class="diagram-avatar">${initials}</div>`;
+        }
+    };
+
+    // Node suami
+    const suamiHtml = `<div class="diagram-node">${renderFoto(node)}<div class="diagram-name">${node.nama || '-'}</div><div class="diagram-year">${getYear(node.tglLahir)}</div></div>`;
+    let istriHtml = '';
+    let connectorSymbol = '+';
+    if (node.spouse && node.spouse.nama) {
+        istriHtml = `<div class="diagram-node">${renderFoto(node.spouse)}<div class="diagram-name">${node.spouse.nama || '-'}</div><div class="diagram-year">${getYear(node.spouse.tglLahir)}</div></div>`;
+        // Tentukan simbol berdasarkan status kawin (dari node suami)
+        if (node.statusKawin === 'Cerai') {
+            connectorSymbol = 'x';
+        } else {
+            connectorSymbol = '+';
+        }
+    }
+
+    const coupleHtml = `<div class="couple-group">${suamiHtml}${istriHtml ? `<div class="couple-connector">${connectorSymbol}</div>${istriHtml}` : ''}</div>`;
+  if (!node.children || node.children.length === 0) {
+        return `<div class="family-node">${coupleHtml}</div>`;
+    }
+
+    let childrenHtml = '';
+    node.children.forEach(child => {
+        childrenHtml += renderTreeDiagram(child);
+    });
+
+    return `<div class="family-node">
+                ${coupleHtml}
+                <div class="children-connector">
+                    <div class="children-wrapper">${childrenHtml}</div>
+                </div>
+            </div>`;
+}
+
+function BACKUP_renderTreeDiagram(node) {
     if (!node) return '';
 
     const getYear = (dateStr) => {
