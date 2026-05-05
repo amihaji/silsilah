@@ -1020,7 +1020,7 @@ function getFotoForDiagram(item) {
 }
 
 // Render Diagram: Pasangan Selevel, Anak di Bawah (Rekursif)
-function BACKUP_renderTreeDiagram(node) {
+function renderTreeDiagram(node) {
     if (!node) return '';
     const getYear = (dateStr) => {
         if (!dateStr) return '';
@@ -1031,44 +1031,70 @@ function BACKUP_renderTreeDiagram(node) {
     const renderFoto = (person) => {
         const initials = getInitials(person.nama);
         if (person.foto && person.foto.includes('http')) {
-            return `<img src="${person.foto}" class="diagram-foto" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\"diagram-avatar\">${initials}</div>';">`;
+            return `<img src="${person.foto}" class="diagram-foto" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'diagram-avatar\'>${initials}</div>';">`;
         } else {
             return `<div class="diagram-avatar">${initials}</div>`;
         }
     };
 
-    // Node suami
-    const suamiHtml = `<div class="diagram-node">${renderFoto(node)}<div class="diagram-name">${node.nama || '-'}</div><div class="diagram-year">${getYear(node.tglLahir)}</div></div>`;
+    // Node Suami
+    const suamiHtml = `
+        <div class="diagram-node">
+            ${renderFoto(node)}
+            <div class="diagram-name">${node.nama || '-'}</div>
+            <div class="diagram-year">${getYear(node.tglLahir)}</div>
+        </div>
+    `;
+
     let istriHtml = '';
     if (node.spouse && node.spouse.nama) {
-        istriHtml = `<div class="diagram-node">${renderFoto(node.spouse)}<div class="diagram-name">${node.spouse.nama || '-'}</div><div class="diagram-year">${getYear(node.spouse.tglLahir)}</div></div>`;
+        istriHtml = `
+            <div class="diagram-node">
+                ${renderFoto(node.spouse)}
+                <div class="diagram-name">${node.spouse.nama || '-'}</div>
+                <div class="diagram-year">${getYear(node.spouse.tglLahir)}</div>
+            </div>
+        `;
     }
 
-    // ========= PERUBAHAN MINIMAL: tentukan simbol =========
+    // ========= PERUBAHAN MINIMAL: tentukan simbol berdasarkan status kawin =========
     let connectorSymbol = '+';
     if (node.statusKawin && node.statusKawin.toLowerCase() === 'cerai') {
         connectorSymbol = 'x';
     }
-  
-    // Gunakan connectorSymbol di dalam coupleHtml (struktur HTML tetap persis seperti asli)
-    const coupleHtml = `<div class="couple-group">${suamiHtml}${istriHtml ? `<div class="couple-connector">${connectorSymbol}</div>${istriHtml}` : ''}</div>`;
+    // =============================================================================
+
+    const coupleHtml = `
+        <div class="couple-group">
+            ${suamiHtml}
+            ${istriHtml ? `<div class="couple-connector">${connectorSymbol}</div>${istriHtml}` : ''}
+        </div>
+    `;
+
+    // Jika tidak punya anak
     if (!node.children || node.children.length === 0) {
         return `<div class="family-node">${coupleHtml}</div>`;
     }
 
+    // Proses anak-anak secara rekursif
     let childrenHtml = '';
     node.children.forEach(child => {
         childrenHtml += renderTreeDiagram(child);
     });
-    return `<div class="family-node">
-                ${coupleHtml}
-                <div class="children-connector">
-                    <div class="children-wrapper">${childrenHtml}</div>
+    // Bungkus dengan container khusus untuk garis T terbalik
+    return `
+        <div class="family-node">
+            ${coupleHtml}
+            <div class="children-connector">
+                <div class="children-wrapper">
+                    ${childrenHtml}
                 </div>
-            </div>`;
+            </div>
+        </div>
+    `;
 }
 
-function renderTreeDiagram(node) {
+function BACKUP_renderTreeDiagram(node) {
     if (!node) return '';
     const getYear = (dateStr) => {
         if (!dateStr) return '';
