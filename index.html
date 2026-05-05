@@ -113,7 +113,6 @@
     /* Ganti style foto-thumb */
     .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #023a7a; }
 
-
     /* Diagram pohon horizontal dengan garis T terbalik */
     .tree-diagram {
         font-family: 'Segoe UI', sans-serif;
@@ -124,7 +123,6 @@
         max-height: 550px;
         text-align: center;
     }
-
     .tree-root {
         list-style: none;
         padding: 0;
@@ -139,28 +137,70 @@
         margin: 0;
         padding: 0;
     }
-
     .family-node {
+        position: relative;      /* ← PENTING: agar ::before posisi absolut mengacu ke node ini */
         display: inline-block;
         vertical-align: top;
         text-align: center;
-        position: relative;
     }
-
     .couple-group {
         display: flex;
         flex-direction: row;
         justify-content: center;
         align-items: center;
         gap: 15px;
-        margin-bottom: 30px; /* ruang untuk garis */
+        margin-bottom: 30px;      /* jarak dari pasangan ke garis horizontal */
     }
-
+    /* ========= GARIS T TERBALIK (diperbaiki) ========= */
+    .children-connector {
+        position: relative;
+        margin-top: 0;
+    }
+    /* Garis vertikal dari pasangan ke garis horizontal */
+    .children-connector::before {
+        content: '';
+        position: absolute;
+        top: -30px;               /* ← setinggi margin-bottom couple-group */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 30px;             /* ← panjang tepat 30px */
+        background: #aaa;
+    }
+    /* Garis horizontal di atas anak-anak */
+    .children-connector::after {
+        content: '';
+        position: absolute;
+        top: -30px;               /* ← sinkron dengan ::before */
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #aaa;
+    }
+    .children-wrapper {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        gap: 40px;
+        position: relative;
+        padding-top: 20px;        /* jarak dari garis horizontal ke node anak */
+    }
+    /* Garis vertikal dari garis horizontal ke setiap anak */
+    .family-node::before {
+        content: '';
+        position: absolute;
+        top: -20px;               /* = padding-top children-wrapper */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 20px;
+        background: #aaa;
+    }
+    /* Perbaiki tampilan node diagram */
     .diagram-node {
         text-align: center;
         margin: 5px;
     }
-
     .diagram-foto {
         width: 60px;
         height: 60px;
@@ -169,7 +209,6 @@
         border: 2px solid #1A365D;
         background: white;
     }
-
     .diagram-avatar {
         width: 60px;
         height: 60px;
@@ -183,73 +222,16 @@
         font-size: 20px;
         margin: 0 auto;
     }
-
     .diagram-name {
         font-size: 12px;
         font-weight: 600;
         color: #333;
         margin-top: 5px;
     }
-
     .diagram-year {
         font-size: 10px;
         color: #666;
     }
-
-    /* ========= GARIS T TERBALIK ========= */
-    .children-connector {
-        position: relative;
-        margin-top: 5px;
-    }
-
-    /* Garis vertikal dari orang tua ke horizontal */
-    .children-connector::before {
-        content: '';
-        position: absolute;
-        top: -20px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 2px;
-        height: 20px;
-        background: #aaa;
-    }
-
-    /* Garis horizontal di atas anak-anak */
-    .children-connector::after {
-        content: '';
-        position: absolute;
-        top: -20px;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: #aaa;
-    }
-
-    .children-wrapper {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        gap: 40px;
-        position: relative;
-        padding-top: 20px;
-    }
-
-    /* Garis vertikal ke setiap anak */
-    .family-node {
-        position: relative;
-    }
-
-    .family-node::before {
-        content: '';
-        position: absolute;
-        top: -20px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 2px;
-        height: 20px;
-        background: #aaa;
-    }
-
     /* Responsif */
     @media (max-width: 768px) {
         .diagram-foto, .diagram-avatar {
@@ -262,6 +244,7 @@
         .children-wrapper { gap: 20px; }
         .couple-group { gap: 8px; }
     }
+
   </style>
 </head>
 <body>
