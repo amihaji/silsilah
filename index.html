@@ -153,50 +153,46 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: 30px;     /* kurangi dari 40px = untuk mengatur jarak suami dan istri */
+        min-width: 10px;     /* kurangi dari 40px = untuk mengatur jarak suami dan istri */
         margin: 0 2px;       /* kurangi margin samping = untuk mengatur jarak suami dan istri */
         color: #2c3e66;
     }
 
-
-/* ========= PERBAIKAN GARIS HORIZONTAL TIDAK BERLEBIH ========= */
-.children-connector {
-    position: relative;
-    display: inline-block;    /* lebar mengikuti isi (children-wrapper) */
-}
-
-.children-connector::before {
-    content: '';
-    position: absolute;
-    top: -30px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 2px;
-    height: 30px;
-    background-color: #555;
-    z-index: 1;
-}
-
-.children-connector::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: #555;
-    z-index: 1;
-}
-
-.children-wrapper {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: center;
-    gap: 40px;
-    position: relative;
-    padding-top: 20px;
-}
+    /* GARIS HORIZONTAL TIDAK BERLEBIH */
+    .children-connector {
+        position: relative;
+        display: inline-block;    /* lebar mengikuti isi (children-wrapper) */
+    }
+    .children-connector::before {
+        content: '';
+        position: absolute;
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 30px;
+        background-color: #555;
+        z-index: 1;
+    }
+    .children-connector::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #555;
+        z-index: 1;
+    }
+    .children-wrapper {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: center;
+        gap: 40px;
+        position: relative;
+        padding-top: 20px;
+    }
     /* Garis vertikal dari garis horizontal ke setiap anak */
     .family-node::before {
         content: '';
