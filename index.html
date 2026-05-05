@@ -114,45 +114,7 @@
     .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #023a7a; }
 
     /* Diagram pohon horizontal dengan garis T terbalik */
-    .tree-diagram {
-        font-family: 'Segoe UI', sans-serif;
-        padding: 20px;
-        background: transparent;
-        overflow-x: auto;
-        overflow-y: auto;
-        max-height: 550px;
-        text-align: center;
-    }
-    .tree-root {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: inline-flex;
-        flex-direction: row;
-        justify-content: center;
-        gap: 40px;
-    }
-    .tree-root, .tree-root li {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-    }
-    .family-node {
-        position: relative;      /* ← PENTING: agar ::before posisi absolut mengacu ke node ini */
-        display: inline-block;
-        vertical-align: top;
-        text-align: center;
-    }
-    .couple-group {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 30px;      /* jarak dari pasangan ke garis horizontal */
-    }
-    /* ========= GARIS T TERBALIK (diperbaiki) ========= */
-    /* ========= DIAGRAM POHON HORIZONTAL (T TERBALIK) ========= */
+    /* ========= DIAGRAM POHON (BENTUK ⊥) ========= */
     .tree-diagram {
         font-family: 'Segoe UI', sans-serif;
         padding: 20px;
@@ -171,7 +133,7 @@
         padding: 0;
     }
     .family-node {
-        position: relative;      /* kunci untuk pseudo-elemen */
+        position: relative;
         display: inline-block;
         vertical-align: top;
         text-align: center;
@@ -182,16 +144,16 @@
         justify-content: center;
         align-items: center;
         gap: 20px;
-        margin-bottom: 30px;      /* ruang untuk garis vertikal dari couple ke horizontal */
+        margin-bottom: 30px;   /* jarak antara pasangan dan garis horizontal */
     }
-    /* GARIS VERTIKAL DARI ORANGTUA KE GARIS HORIZONTAL */
+    /* Garis vertikal dari pasangan ke garis horizontal */
     .children-connector {
         position: relative;
     }
     .children-connector::before {
         content: '';
         position: absolute;
-        top: -30px;               /* sesuai margin-bottom couple-group */
+        top: -30px;            /* naik setinggi margin-bottom */
         left: 50%;
         transform: translateX(-50%);
         width: 2px;
@@ -199,11 +161,11 @@
         background-color: #555;
         z-index: 1;
     }
-    /* GARIS HORIZONTAL DI ATAS ANAK-ANAK */
+    /* Garis horizontal (⊥) di posisi top:0 */
     .children-connector::after {
         content: '';
         position: absolute;
-        top: -30px;               /* sejajar dengan ujung vertikal */
+        top: 0;                /* <-- kunci: di sini, bukan di -30px */
         left: 0;
         right: 0;
         height: 2px;
@@ -216,13 +178,13 @@
         justify-content: center;
         gap: 40px;
         position: relative;
-        padding-top: 20px;        /* ruang untuk garis vertikal ke anak */
+        padding-top: 20px;     /* ruang untuk garis vertikal anak */
     }
-    /* GARIS VERTIKAL DARI HORIZONTAL KE MASING-MASING ANAK */
+    /* Garis vertikal dari garis horizontal ke setiap anak */
     .family-node::before {
         content: '';
         position: absolute;
-        top: -20px;               /* = padding-top children-wrapper */
+        top: -20px;            /* naik setinggi padding-top */
         left: 50%;
         transform: translateX(-50%);
         width: 2px;
@@ -230,7 +192,7 @@
         background-color: #555;
         z-index: 1;
     }
-    /* TAMPILAN NODE */
+    /* Tampilan node */
     .diagram-node {
         text-align: center;
         margin: 5px;
