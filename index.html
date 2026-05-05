@@ -1020,7 +1020,7 @@ function getFotoForDiagram(item) {
 }
 
 // Render Diagram: Pasangan Selevel, Anak di Bawah (Rekursif)
-function renderTreeDiagram(node) {
+function BVACKUP_renderTreeDiagram(node) {
     if (!node) return '';
     const getYear = (dateStr) => {
         if (!dateStr) return '';
@@ -1068,7 +1068,7 @@ function renderTreeDiagram(node) {
             </div>`;
 }
 
-function BACKUP_renderTreeDiagram(node) {
+function renderTreeDiagram(node) {
     if (!node) return '';
     const getYear = (dateStr) => {
         if (!dateStr) return '';
