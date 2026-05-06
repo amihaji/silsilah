@@ -415,7 +415,7 @@
               -->
               <div class="input-group mt-2" id="divPasangan" style="display:none;">
                 <span class="input-group-text"> <i class="fas fa-restroom"> </i></span>
-                <input type="text" id="namaPasangan" class="form-control" placeholder="inputNamaPasangan" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required >
+                <input type="text" id="namaPasangan" class="form-control" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required >
               </div>
 
               <!--
@@ -1501,18 +1501,18 @@ function openDiagram() {
         const statusKawin = document.getElementById('statusKawin').value;
         const divPasangan = document.getElementById('divPasangan');
         //const labelPasangan = document.getElementById('labelPasangan');
-        const namaPasangan = document.placeholder('inputNamaPasangan');
+        const namaPasangan = document.getElementById('namaPasangan');
         let show = false;
         if (jk === "pria") {
             if (statusKawin === "kawin" || statusKawin === "cerai") {
                 // labelPasangan.innerText = "Nama Istri";
-                namaPasangan.innerText = "Nama Istri Anda";
+                namaPasangan.ariaPlaceholder = "Nama Istri Anda";
                 show = true;
             }
         } else if (jk === "wanita") {
             if (statusKawin === "kawin" || statusKawin === "cerai") {
                 // labelPasangan.innerText = "Nama Suami";
-                namaPasangan.innerText = "Nama Suami Anda";
+                namaPasangan.ariaPlaceholder = "Nama Suami Anda";
                 show = true;
             }
         }
