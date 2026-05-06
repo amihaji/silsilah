@@ -147,7 +147,7 @@
         margin-bottom: 5px;   /* 30px jarak antara pasangan dan garis horizontal */
     }
     .couple-connector {
-        font-size: 24px;      /* Ukuran siombol "x" dan "+" */
+        font-size: 24px;      /* Ukuran simbol "x" dan "+" */
         font-weight: bold;
         display: inline-flex;
         align-items:center;
@@ -335,49 +335,23 @@
             <input type="hidden" id="formId">
             <input type="hidden" id="fotoLama">
             <div class="row g-3">
-              <!--
-              <div class="col-md-12">
-                <label class="form-label">Nama Lengkap</label>
-                <input type="text" id="nama" class="form-control" required>
-              </div>
-              -->
+             
               <div class="input-group mt-2">
                 <span class="input-group-text"> <i class="fas fa-user-alt"> </i></span>
                 <input type="text" id="nama" class="form-control" placeholder="Input nama anda tanpa nama ayah" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required >
               </div>
 
-              <!--
-              <div class="col-md-12">
-                <label class="form-label">Tanggal Lahir</label>
-                <input type="date" id="tglLahir" class="form-control">
-              </div>
-              -->
               <div class="input-group mt-2">
                 <span class="input-group-text">Tgl Lahir</span>
                 <input type="date" id="tglLahir" placeholder="Input tgl lahir" class="form-control" required>
               </div>
 
-             <!-- 
-              <div class="col-md-12">
-                <label class="form-label">Unggah Foto</label>
-                <input type="file" id="fotoFile" class="form-control" accept="image/*">
-              </div>
-              -->
               <div class="input-group mt-2">
                 <span class="input-group-text"><i class="material-icons">add_a_photo</i></span>
                 <input type="file" id="fotoFile" class="form-control" accept="image/*">
                 <!-- <input type="file" id="fotoFile" accept="image/*"> -->
               </div>
 
-              <!---
-              <div class="col-md-12">
-                <label class="form-label">Jenis Kelamin</label>
-                <select id="jk" class="form-select" onchange="togglePasangan()">
-                  <option value="Pria">Pria</option>
-                  <option value="Wanita">Wanita</option>
-                </select>
-              </div>
-              -->
               <div class="input-group mt-2">
                 <span class="input-group-text"><i class="fas fa-venus-mars"></i></span>
                 <select id="jk" class="form-select" onchange="togglePasangan()" required>
@@ -386,17 +360,7 @@
                    <option value="wanita">wanita</option>
                 </select>
               </div>
-              
-              <!--
-              <div class="col-md-12">
-                <label class="form-label">Status Perkawinan</label>
-                <select id="statusKawin" class="form-select" onchange="togglePasangan()">  
-                   <option value="Lajang">Lajang</option>
-                   <option value="Kawin">Kawin</option>
-                   <option value="Cerai">Cerai</option>
-                </select>
-              </div>
-              -->
+         
               <div class="input-group mt-2">
                 <span class="input-group-text"><i class="fas fa-heart"></i></span>
                 <select id="statusKawin" class="form-select" onchange="togglePasangan()" required>
@@ -406,34 +370,11 @@
                     <option value="cerai">cerai</option>
                 </select>
               </div>
-              
-              <!--
-              <div class="col-md-12" id="divPasangan" style="display:none;">
-                <label class="form-label" id="labelPasangan">Nama Pasangan</label>
-                <input type="text" id="namaPasangan" class="form-control form-control-sm">
-              </div>
-              -->
              
               <div class="input-group mt-2" id="divPasangan" style="display:none;">
                 <!-- DISINI Tampil Nama Pasangan, melalui fungsi togglePasangan -->
-                <!-- 
-                     <span class="input-group-text"> <i class="fas fa-restroom"> </i></span> 
-                     <input type="text" id="namaPasangan" class="form-control" placeholder="Input nama pasangan anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required > 
-                -->     
               </div>
 
-              <!--
-              <div class="col-md-12">
-                <label class="form-label">Status Keluarga</label>
-                <select id="statusKeluarga" class="form-select">
-                  <option value="Suami">Suami</option>
-                  <option value="Ex Suami">Ex Suami</option>
-                  <option value="Istri">Istri</option>
-                  <option value="Ex Istri">Ex Istri</option>
-                  <option value="Anak">Anak</option>
-                </select>
-              </div>
-              -->
               <div class="input-group mt-2">
                 <span class="input-group-text"><i class="fas fa-users"></i></span>
                 <select id="statusKeluarga" class="form-select" required>
@@ -445,46 +386,22 @@
                     <option value="anak">anak</option>
                 </select>
               </div>
-              
-              <!--
-              <div class="col-md-12">
-                <label class="form-label">Alamat Lengkap</label>
-                <textarea id="alamat" class="form-control" rows="2"></textarea>
-              </div>
-              -->
+         
               <div class="input-group mt-2">
                 <span class="input-group-text"> <i class="fas fa-address-book"> </i></span>
                 <input type="text" id="alamat" class="form-control" placeholder="Input alamat anda" oninput="this.value = this.value.toLowerCase().substring(0, 80)" maxlength="80" pattern="[A-Za-z ]+">
               </div>
 
-              <!--
-              <div class="col-md-12">
-                <label class="form-label">Kota</label>
-                <input type="text" id="kota" class="form-control">
-              </div>
-              -->
               <div class="input-group mt-2">
                 <span class="input-group-text"> <i class="fas fa-city"> </i></span>
                 <input type="text" id="kota" class="form-control" placeholder="Input kota anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+">
               </div>
 
-              <!--
-              <div class="col-md-12">
-                <label class="form-label">Nama Ayah</label>
-                <input type="text" id="ayah" class="form-control">
-              </div>
-              -->
               <div class="input-group mt-2">
                 <span class="input-group-text"> <i class="fas fa-male"> </i></span>
                 <input type="text" id="ayah" class="form-control" placeholder="Input nama ayah anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required>
               </div>
 
-              <!--
-              <div class="col-md-12">
-                <label class="form-label">Nama Ibu</label>
-                <input type="text" id="ibu" class="form-control">
-              </div>
-              -->
               <div class="input-group mt-2">
                 <span class="input-group-text"> <i class="fas fa-female"> </i></span>
                 <input type="text" id="ibu" class="form-control" placeholder="Input nama ibu anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required>
@@ -1522,7 +1439,6 @@ function openDiagram() {
                 show = true;
             }
         }
-        
         if (show) {
             divPasangan.style.display = "flex";
         } else {
@@ -1530,31 +1446,6 @@ function openDiagram() {
             divPasangan.innerHTML = "";
         }
     }
-
-    function BACKUP_togglePasangan() {
-        const jk = document.getElementById('jk').value;
-        const statusKawin = document.getElementById('statusKawin').value;
-        const divPasangan = document.getElementById('divPasangan');
-        const labelPasangan = document.getElementById('labelPasangan');
-        //const namaPasangan = document.getElementById('namaPasangan');
-        let show = false;
-        if (jk === "pria") {
-            if (statusKawin === "kawin" || statusKawin === "cerai") {
-                labelPasangan.innerText = "Nama Istri";
-                // namaPasangan.innerHTML = "Nama Istri Anda";
-                show = true;
-            }
-        } else if (jk === "wanita") {
-            if (statusKawin === "kawin" || statusKawin === "cerai") {
-                labelPasangan.innerText = "Nama Suami";
-                //namaPasangan.innerText= "Nama Suami Anda";
-                show = true;
-            }
-        }
-        divPasangan.style.display = show ? "block" : "none";
-        if (!show) document.getElementById('namaPasangan').value = "";
-    }
-
 
     /*****************************************************************
      * Fungsi Pesan General
