@@ -1506,13 +1506,13 @@ function openDiagram() {
         if (jk === "pria") {
             if (statusKawin === "kawin" || statusKawin === "cerai") {
                 // labelPasangan.innerText = "Nama Istri";
-                namaPasangan.ariaPlaceholder = "Nama Istri Anda";
+                namaPasangan.innerHTML = "Nama Istri Anda";
                 show = true;
             }
         } else if (jk === "wanita") {
             if (statusKawin === "kawin" || statusKawin === "cerai") {
                 // labelPasangan.innerText = "Nama Suami";
-                namaPasangan.ariaPlaceholder = "Nama Suami Anda";
+                namaPasangan.innerText= "Nama Suami Anda";
                 show = true;
             }
         }
