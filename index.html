@@ -337,7 +337,7 @@
             <div class="row g-3">
              
               <div class="input-group mt-2">
-                <span class="input-group-text"> <i class="fas fa-user-alt"> </i></span>
+                <span class="input-group-text"><i class="fas fa-user-alt"></i></span>
                 <input type="text" id="nama" class="form-control" placeholder="Input nama anda tanpa nama ayah" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required >
               </div>
 
@@ -388,22 +388,22 @@
               </div>
          
               <div class="input-group mt-2">
-                <span class="input-group-text"> <i class="fas fa-address-book"> </i></span>
+                <span class="input-group-text"><i class="fas fa-address-book"></i></span>
                 <input type="text" id="alamat" class="form-control" placeholder="Input alamat anda" oninput="this.value = this.value.toLowerCase().substring(0, 80)" maxlength="80" pattern="[A-Za-z ]+">
               </div>
 
               <div class="input-group mt-2">
-                <span class="input-group-text"> <i class="fas fa-city"> </i></span>
+                <span class="input-group-text"><i class="fas fa-city"></i></span>
                 <input type="text" id="kota" class="form-control" placeholder="Input kota anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+">
               </div>
 
               <div class="input-group mt-2">
-                <span class="input-group-text"> <i class="fas fa-male"> </i></span>
+                <span class="input-group-text"><i class="fas fa-male"></i></span>
                 <input type="text" id="ayah" class="form-control" placeholder="Input nama ayah anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required>
               </div>
 
               <div class="input-group mt-2">
-                <span class="input-group-text"> <i class="fas fa-female"> </i></span>
+                <span class="input-group-text"><i class="fas fa-female"></i></span>
                 <input type="text" id="ibu" class="form-control" placeholder="Input nama ibu anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required>
               </div>
 
@@ -1293,7 +1293,6 @@ function openDiagram() {
         return { ...ayahData, spouse: spouse, children: anakNodes };
     }
 
-    // Generate Diagram (memanggil buildFamilyTreeByAyah)
     // Generate Diagram (memanggil buildFamilyTreeByAyah dan renderTreeDiagram)
     function generateDiagram() {
         const selectEl = document.getElementById('pilihNamaDiagram');
@@ -1350,10 +1349,9 @@ function openDiagram() {
         }
         
         showLoader(true, "Menyiapkan PDF...");
-        
         const opt = {
             margin: [0.5, 0.5, 0.5, 0.5],
-            filename: 'family_tree.pdf',
+            filename: 'pohon_silsilah.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, logging: false },
             jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
