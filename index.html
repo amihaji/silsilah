@@ -343,7 +343,8 @@
 
               <div class="input-group mt-2">
                 <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                <input type="date" id="tglLahir" placeholder="Input tgl lahir" class="form-control" required>
+                <input type="text" id="tglLahir" placeholder="Input tgl lahir" class="form-control" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" required>
+                <span class="input-group-text">dd/mm/yyyy</span>
               </div>
 
               <div class="input-group mt-2">
@@ -582,6 +583,10 @@
     const form = document.getElementById('formKeluarga');
     if (form) form.reset();
     
+    // Pastikan type tglLahir kembali ke text agar placeholder tampil
+    const tglLahirInput = document.getElementById('tglLahir');
+    if (tglLahirInput) tglLahirInput.type = 'text';
+
     document.getElementById('formId').value = "";
     document.getElementById('formMessage').style.display = 'none';
     
@@ -604,7 +609,15 @@
             document.getElementById('formId').value = item.id;
             document.getElementById('nama').value = item.nama || "";
             document.getElementById('jk').value = item.jk || "pria";
-            document.getElementById('tglLahir').value = item.tglLahir ? new Date(item.tglLahir).toISOString().split('T')[0] : "";
+            
+            if (item.tglLahir) {
+                tglLahirInput.type = 'date';
+                tglLahirInput.value = new Date(item.tglLahir).toISOString().split('T')[0];
+            } else {
+                tglLahirInput.type = 'text';
+                tglLahirInput.value = "";
+            }
+
             document.getElementById('statusKawin').value = item.statusKawin || "lajang";
             document.getElementById('namaPasangan').value = item.namaPasangan || "";
             document.getElementById('statusKeluarga').value = item.statusKeluarga || "anak";
