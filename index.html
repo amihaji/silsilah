@@ -342,14 +342,8 @@
               </div>
 
               <div class="input-group mt-2">
-                <span class="input-group-text">Tgl Lahir</span>
+                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
                 <input type="date" id="tglLahir" placeholder="Input tgl lahir" class="form-control" required>
-              </div>
-
-              <div class="input-group mt-2">
-                <span class="input-group-text"><i class="material-icons">add_a_photo</i></span>
-                <input type="file" id="fotoFile" class="form-control" accept="image/*">
-                <!-- <input type="file" id="fotoFile" accept="image/*"> -->
               </div>
 
               <div class="input-group mt-2">
@@ -405,6 +399,11 @@
               <div class="input-group mt-2">
                 <span class="input-group-text"><i class="fas fa-female"></i></span>
                 <input type="text" id="ibu" class="form-control" placeholder="Input nama ibu anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required>
+              </div>
+
+              <div class="input-group mt-2">
+                <span class="input-group-text"><i class="material-icons">add_a_photo</i></span>
+                <input type="file" id="fotoFile" class="form-control" placeholder="Upload Foto Anda" accept="image/*">
               </div>
 
             </div>
