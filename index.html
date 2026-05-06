@@ -335,10 +335,15 @@
             <input type="hidden" id="formId">
             <input type="hidden" id="fotoLama">
             <div class="row g-3">
-              
+              <!--
               <div class="col-md-12">
                 <label class="form-label">Nama Lengkap</label>
                 <input type="text" id="nama" class="form-control" required>
+              </div>
+              -->
+              <div class="input-group mt-2">
+                <span class="input-group-text"> <i class="fas fa-user-alt"> </i></span>
+                <input type="text" id="nama" class="form-control" placeholder="Input nama anda tanpa nama ayah" oninput="this.value = this.value.toUpperCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required >
               </div>
 
               <div class="col-md-12">
