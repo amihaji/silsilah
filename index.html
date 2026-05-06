@@ -337,18 +337,18 @@
             <div class="row g-3">
              
               <div class="input-group mt-4">
-                <span class="input-group-text"><i class="fas fa-user-alt" style="font-size:18px"></i></span>
+                <span class="input-group-text"><i class="fas fa-user-alt" style="font-size:16px"></i></span>
                 <input type="text" id="nama" class="form-control" placeholder="Input nama anda tanpa nama ayah" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required >
               </div>
 
               <div class="input-group mt-2">
-                <span class="input-group-text"><i class="fas fa-calendar-alt" style="font-size:18px"></i></span>
+                <span class="input-group-text"><i class="fas fa-calendar-alt" style="font-size:16px"></i></span>
                 <input type="text" id="tglLahir" placeholder="Input tgl lahir" class="form-control" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" required>
                 <!-- <span class="input-group-text">dd/mm/yyyy</span> -->
               </div>
 
               <div class="input-group mt-2">
-                <span class="input-group-text"><i class="fas fa-venus-mars"></i></span>
+                <span class="input-group-text"><i class="fas fa-venus-mars" style="font-size:16px"></i></span>
                 <select id="jk" class="form-select" onchange="togglePasangan()" required>
                    <option value="">Pilih Jenis Kelamin...</option>
                    <option value="pria">pria</option>
@@ -357,7 +357,7 @@
               </div>
          
               <div class="input-group mt-2">
-                <span class="input-group-text"><i class="fas fa-heart" style="font-size:18px"></i></span>
+                <span class="input-group-text"><i class="fas fa-heart" style="font-size:16px"></i></span>
                 <select id="statusKawin" class="form-select" onchange="togglePasangan()" required>
                     <option value="">Pilih Status Perkawinan...</option>
                     <option value="lajang">lajang</option>
