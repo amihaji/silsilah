@@ -357,6 +357,18 @@
                 <input type="date" id="tglLahir" class="form-control" required>
               </div>
 
+             <!--
+              <div class="col-md-12">
+                <label class="form-label">Unggah Foto</label>
+                <input type="file" id="fotoFile" class="form-control" accept="image/*">
+              </div>
+              -->
+              <div class="input-group mt-2">
+                <span class="input-group-text"><i class="material-icons">add_a_photo</i></span>
+                <input type="file" id="fotoFile" class="form-control" accept="image/*">
+                <!-- <input type="file" id="fotoFile" accept="image/*"> -->
+              </div>
+
               <!---
               <div class="col-md-12">
                 <label class="form-label">Jenis Kelamin</label>
@@ -474,17 +486,6 @@
                 <input type="text" id="ibu" class="form-control" placeholder="Input nama ibu anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required>
               </div>
 
-              <!--
-              <div class="col-md-12">
-                <label class="form-label">Unggah Foto</label>
-                <input type="file" id="fotoFile" class="form-control" accept="image/*">
-              </div>
-              -->
-              <div class="input-group mt-2">
-                <span class="input-group-text"><i class="material-icons">add_a_photo</i></span>
-                <input type="file" id="fotoFile" class="form-control" accept="image/*">
-                <!-- <input type="file" id="fotoFile" accept="image/*"> -->
-              </div>
             </div>
           </div>
           <!-- Tampilkan pesan diatas tombol -->
