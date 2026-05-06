@@ -413,9 +413,19 @@
                 <input type="text" id="namaPasangan" class="form-control form-control-sm">
               </div>
               -->
+              
+              <!-- DISINI Tampil Nama Pasangan, melalui fungsi togglePasangan -->
+              
               <div class="input-group mt-2" id="divPasangan" style="display:none;">
                 <span class="input-group-text"> <i class="fas fa-restroom"> </i></span>
-                <input type="text" id="namaPasangan" class="form-control" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required >
+                <!-- DISINI Tampil Nama Pasangan, melalui fungsi togglePasangan -->
+                <!-- 
+                     <input type="text" 
+                     id="namaPasangan" 
+                     class="form-control" 
+                     placeholder="Input nama pasangan anda" 
+                     oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required > 
+                -->     
               </div>
 
               <!--
@@ -1500,25 +1510,62 @@ function openDiagram() {
         const jk = document.getElementById('jk').value;
         const statusKawin = document.getElementById('statusKawin').value;
         const divPasangan = document.getElementById('divPasangan');
-        //const labelPasangan = document.getElementById('labelPasangan');
-        const namaPasangan = document.getElementById('namaPasangan');
+        const labelPasangan = document.getElementById('labelPasangan');
+        //const namaPasangan = document.getElementById('namaPasangan');
         let show = false;
         if (jk === "pria") {
             if (statusKawin === "kawin" || statusKawin === "cerai") {
-                // labelPasangan.innerText = "Nama Istri";
-                namaPasangan.innerHTML = "Nama Istri Anda";
+                divPasangan.innerHTML +=`<input 
+                    type="text" 
+                    id="namaPasangan" 
+                    class="form-control" 
+                    placeholder="Input nama istri anda" 
+                    oninput="this.value = this.value.toLowerCase().substring(0, 40)" 
+                    maxlength="40" pattern="[A-Za-z ]+" required > 
+                `;
                 show = true;
             }
         } else if (jk === "wanita") {
             if (statusKawin === "kawin" || statusKawin === "cerai") {
-                // labelPasangan.innerText = "Nama Suami";
-                namaPasangan.innerText= "Nama Suami Anda";
+                divPasangan.innerHTML +=`<input 
+                    type="text" 
+                    id="namaPasangan" 
+                    class="form-control" 
+                    placeholder="Input nama suami anda" 
+                    oninput="this.value = this.value.toLowerCase().substring(0, 40)" 
+                    maxlength="40" pattern="[A-Za-z ]+" required > 
+                `;
                 show = true;
             }
         }
         divPasangan.style.display = show ? "block" : "none";
         if (!show) document.getElementById('namaPasangan').value = "";
     }
+
+    function BACKUP_togglePasangan() {
+        const jk = document.getElementById('jk').value;
+        const statusKawin = document.getElementById('statusKawin').value;
+        const divPasangan = document.getElementById('divPasangan');
+        const labelPasangan = document.getElementById('labelPasangan');
+        //const namaPasangan = document.getElementById('namaPasangan');
+        let show = false;
+        if (jk === "pria") {
+            if (statusKawin === "kawin" || statusKawin === "cerai") {
+                labelPasangan.innerText = "Nama Istri";
+                // namaPasangan.innerHTML = "Nama Istri Anda";
+                show = true;
+            }
+        } else if (jk === "wanita") {
+            if (statusKawin === "kawin" || statusKawin === "cerai") {
+                labelPasangan.innerText = "Nama Suami";
+                //namaPasangan.innerText= "Nama Suami Anda";
+                show = true;
+            }
+        }
+        divPasangan.style.display = show ? "block" : "none";
+        if (!show) document.getElementById('namaPasangan').value = "";
+    }
+
 
     /*****************************************************************
      * Fungsi Pesan General
