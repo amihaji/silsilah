@@ -383,7 +383,7 @@
               </div>
          
               <div class="input-group mt-2">
-                <span class="input-group-text"><i class="fas fa-house-user" style="font-size:17px"></i></span>
+                <span class="input-group-text"><i class="fas fa-house-user" style="font-size:16px"></i></span>
                 <input type="text" id="alamat" class="form-control" placeholder="Input alamat anda" oninput="this.value = this.value.toLowerCase().substring(0, 80)" maxlength="80" pattern="[A-Za-z ]+">
               </div>
 
@@ -1435,7 +1435,7 @@ function openDiagram() {
         if (jk === "pria") {
             if (statusKawin === "kawin" || statusKawin === "cerai") {
                 divPasangan.innerHTML = `
-                    <span class="input-group-text"><i class="fa fa-female" style="font-size:20px"></i></span> 
+                    <span class="input-group-text"><i class="fa fa-female" style="font-size:21px"></i></span> 
                     <input type="text" id="namaPasangan" class="form-control" placeholder="Input nama istri anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required>
                 `;
                 show = true;
@@ -1443,7 +1443,7 @@ function openDiagram() {
         } else if (jk === "wanita") {
             if (statusKawin === "kawin" || statusKawin === "cerai") {
                 divPasangan.innerHTML = `
-                    <span class="input-group-text"><i class="fa fa-male" style="font-size:20px"></i></span> 
+                    <span class="input-group-text"><i class="fa fa-male" style="font-size:21px"></i></span> 
                     <input type="text" id="namaPasangan" class="form-control" placeholder="Input nama suami anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required>
                 `;
                 show = true;
