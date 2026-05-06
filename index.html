@@ -1504,27 +1504,31 @@ function openDiagram() {
         const jk = document.getElementById('jk').value;
         const statusKawin = document.getElementById('statusKawin').value;
         const divPasangan = document.getElementById('divPasangan');
-        // const labelPasangan = document.getElementById('labelPasangan');
         let show = false;
         if (jk === "pria") {
             if (statusKawin === "kawin" || statusKawin === "cerai") {
-                divPasangan.innerHTML =`
-                    <span class="input-group-text"> <i class="fas fa-restroom"> </i></span> 
-                    <input type="text" id="namaPasangan" class="form-control" placeholder="Input nama istri anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required > 
+                divPasangan.innerHTML = `
+                    <span class="input-group-text"><i class="fas fa-restroom"></i></span> 
+                    <input type="text" id="namaPasangan" class="form-control" placeholder="Input nama istri anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required>
                 `;
                 show = true;
             }
         } else if (jk === "wanita") {
             if (statusKawin === "kawin" || statusKawin === "cerai") {
-                divPasangan.innerHTML =`
-                    <span class="input-group-text"> <i class="fas fa-restroom"> </i></span> 
-                    <input type="text" id="namaPasangan" class="form-control" placeholder="Input nama suami anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required > 
+                divPasangan.innerHTML = `
+                    <span class="input-group-text"><i class="fas fa-restroom"></i></span> 
+                    <input type="text" id="namaPasangan" class="form-control" placeholder="Input nama suami anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required>
                 `;
                 show = true;
             }
         }
-        divPasangan.style.display = show ? "block" : "none";
-        if (!show) document.getElementById('namaPasangan').value = "";
+        
+        if (show) {
+            divPasangan.style.display = "flex";
+        } else {
+            divPasangan.style.display = "none";
+            divPasangan.innerHTML = "";
+        }
     }
 
     function BACKUP_togglePasangan() {
