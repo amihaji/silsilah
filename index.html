@@ -1435,7 +1435,7 @@ function openDiagram() {
         if (jk === "pria") {
             if (statusKawin === "kawin" || statusKawin === "cerai") {
                 divPasangan.innerHTML = `
-                    <span class="input-group-text"><i class="fas fa-restroom"></i></span> 
+                    <span class="input-group-text"><i class="fas fa-restroom" style="font-size:16px"></i></span> 
                     <input type="text" id="namaPasangan" class="form-control" placeholder="Input nama istri anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required>
                 `;
                 show = true;
@@ -1443,7 +1443,7 @@ function openDiagram() {
         } else if (jk === "wanita") {
             if (statusKawin === "kawin" || statusKawin === "cerai") {
                 divPasangan.innerHTML = `
-                    <span class="input-group-text"><i class="fas fa-restroom"></i></span> 
+                    <span class="input-group-text"><i class="fas fa-restroom" style="font-size:16px"></i></span> 
                     <input type="text" id="namaPasangan" class="form-control" placeholder="Input nama suami anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required>
                 `;
                 show = true;
