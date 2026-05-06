@@ -370,8 +370,8 @@
                 <span class="input-group-text"><i class="fas fa-venus-mars"></i></span>
                 <select id="jk" class="form-select" onchange="togglePasangan()" required>
                    <option value="">Pilih Jenis Kelamin...</option>
-                   <option value="pria">Pria</option>
-                   <option value="wanita">Wanita</option>
+                   <option value="pria">pria</option>
+                   <option value="wanita">wanita</option>
                 </select>
               </div>
               
@@ -481,9 +481,9 @@
               </div>
               -->
               <div class="input-group mt-2">
-                <span class="input-group-text"><i class="material-icons">add_a_photo</i>/span>
-                <!-- <input type="file" id="fotoFile" class="form-control" accept="image/*"> -->
-                <input type="file" id="fotoFile" accept="image/*">
+                <span class="input-group-text"><i class="material-icons">add_a_photo</i></span>
+                <input type="file" id="fotoFile" class="form-control" accept="image/*">
+                <!-- <input type="file" id="fotoFile" accept="image/*"> -->
               </div>
             </div>
           </div>
@@ -682,11 +682,11 @@
         if (item) {
             document.getElementById('formId').value = item.id;
             document.getElementById('nama').value = item.nama || "";
-            document.getElementById('jk').value = item.jk || "Pria";
+            document.getElementById('jk').value = item.jk || "pria";
             document.getElementById('tglLahir').value = item.tglLahir ? new Date(item.tglLahir).toISOString().split('T')[0] : "";
-            document.getElementById('statusKawin').value = item.statusKawin || "Lajang";
+            document.getElementById('statusKawin').value = item.statusKawin || "lajang";
             document.getElementById('namaPasangan').value = item.namaPasangan || "";
-            document.getElementById('statusKeluarga').value = item.statusKeluarga || "Anak";
+            document.getElementById('statusKeluarga').value = item.statusKeluarga || "anak";
             document.getElementById('alamat').value = item.alamat || "";
             document.getElementById('kota').value = item.kota || "";
             document.getElementById('ayah').value = item.ayah || "";
@@ -1316,7 +1316,7 @@ function openDiagram() {
             ayahData = {
                 id: `virtual-${Date.now()}`,
                 nama: ayahName,
-                jk: "Pria",
+                jk: "pria",
                 tglLahir: "",
                 foto: "",
                 namaPasangan: "",
@@ -1501,13 +1501,13 @@ function openDiagram() {
         const divPasangan = document.getElementById('divPasangan');
         const labelPasangan = document.getElementById('labelPasangan');
         let show = false;
-        if (jk === "Pria") {
-            if (statusKawin === "Kawin" || statusKawin === "Cerai") {
+        if (jk === "pria") {
+            if (statusKawin === "kawin" || statusKawin === "cerai") {
                 labelPasangan.innerText = "Nama Istri";
                 show = true;
             }
-        } else if (jk === "Wanita") {
-            if (statusKawin === "Kawin" || statusKawin === "Cerai") {
+        } else if (jk === "wanita") {
+            if (statusKawin === "kawin" || statusKawin === "cerai") {
                 labelPasangan.innerText = "Nama Suami";
                 show = true;
             }
