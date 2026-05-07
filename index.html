@@ -404,7 +404,12 @@
 
               <div class="input-group mt-2">
                 <span class="input-group-text"><i class="material-icons" style="font-size:16px">add_a_photo</i></span>
-                <input type="file" id="fotoFile" class="form-control" placeholder="Upload Foto Anda" accept="image/*">
+                <!-- Input teks untuk menampilkan nama file atau placeholder -->
+                <input type="text" id="fotoLabel" class="form-control text-muted" value="Tidak ada file terpilih" readonly onclick="document.getElementById('fotoFile').click()" style="cursor: pointer; background-color: #fff;">
+                <!-- Tombol kustom -->
+                <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('fotoFile').click()">Pilih File</button>
+                <!-- Input file asli yang disembunyikan -->
+                <input type="file" id="fotoFile" class="d-none" accept="image/*" onchange="updateFileName(this)">
               </div>
 
             </div>
@@ -1454,6 +1459,20 @@ function openDiagram() {
         } else {
             divPasangan.style.display = "none";
             divPasangan.innerHTML = "";
+        }
+    }
+
+    /***************************
+     * Update file upload foto 
+     **************************/
+    function updateFileName(input) {
+        const label = document.getElementById('fotoLabel');
+        if (input.files && input.files.length > 0) {
+            label.value = input.files[0].name;
+            label.classList.remove('text-muted');
+        } else {
+            label.value = 'Tidak ada file terpilih';
+            label.classList.add('text-muted');
         }
     }
 
