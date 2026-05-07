@@ -588,6 +588,13 @@
     const form = document.getElementById('formKeluarga');
     if (form) form.reset();
     
+    // Reset label foto kustom
+    const fotoLabel = document.getElementById('fotoLabel');
+    if (fotoLabel) {
+        fotoLabel.value = 'Tidak ada file foto terpilih';
+        fotoLabel.classList.add('text-muted');
+    }
+
     // Pastikan type tglLahir kembali ke text agar placeholder tampil
     const tglLahirInput = document.getElementById('tglLahir');
     if (tglLahirInput) tglLahirInput.type = 'text';
