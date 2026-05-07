@@ -757,6 +757,13 @@
             } else {
                 globalData = [];
             }
+            // Sort data berdasarkan tglLahir (Ascending: Tua ke Muda)
+            globalData.sort((a, b) => {
+                const dateA = a.tglLahir ? new Date(a.tglLahir) : new Date('9999-12-31');
+                const dateB = b.tglLahir ? new Date(b.tglLahir) : new Date('9999-12-31');
+                return dateA - dateB;
+            });
+            
             renderTable();
             console.log(`Berhasil merender ${globalData.length} baris data.`);
         } catch (error) {
