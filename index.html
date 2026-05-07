@@ -657,14 +657,23 @@
             }
 
             document.getElementById('statusKawin').value = item.statusKawin || "lajang";
-            document.getElementById('namaPasangan').value = item.namaPasangan || "";
+            //document.getElementById('namaPasangan').value = item.namaPasangan || "";
+
+            // Panggil togglePasangan() dulu agar input namaPasangan dibuat di DOM
+            if (typeof togglePasangan === 'function') togglePasangan();
+            
+            // Baru kemudian isi nilainya jika elemennya sudah ada
+            const pasanganEl = document.getElementById('namaPasangan');
+            if (pasanganEl) {
+                pasanganEl.value = item.namaPasangan || "";
+            }
             document.getElementById('statusKeluarga').value = item.statusKeluarga || "anak";
             document.getElementById('alamat').value = item.alamat || "";
             document.getElementById('kota').value = item.kota || "";
             document.getElementById('ayah').value = item.ayah || "";
             document.getElementById('ibu').value = item.ibu || "";
             document.getElementById('fotoLama').value = item.foto || "";
-            if (typeof togglePasangan === 'function') togglePasangan();
+            // if (typeof togglePasangan === 'function') togglePasangan();
         }
     }
     modalInstance.show();
