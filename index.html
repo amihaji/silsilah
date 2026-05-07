@@ -416,7 +416,8 @@
           </div>
           <!-- Tampilkan pesan diatas tombol -->
           <div id="formMessage" class="form-msg"></div>
-          
+          <div id="formKeluargaMessage" class="form-msg"></div>
+                    
           <!-- Tampilkan tombol disini -->
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -534,11 +535,13 @@
             loadData();
         } else {
             //alert(res.message);
-            showMessage(res.message, "error");
+            // showMessage(res.message, "error");
+            showMessage(res.message, "error", "loginMessage");
         }
       } catch (err) {
           //alert("Gagal terhubung ke server");
-          showMessage("Gagal terhubung ke serrver : " + err.message, "error");
+          //showMessage("Gagal terhubung ke serrver : " + err.message, "error");
+          showMessage("Gagal terhubung ke serrver : " + err.message, "error", "loginMessage");
       } finally {
           btn.disabled = false;
           btn.innerHTML = textAsli;
@@ -600,8 +603,10 @@
     if (tglLahirInput) tglLahirInput.type = 'text';
 
     document.getElementById('formId').value = "";
-    document.getElementById('formMessage').style.display = 'none';
-    
+    document.getElementById('fotoLama').value = "";
+    //document.getElementById('formMessage').style.display = 'none';
+    document.getElementById('formKeluargaMessage').style.display = 'none';
+
     // Reset Tombol Simpan agar tidak disabled (Fix Hang)
     const btn = document.getElementById('btnSimpan');
     if (btn) {
@@ -655,9 +660,11 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...';
         
-        document.getElementById('formMessage').style.display = 'none';
+        // document.getElementById('formMessage').style.display = 'none';
+        document.getElementById('formKeluargaMessage').style.display = 'none';
 
         try {
+            const namaPasanganEl = document.getElementById('namaPasangan');
             let payload = {
                 action: "saveData",
                 data: {
@@ -666,7 +673,8 @@
                     jk: document.getElementById('jk').value,
                     tglLahir: document.getElementById('tglLahir').value,
                     statusKawin: document.getElementById('statusKawin').value,
-                    namaPasangan: document.getElementById('namaPasangan').value,
+                    // namaPasangan: document.getElementById('namaPasangan').value,
+                    namaPasangan: namaPasanganEl ? namaPasanganEl.value : "",
                     statusKeluarga: document.getElementById('statusKeluarga').value,
                     alamat: document.getElementById('alamat').value,
                     kota: document.getElementById('kota').value,
@@ -689,7 +697,8 @@
                 await kirimData(payload); // Nama fungsi tetap sesuai REV4
             }
         } catch (err) {
-            showMessage("Error: " + err.message, "error", "formMessage");
+            // showMessage("Error: " + err.message, "error", "formMessage");
+            showMessage("Error: " + err.message, "error", "formKeluargaMessage");
             const btnReset = document.getElementById('btnSimpan');
             btnReset.disabled = false;
             btnReset.innerHTML = 'Simpan Data';
@@ -993,19 +1002,22 @@
         const res = await resp.json();
         
         if (res.success) {
-            showMessage("Data berhasil disimpan!", "success", "formMessage");
+            // showMessage("Data berhasil disimpan!", "success", "formMessage");
+            showMessage("Data berhasil disimpan!", "success", "formKeluargaMessage");
             setTimeout(() => {
                 modalInstance.hide();
                 loadData();
             }, 1500);
         } else {
-            showMessage("Gagal: " + res.message, "error", "formMessage");
+            // showMessage("Gagal: " + res.message, "error", "formMessage");
+            showMessage("Gagal: " + res.message, "error", "formKeluargaMessage");
             const btn = document.getElementById('btnSimpan');
             btn.disabled = false;
             btn.innerHTML = 'Simpan Data';
         }
     } catch (err) {
-        showMessage("Kesalahan koneksi", "error", "formMessage");
+        // showMessage("Kesalahan koneksi", "error", "formMessage");
+        showMessage("Kesalahan koneksi", "error", "formKeluargaMessage");
         const btn = document.getElementById('btnSimpan');
         btn.disabled = false;
         btn.innerHTML = 'Simpan Data';
