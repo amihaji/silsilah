@@ -294,6 +294,14 @@
       <div class="card p-3 shadow-sm">
         <div class="d-flex justify-content-between mb-3 align-items-center">
             <h5 class="m-0">Data Anggota Keluarga</h5>
+     
+            <div class="input-group mt-4">
+                <input type="text" id="cariNama" class="form-control" placeholder="Input nama yang dicari . . ." >
+                <button class="btn btn-outline-primary btn-sm" onclick="cariData('cariNamaAnggota')">
+                    <i class='fas fa-search'></i> <span>Cari</span>
+                </button>
+            </div>
+
             <div class="d-flex gap-2">
                 <button class="btn btn-primary btn-sm" onclick="openForm('add')">
                     <i class='fas fa-plus'></i> <span>Tambah</span>
@@ -606,7 +614,6 @@
         fotoLabel.value = 'Tidak ada file foto terpilih';
         fotoLabel.classList.add('text-muted');
     }
-
     // Pastikan type tglLahir kembali ke text agar placeholder tampil
     const tglLahirInput = document.getElementById('tglLahir');
     if (tglLahirInput) tglLahirInput.type = 'text';
@@ -614,7 +621,6 @@
     document.getElementById('formId').value = "";
     document.getElementById('fotoLama').value = "";
     document.getElementById('formKeluargaMessage').style.display = 'none';
-
     // Reset Tombol Simpan agar tidak disabled (Fix Hang)
     const btn = document.getElementById('btnSimpan');
     if (btn) {
@@ -627,7 +633,6 @@
     if (titleEl) {
         titleEl.innerText = (mode === 'edit') ? "Edit Data Keluarga" : "Tambah Data Keluarga";
     }
-
     if (mode === 'edit' && id) {
         const item = globalData.find(x => x.id == id);
         if (item) {
@@ -763,7 +768,7 @@
                 const dateB = b.tglLahir ? new Date(b.tglLahir) : new Date('9999-12-31');
                 return dateA - dateB;
             });
-            
+            // Buat tabel data 
             renderTable();
             console.log(`Berhasil merender ${globalData.length} baris data.`);
         } catch (error) {
