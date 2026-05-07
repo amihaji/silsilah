@@ -557,16 +557,36 @@
       tbody.innerHTML = '';
       
       if (!globalData || globalData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Data tidak ditemukan atau kosong.</td></tr>';
+        // tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Data tidak ditemukan atau kosong.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4"><div class="text-muted">Tidak ada data ditemukan di database</div></td></tr>';
         return;
       }
 
       globalData.forEach(item => {
-        const img = (item.foto && item.foto.includes('http')) ? item.foto : '[https://via.placeholder.com/50?text=No+Foto](https://via.placeholder.com/50?text=No+Foto)';
+        // const img = (item.foto && item.foto.includes('http')) ? item.foto : '[https://via.placeholder.com/50?text=No+Foto](https://via.placeholder.com/50?text=No+Foto)';
         
-        tbody.innerHTML += `
+        /****
+          tbody.innerHTML += `
           <tr>
             <td><img src="${img}" class="foto-thumb" onerror="this.src='[https://via.placeholder.com/50](https://via.placeholder.com/50)'"></td>
+        ****/   
+        const itemId = item.id ? String(item.id) : '';
+        const itemNama = item.nama ? item.nama : 'Tanpa Nama';
+        const itemNamaEscaped = itemNama.replace(/'/g, "\\'");
+        
+        // Handle foto atau avatar
+        const fotoUrl = item.foto && item.foto.includes('http') ? item.foto : null;
+        const initials = getInitials(item.nama);
+        let fotoDisplay = '';
+        if (fotoUrl) {
+            fotoDisplay = `<img src="${fotoUrl}" class="foto-thumb" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'avatar-circle\'>${initials}</div>';">`;
+        } else {
+            fotoDisplay = `<div class="avatar-circle">${initials}</div>`;
+        }
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="text-center">${fotoDisplay}</td>
             <td><strong>${item.nama || '-'}</strong></td>
             <td>${item.statusKawin || '-'}</td>
             <td>${item.namaPasangan || '-'}</td>
@@ -574,13 +594,14 @@
             <td>${item.ayah || '-'}</td>
             <td>${item.ibu || '-'}</td>
             <td class="text-center">
-              <div class="d-flex justify-content-center gap-1">
-                <button type="button" class="btn btn-info text-white btn-round" onclick="viewDetail('${itemId}')"><i class="fas fa-eye"></i></button>
-                <button type="button" class="btn btn-warning text-white btn-round" onclick="openForm('edit', '${itemId}')"><i class="fas fa-pencil"></i></button>
-                <button type="button" class="btn btn-danger text-white btn-round" onclick="hapusData('${itemId}', '${itemNama}')"><i class="fas fa-trash"></i></button>
-              </div>
+                <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-info btn-round" onclick="viewDetail('${itemId}')"><i class="fas fa-eye"></i></button>
+                    <button type="button" class="btn btn-warning btn-round" onclick="openForm('edit', '${itemId}')"><i class="fas fa-pencil"></i></button>
+                    <button type="button" class="btn btn-danger btn-round" onclick="hapusData('${itemId}', '${itemNamaEscaped}')"><i class="fas fa-trash"></i></button>
+                </div>    
             </td>
-          </tr>`;
+          `;
+          tbody.appendChild(tr);
       });
     }
  
@@ -744,48 +765,7 @@
             } else {
                 globalData = [];
             }
-
-            const tbody = document.getElementById('tableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-            if (globalData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-4"><div class="text-muted">Tidak ada data ditemukan di database</div></td></tr>`;
-                return;
-            }
-
-            globalData.forEach((item) => {
-                const itemId = item.id ? String(item.id) : '';
-                const itemNama = item.nama ? item.nama : 'Tanpa Nama';
-                const itemNamaEscaped = itemNama.replace(/'/g, "\\'");
-                // Handle foto atau avatar
-                const fotoUrl = item.foto && item.foto.includes('http') ? item.foto : null;
-                const initials = getInitials(item.nama);
-                let fotoDisplay = '';
-                if (fotoUrl) {
-                    fotoDisplay = `<img src="${fotoUrl}" class="foto-thumb" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'avatar-circle\'>${initials}</div>';">`;
-                } else {
-                    fotoDisplay = `<div class="avatar-circle">${initials}</div>`;
-                }
-                
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="text-center">${fotoDisplay}</td>
-                    <td>${item.nama || '-'}</td>
-                    <td>${item.statusKawin || '-'}</td>
-                    <td>${item.namaPasangan || '-'}</td>
-                    <td>${item.statusKeluarga || '-'}</td>
-                    <td>${item.ayah || '-'}</td>
-                    <td>${item.ibu || '-'}</td>
-                    <td class="text-center">
-                        <div class="btn-group btn-group-sm">
-                            <button type="button" class="btn btn-info btn-round" onclick="viewDetail('${itemId}')"><i class="fas fa-eye"></i></button>
-                            <button type="button" class="btn btn-warning btn-round" onclick="openForm('edit', '${itemId}')"><i class="fas fa-pencil"></i></button>
-                            <button type="button" class="btn btn-danger btn-round" onclick="hapusData('${itemId}', '${itemNamaEscaped}')"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+            renderTable();
             console.log(`Berhasil merender ${globalData.length} baris data.`);
         } catch (error) {
             console.error("Error saat loadData:", error);
