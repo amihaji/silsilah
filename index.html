@@ -485,9 +485,7 @@
         // Daftarkan modal konfirmasi
         const elConfirm = document.getElementById('confirmModal');
         if (elConfirm) confirmModalInstance = new bootstrap.Modal(elConfirm);
-        
-        // HAPUS pendaftaran viewModalInstance - tidak perlu
-        
+              
         // Registrasi Event Submit Form
         const fLogin = document.getElementById('formLogin');
         if (fLogin) fLogin.onsubmit = prosesLogin;
@@ -504,9 +502,9 @@
         if (btnDownloadExcel) btnDownloadExcel.onclick = downloadDiagramExcel;
     });
 
-     /***********************
-     * Tampilan showloader 
-     ***********************/
+    /***********************
+    * Tampilan showloader 
+    ***********************/
     function showLoader(show, text = "Memproses...") {
       document.getElementById('loader').style.display = show ? 'flex' : 'none';
       document.getElementById('loaderText').innerText = text;
@@ -534,13 +532,9 @@
             document.getElementById('appArea').classList.remove('d-none');
             loadData();
         } else {
-            //alert(res.message);
-            // showMessage(res.message, "error");
-            showMessage(res.message, "error", "loginMessage");
+             showMessage(res.message, "error", "loginMessage");
         }
       } catch (err) {
-          //alert("Gagal terhubung ke server");
-          //showMessage("Gagal terhubung ke serrver : " + err.message, "error");
           showMessage("Gagal terhubung ke serrver : " + err.message, "error", "loginMessage");
       } finally {
           btn.disabled = false;
@@ -557,19 +551,11 @@
       tbody.innerHTML = '';
       
       if (!globalData || globalData.length === 0) {
-        // tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Data tidak ditemukan atau kosong.</td></tr>';
         tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4"><div class="text-muted">Tidak ada data ditemukan di database</div></td></tr>';
         return;
       }
 
       globalData.forEach(item => {
-        // const img = (item.foto && item.foto.includes('http')) ? item.foto : '[https://via.placeholder.com/50?text=No+Foto](https://via.placeholder.com/50?text=No+Foto)';
-        
-        /****
-          tbody.innerHTML += `
-          <tr>
-            <td><img src="${img}" class="foto-thumb" onerror="this.src='[https://via.placeholder.com/50](https://via.placeholder.com/50)'"></td>
-        ****/   
         const itemId = item.id ? String(item.id) : '';
         const itemNama = item.nama ? item.nama : 'Tanpa Nama';
         const itemNamaEscaped = itemNama.replace(/'/g, "\\'");
@@ -625,7 +611,6 @@
 
     document.getElementById('formId').value = "";
     document.getElementById('fotoLama').value = "";
-    //document.getElementById('formMessage').style.display = 'none';
     document.getElementById('formKeluargaMessage').style.display = 'none';
 
     // Reset Tombol Simpan agar tidak disabled (Fix Hang)
@@ -635,7 +620,7 @@
         btn.innerHTML = 'Simpan Data';
     }
 
-    // Update Judul Modal (Fix Point 2.2 menggunakan id="modalTitle")
+    // Update Judul Modal 
     const titleEl = document.getElementById('modalTitle');
     if (titleEl) {
         titleEl.innerText = (mode === 'edit') ? "Edit Data Keluarga" : "Tambah Data Keluarga";
@@ -657,8 +642,6 @@
             }
 
             document.getElementById('statusKawin').value = item.statusKawin || "lajang";
-            //document.getElementById('namaPasangan').value = item.namaPasangan || "";
-
             // Panggil togglePasangan() dulu agar input namaPasangan dibuat di DOM
             if (typeof togglePasangan === 'function') togglePasangan();
             
@@ -673,7 +656,6 @@
             document.getElementById('ayah').value = item.ayah || "";
             document.getElementById('ibu').value = item.ibu || "";
             document.getElementById('fotoLama').value = item.foto || "";
-            // if (typeof togglePasangan === 'function') togglePasangan();
         }
     }
     modalInstance.show();
@@ -720,14 +702,13 @@
                 const reader = new FileReader();
                 reader.onload = async function(event) {
                     payload.data.fotoBase64 = event.target.result;
-                    await kirimData(payload); // Nama fungsi tetap sesuai REV4
+                    await kirimData(payload); 
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
-                await kirimData(payload); // Nama fungsi tetap sesuai REV4
+                await kirimData(payload); 
             }
         } catch (err) {
-            // showMessage("Error: " + err.message, "error", "formMessage");
             showMessage("Error: " + err.message, "error", "formKeluargaMessage");
             const btnReset = document.getElementById('btnSimpan');
             btnReset.disabled = false;
@@ -879,12 +860,10 @@
                 keyboard: true
             });
             modal.show();
-
             // Hapus modal setelah ditutup
             modalElement.addEventListener('hidden.bs.modal', function() {
                 modalElement.remove();
             });
-
         } catch (e) {
             console.error("View Error:", e);
             showMessage("Gagal menampilkan detail: " + e.message, "error", "tableMessage");
@@ -991,21 +970,18 @@
         const res = await resp.json();
         
         if (res.success) {
-            // showMessage("Data berhasil disimpan!", "success", "formMessage");
             showMessage("Data berhasil disimpan!", "success", "formKeluargaMessage");
             setTimeout(() => {
                 modalInstance.hide();
                 loadData();
             }, 1500);
         } else {
-            // showMessage("Gagal: " + res.message, "error", "formMessage");
             showMessage("Gagal: " + res.message, "error", "formKeluargaMessage");
             const btn = document.getElementById('btnSimpan');
             btn.disabled = false;
             btn.innerHTML = 'Simpan Data';
         }
     } catch (err) {
-        // showMessage("Kesalahan koneksi", "error", "formMessage");
         showMessage("Kesalahan koneksi", "error", "formKeluargaMessage");
         const btn = document.getElementById('btnSimpan');
         btn.disabled = false;
@@ -1017,232 +993,242 @@
      * FUNGSI DIAGRAM POHON KELUARGA
      ***************************************/
 
-// Buka modal diagram (dinamis - sama seperti viewDetail)
-
-   // Fungsi untuk mendapatkan inisial dari nama
-function getInitials(nama) {
-    if (!nama || nama === '-' || nama === '') return '?';
-    const parts = nama.trim().split(' ');
-    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
-}
-
-// Mendapatkan tahun lahir dari tglLahir
-function getBirthYear(tglLahir) {
-    if (!tglLahir) return '';
-    try {
-        const date = new Date(tglLahir);
-        return date.getFullYear();
-    } catch(e) {
-        return '';
+    /*********************************************
+    * Fungsi untuk mendapatkan inisial dari nama
+    *********************************************/  
+    function getInitials(nama) {
+        if (!nama || nama === '-' || nama === '') return '?';
+        const parts = nama.trim().split(' ');
+        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
     }
-}
 
-// Mendapatkan foto atau avatar untuk diagram
-function getFotoForDiagram(item) {
-    const initials = getInitials(item.nama);
-    const birthYear = getBirthYear(item.tglLahir);
-    
-    if (item.foto && item.foto.includes('http')) {
-        return `<img src="${item.foto}" class="diagram-foto" onerror="this.onerror=null; this.parentElement.innerHTML=this.parentElement.innerHTML='<div class=\'diagram-avatar\'>${initials}</div><div class=\'diagram-name\'>${item.nama || '-'}</div><div class=\'diagram-year\'>${birthYear}</div>';">`;
-    } else {
-        return `<div class="diagram-avatar">${initials}</div>`;
+    /***************************************
+    * Mendapatkan tahun lahir dari tglLahir
+    ****************************************/
+    function getBirthYear(tglLahir) {
+        if (!tglLahir) return '';
+        try {
+            const date = new Date(tglLahir);
+            return date.getFullYear();
+        } catch(e) {
+            return '';
+        }
     }
-}
 
-// Render Diagram: Pasangan Selevel, Anak di Bawah (Rekursif)
-function renderTreeDiagram(node) {
-    if (!node) return '';
-    const getYear = (dateStr) => {
-        if (!dateStr) return '';
-        try { return new Date(dateStr).getFullYear(); }
-        catch(e) { return ''; }
-    };
-
-    const renderFoto = (person) => {
-        const initials = getInitials(person.nama);
-        if (person.foto && person.foto.includes('http')) {
-            return `<img src="${person.foto}" class="diagram-foto" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'diagram-avatar\'>${initials}</div>';">`;
+    /********************************************
+    * Mendapatkan foto atau avatar untuk diagram
+    *********************************************/
+    function getFotoForDiagram(item) {
+        const initials = getInitials(item.nama);
+        const birthYear = getBirthYear(item.tglLahir);
+        
+        if (item.foto && item.foto.includes('http')) {
+            return `<img src="${item.foto}" class="diagram-foto" onerror="this.onerror=null; this.parentElement.innerHTML=this.parentElement.innerHTML='<div class=\'diagram-avatar\'>${initials}</div><div class=\'diagram-name\'>${item.nama || '-'}</div><div class=\'diagram-year\'>${birthYear}</div>';">`;
         } else {
             return `<div class="diagram-avatar">${initials}</div>`;
         }
-    };
+    }
 
-    // Node Suami
-    const suamiHtml = `
-        <div class="diagram-node">
-            ${renderFoto(node)}
-            <div class="diagram-name">${node.nama || '-'}</div>
-            <div class="diagram-year">${getYear(node.tglLahir)}</div>
-        </div>
-    `;
+    /***********************************************************
+    * Render Diagram: Pasangan Selevel, Anak di Bawah (Rekursif)
+    ************************************************************/
+    function renderTreeDiagram(node) {
+        if (!node) return '';
+        const getYear = (dateStr) => {
+            if (!dateStr) return '';
+            try { return new Date(dateStr).getFullYear(); }
+            catch(e) { return ''; }
+        };
 
-    let istriHtml = '';
-    if (node.spouse && node.spouse.nama) {
-        istriHtml = `
+        const renderFoto = (person) => {
+            const initials = getInitials(person.nama);
+            if (person.foto && person.foto.includes('http')) {
+                return `<img src="${person.foto}" class="diagram-foto" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'diagram-avatar\'>${initials}</div>';">`;
+            } else {
+                return `<div class="diagram-avatar">${initials}</div>`;
+            }
+        };
+
+        // Node Suami
+        const suamiHtml = `
             <div class="diagram-node">
-                ${renderFoto(node.spouse)}
-                <div class="diagram-name">${node.spouse.nama || '-'}</div>
-                <div class="diagram-year">${getYear(node.spouse.tglLahir)}</div>
+                ${renderFoto(node)}
+                <div class="diagram-name">${node.nama || '-'}</div>
+                <div class="diagram-year">${getYear(node.tglLahir)}</div>
             </div>
         `;
-    }
 
-    // tentukan simbol berdasarkan status kawin = "+"  dan cerai="x"
-    let connectorSymbol = '+';
-    if (node.statusKawin && node.statusKawin.toLowerCase() === 'cerai') {
-        connectorSymbol = 'x';
-    }
-    const coupleHtml = `
-        <div class="couple-group">
-            ${suamiHtml}
-            ${istriHtml ? `<div class="couple-connector">${connectorSymbol}</div>${istriHtml}` : ''}
-        </div>
-    `;
-
-    // Jika tidak punya anak
-    if (!node.children || node.children.length === 0) {
-        return `<div class="family-node">${coupleHtml}</div>`;
-    }
-
-    // Proses anak-anak secara rekursif
-    let childrenHtml = '';
-    node.children.forEach(child => {
-        childrenHtml += renderTreeDiagram(child);
-    });
-    // Bungkus dengan container khusus untuk garis "⊥"
-    return `
-        <div class="family-node">
-            ${coupleHtml}
-            <div class="children-connector">
-                <div class="children-wrapper">
-                    ${childrenHtml}
+        let istriHtml = '';
+        if (node.spouse && node.spouse.nama) {
+            istriHtml = `
+                <div class="diagram-node">
+                    ${renderFoto(node.spouse)}
+                    <div class="diagram-name">${node.spouse.nama || '-'}</div>
+                    <div class="diagram-year">${getYear(node.spouse.tglLahir)}</div>
                 </div>
-            </div>
-        </div>
-    `;
-}
+            `;
+        }
 
-// Buka modal diagram (dinamis - sama seperti viewDetail)
-function openDiagram() {
-    try {
-        // Hapus modal dinamis jika sudah ada sebelumnya
-        const existingModal = document.getElementById('dynamicDiagramModal');
-        if (existingModal) {
-            existingModal.remove();
+        // tentukan simbol berdasarkan status kawin = "+"  dan cerai="x"
+        let connectorSymbol = '+';
+        if (node.statusKawin && node.statusKawin.toLowerCase() === 'cerai') {
+            connectorSymbol = 'x';
         }
-        
-        // Ambil daftar unik Nama Ayah dari field "ayah" di database
-        const ayahSet = new Set();
-        if (globalData && globalData.length > 0) {
-            globalData.forEach(item => {
-                if (item.ayah && item.ayah.trim() !== '') {
-                    ayahSet.add(item.ayah.trim());
-                }
-            });
+        const coupleHtml = `
+            <div class="couple-group">
+                ${suamiHtml}
+                ${istriHtml ? `<div class="couple-connector">${connectorSymbol}</div>${istriHtml}` : ''}
+            </div>
+        `;
+
+        // Jika tidak punya anak
+        if (!node.children || node.children.length === 0) {
+            return `<div class="family-node">${coupleHtml}</div>`;
         }
-        
-        // Konversi ke array dan urutkan
-        const ayahList = Array.from(ayahSet).sort();
-        
-        // Isi dropdown options dari daftar Ayah
-        let dropdownOptions = '<option value="">-- Pilih Keluarga (Nama Ayah) --</option>';
-        ayahList.forEach(ayah => {
-            // Gunakan nilai asli, hindari karakter kutip bermasalah
-            const safeAyah = ayah.replace(/"/g, '&quot;');
-            dropdownOptions += `<option value="${safeAyah}">${ayah}</option>`;
+
+        // Proses anak-anak secara rekursif
+        let childrenHtml = '';
+        node.children.forEach(child => {
+            childrenHtml += renderTreeDiagram(child);
         });
-        
-        // Jika tidak ada data ayah, beri pesan
-        if (ayahList.length === 0) {
-            dropdownOptions = '<option value="">-- Tidak ada data ayah --</option>';
-        }
-        
-        // Buat modal diagram dinamis
-        const modalHtml = `
-            <div class="modal fade" id="dynamicDiagramModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
-                <div class="modal-dialog modal-xl modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-primary text-white">
-                            <h5 class="modal-title">Buat Diagram Pohon</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row mb-3">
-                                <div class="col-md-12 d-flex gap-2 align-items-center flex-wrap">
-                                    <select id="pilihNamaDiagram" class="form-select" style="flex:2; min-width:250px;">
-                                        ${dropdownOptions}
-                                    </select>
-                                    <button class="btn btn-primary" id="btnBuatDiagram" title="Buat Diagram">
-                                        <i class="fas fa-sitemap"></i> Diagram
-                                    </button>
-                                    <button class="btn btn-success" id="btnDownloadPdf" title="Download PDF">
-                                        <i class="fas fa-file-pdf"></i> PDF
-                                    </button>
-                                    <button class="btn btn-info" id="btnDownloadExcel" title="Download Excel">
-                                        <i class="fas fa-file-excel"></i> Excel
-                                    </button>
-                                </div>
-                            </div>
-                            <div id="diagramContainer" style="min-height: 450px; max-height: 550px; overflow: auto; padding: 15px; background: #f5f5f5; border-radius: 8px;">
-                                <div class="text-center text-muted p-5">Silakan pilih keluarga (Nama Ayah) dan klik tombol Diagram</div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                        </div>
+        // Bungkus dengan container khusus untuk garis "⊥"
+        return `
+            <div class="family-node">
+                ${coupleHtml}
+                <div class="children-connector">
+                    <div class="children-wrapper">
+                        ${childrenHtml}
                     </div>
                 </div>
             </div>
         `;
-        
-        // Tambahkan ke body
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-        // Tampilkan modal
-        const modalElement = document.getElementById('dynamicDiagramModal');
-        const modal = new bootstrap.Modal(modalElement, {
-            backdrop: true,
-            keyboard: true
-        });
-        modal.show();
-        
-        // Hapus modal setelah ditutup
-        modalElement.addEventListener('hidden.bs.modal', function() {
-            modalElement.remove();
-        });
-        
-        // Event listener untuk tombol Diagram
-        const btnBuat = document.getElementById('btnBuatDiagram');
-        if (btnBuat) {
-            btnBuat.onclick = function() {
-                generateDiagram();
-            };
-        }
-        
-        // Event listener untuk tombol PDF
-        const btnPdf = document.getElementById('btnDownloadPdf');
-        if (btnPdf) {
-            btnPdf.onclick = function() {
-                downloadDiagramPDF();
-            };
-        }
-        
-        // Event listener untuk tombol Excel
-        const btnExcel = document.getElementById('btnDownloadExcel');
-        if (btnExcel) {
-            btnExcel.onclick = function() {
-                downloadDiagramExcel();
-            };
-        }
-        
-    } catch (e) {
-        console.error("Error openDiagram:", e);
-        showMessage("Gagal membuka diagram: " + e.message, "error", "tableMessage");
     }
-}
 
-    // Membangun struktur tree berdasarkan Nama Ayah
+    /*********************************************************
+    * Buka modal diagram (dinamis - sama seperti viewDetail)
+    **********************************************************/
+    function openDiagram() {
+        try {
+            // Hapus modal dinamis jika sudah ada sebelumnya
+            const existingModal = document.getElementById('dynamicDiagramModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Ambil daftar unik Nama Ayah dari field "ayah" di database
+            const ayahSet = new Set();
+            if (globalData && globalData.length > 0) {
+                globalData.forEach(item => {
+                    if (item.ayah && item.ayah.trim() !== '') {
+                        ayahSet.add(item.ayah.trim());
+                    }
+                });
+            }
+            
+            // Konversi ke array dan urutkan
+            const ayahList = Array.from(ayahSet).sort();
+            
+            // Isi dropdown options dari daftar Ayah
+            let dropdownOptions = '<option value="">-- Pilih Keluarga (Nama Ayah) --</option>';
+            ayahList.forEach(ayah => {
+                // Gunakan nilai asli, hindari karakter kutip bermasalah
+                const safeAyah = ayah.replace(/"/g, '&quot;');
+                dropdownOptions += `<option value="${safeAyah}">${ayah}</option>`;
+            });
+            
+            // Jika tidak ada data ayah, beri pesan
+            if (ayahList.length === 0) {
+                dropdownOptions = '<option value="">-- Tidak ada data ayah --</option>';
+            }
+            
+            // Buat modal diagram dinamis
+            const modalHtml = `
+                <div class="modal fade" id="dynamicDiagramModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
+                    <div class="modal-dialog modal-xl modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title">Buat Diagram Pohon</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-12 d-flex gap-2 align-items-center flex-wrap">
+                                        <select id="pilihNamaDiagram" class="form-select" style="flex:2; min-width:250px;">
+                                            ${dropdownOptions}
+                                        </select>
+                                        <button class="btn btn-primary" id="btnBuatDiagram" title="Buat Diagram">
+                                            <i class="fas fa-sitemap"></i> Diagram
+                                        </button>
+                                        <button class="btn btn-success" id="btnDownloadPdf" title="Download PDF">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </button>
+                                        <button class="btn btn-info" id="btnDownloadExcel" title="Download Excel">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="diagramContainer" style="min-height: 450px; max-height: 550px; overflow: auto; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+                                    <div class="text-center text-muted p-5">Silakan pilih keluarga (Nama Ayah) dan klik tombol Diagram</div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Tambahkan ke body
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Tampilkan modal
+            const modalElement = document.getElementById('dynamicDiagramModal');
+            const modal = new bootstrap.Modal(modalElement, {
+                backdrop: true,
+                keyboard: true
+            });
+            modal.show();
+            
+            // Hapus modal setelah ditutup
+            modalElement.addEventListener('hidden.bs.modal', function() {
+                modalElement.remove();
+            });
+            
+            // Event listener untuk tombol Diagram
+            const btnBuat = document.getElementById('btnBuatDiagram');
+            if (btnBuat) {
+                btnBuat.onclick = function() {
+                    generateDiagram();
+                };
+            }
+            
+            // Event listener untuk tombol PDF
+            const btnPdf = document.getElementById('btnDownloadPdf');
+            if (btnPdf) {
+                btnPdf.onclick = function() {
+                    downloadDiagramPDF();
+                };
+            }
+            
+            // Event listener untuk tombol Excel
+            const btnExcel = document.getElementById('btnDownloadExcel');
+            if (btnExcel) {
+                btnExcel.onclick = function() {
+                    downloadDiagramExcel();
+                };
+            }
+            
+        } catch (e) {
+            console.error("Error openDiagram:", e);
+            showMessage("Gagal membuka diagram: " + e.message, "error", "tableMessage");
+        }
+    }
+
+    /************************************************
+    * Membangun struktur tree berdasarkan Nama Ayah
+    *************************************************/
     function buildFamilyTreeByAyah(ayahName) {
         if (!ayahName) return null;
         const normalize = (str) => (str || "").toLowerCase().trim().replace(/\s+/g, " ");
@@ -1318,22 +1304,21 @@ function openDiagram() {
         return { ...ayahData, spouse: spouse, children: anakNodes };
     }
 
-    // Generate Diagram (memanggil buildFamilyTreeByAyah dan renderTreeDiagram)
+    /**************************************************************************
+    * Generate Diagram (memanggil buildFamilyTreeByAyah dan renderTreeDiagram)
+    ***************************************************************************/
     function generateDiagram() {
         const selectEl = document.getElementById('pilihNamaDiagram');
         if (!selectEl) {
             showMessage("Error: Dropdown tidak ditemukan", "error", "tableMessage");
             return;
         }
-        
         const selectedValue = selectEl.value;
         if (!selectedValue) {
             showMessage("Silakan pilih keluarga (Nama Ayah) terlebih dahulu!", "warning", "tableMessage");
             return;
         }
-        
         showLoader(true, "Membuat diagram pohon...");
-        
         try {
             const rootNode = buildFamilyTreeByAyah(selectedValue);
             const container = document.getElementById('diagramContainer');
@@ -1365,7 +1350,9 @@ function openDiagram() {
         }
     }
 
-    // Download sebagai PDF
+    /***********************
+    * Download sebagai PDF
+    ************************/
     function downloadDiagramPDF() {
         const container = document.getElementById('diagramContainer');
         if (!container || container.innerHTML.includes('Silakan pilih') || container.innerHTML.includes('Tidak dapat membangun')) {
@@ -1392,15 +1379,15 @@ function openDiagram() {
         });
     }
 
-    // Download sebagai Excel
+    /**************************
+    * Download sebagai Excel
+    ***************************/
     function downloadDiagramExcel() {
         if (!globalData || globalData.length === 0) {
             showMessage("Tidak ada data untuk diekspor", "warning", "tableMessage");
             return;
         }
-        
         showLoader(true, "Menyiapkan Excel...");
-        
         try {
             const excelData = globalData.map(item => ({
                 'ID': item.id,
@@ -1495,20 +1482,19 @@ function openDiagram() {
         if (!el) return;
         // Mapping Ikon
         const icons = {
-            success: '✅',
-            error: '❌',
-            warning: '⚠️',
-            info: 'ℹ️'
+           success: '<i class="fas fa-check-circle"></i>',
+           error: '<i class="fas fa-exclamation-circle"></i>',
+           warning: '<i class="fas fa-exclamation-triangle"></i>',
+           info: '<i class="fas fa-info-circle"></i>'
         };
         el.className = `form-msg msg-${type}`;
-        el.innerHTML = `<span>${icons[type] || '•'}</span> <span>${msg}</span>`;
+        el.innerHTML = `<span>${icons[type] || ''}</span> <span>${msg}</span>`;
         el.style.display = 'flex';
         // Sembunyikan otomatis dalam 5 detik
         setTimeout(() => {
             el.style.display = 'none';
         }, 5000);
     }
-
    </script>
 </body>
 </html>
