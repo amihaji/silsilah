@@ -336,7 +336,7 @@
       </div>
   </div>
 
-  <!-- Modal Form Anggota -->
+  <!-- TAMPILAN Modal untuk Form INPUT DAN EDIT Anggota -->
   <div class="modal fade" id="formModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
@@ -358,7 +358,21 @@
               <div class="input-group mt-2">
                 <span class="input-group-text"><i class="fas fa-calendar-alt" style="font-size:17px"></i></span>
                 <input type="text" id="tglLahir" placeholder="Input tgl lahir" class="form-control" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" required>
-                <!-- <span class="input-group-text">dd/mm/yyyy</span> -->
+              </div>
+
+              <!--TAMBAHAN FIELD ALMARHUM -->
+              <div class="input-group mt-4">
+                <select id="wafat" class="form-select" onchange="toggleWafat()" required>
+                   <option value="">Apakah sudah alamarhum...</option>
+                   <option value="ya">ya</option>
+                   <option value="tidak">tidak</option>
+                </select>
+              </div>
+              
+              <!-- TAMBAHAN FIELD TGL WAFAT -->
+              <div class="input-group mt-2" id="divTglWafat">
+                <span class="input-group-text"><i class="fas fa-calendar-alt" style="font-size:17px" ></i></span>
+                <input type="text" id="tglWafat" placeholder="Input tgl wafat" class="form-control" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" required>
               </div>
 
               <div class="input-group mt-2">
@@ -442,7 +456,7 @@
     </div>
   </div>
 
-  <!-- Modal Form View Data -->
+  <!-- TAMPILAN Modal Form View Data -->
   <div class="modal fade" id="viewModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
@@ -459,7 +473,7 @@
     </div>
   </div>
 
-  <!-- MODAL KONFIRMASI CUSTOM -->
+  <!-- TAMPILAN MODAL KONFIRMASI CUSTOM -->
   <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-sm modal-dialog-centered">
       <div class="modal-content border-0 shadow">
