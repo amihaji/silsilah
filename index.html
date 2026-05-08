@@ -299,11 +299,44 @@
 
   <!-- AREA APLIKASI -->
   <div id="appArea" class="d-none">
+    <!---
     <nav class="navbar navbar-expand-lg navbar-dark mb-4">
       <div class="container-fluid">
         <a class="navbar-brand" href="#">Pohon Silsilah Keluarga</a>
         <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
       </div>
+    </nav>
+    -->
+    <!-- AREA NAVBAR APLIKASI -->
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+    <div class="container-fluid">
+        <!-- Logo gambar di sebelah kiri -->
+        <a class="navbar-brand d-flex align-items-center" href="#">
+        <img src="images/pohonsilsilah.png" alt="Logo Silsilah" width="150" height="40" class="me-2" style="object-fit: contain;">
+        <span class="fw-bold">SilsilahKu</span>
+        </a>
+        
+        <!-- Tombol toggle untuk mobile -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <!-- Menu kanan -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+            <a class="nav-link" href="#" id="aboutBtn" style="cursor: pointer;">
+                <i class="fas fa-info-circle me-1"></i> About
+            </a>
+            </li>
+            <li class="nav-item">
+            <button class="btn btn-outline-light btn-sm ms-2" onclick="logout()">
+                <i class="fas fa-sign-out-alt me-1"></i> Logout
+            </button>
+            </li>
+        </ul>
+        </div>
+    </div>
     </nav>
    
       <!-- Tampilkan pesan untuk aksi di tabel -->
@@ -588,6 +621,54 @@
       }
     }
 
+    function showAbout() {
+    const existingModal = document.getElementById('dynamicAboutModal');
+    if (existingModal) existingModal.remove();
+    
+    const modalHtml = `
+        <div class="modal fade" id="dynamicAboutModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                <img src="images/pohonsilsilah.png" alt="logo" width="28" height="28" class="me-2" style="object-fit: contain;">
+                Tentang Aplikasi Silsilah
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                <img src="images/pohonsilsilah.png" alt="Logo Silsilah" width="80" height="80" class="mb-2">
+                </div>
+                <h6 class="text-center fw-bold">Sistem Informasi Silsilah Keluarga</h6>
+                <p class="text-muted small text-center">Versi 1.0</p>
+                <hr>
+                <p class="small">
+                <i class="fas fa-check-circle text-success me-2"></i>Kelola data anggota keluarga<br>
+                <i class="fas fa-sitemap text-primary me-2"></i>Lihat diagram pohon silsilah<br>
+                <i class="fas fa-upload text-info me-2"></i>Unggah foto profil<br>
+                <i class="fas fa-download text-secondary me-2"></i>Ekspor ke PDF/Excel
+                </p>
+                <hr>
+                <p class="text-center text-muted small mb-0">
+                Dibuat untuk melestarikan sejarah keluarga.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+            </div>
+            </div>
+        </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modalElement = document.getElementById('dynamicAboutModal');
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+    modalElement.addEventListener('hidden.bs.modal', () => modalElement.remove());
+    }
+    
     /****************************
      * Buat Tabel Data Keluarga
      * **************************/
