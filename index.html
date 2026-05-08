@@ -432,7 +432,7 @@
               </div>
 
               <div class="input-group mt-2">
-                <span class="input-group-text"><i class="fas fa-cloud-upload-alt" style="font-size:15px"></i></span>
+                <span class="input-group-text"><i class="fas fa-cloud-upload-alt" style="font-size:14px"></i></span>
                 <!-- Input teks untuk menampilkan nama file atau placeholder -->
                 <input type="text" id="fotoLabel" class="form-control text-muted" value="Tidak ada file foto terpilih" readonly onclick="document.getElementById('fotoFile').click()" style="cursor: pointer; background-color: #fff;">
                 <!-- Tombol kustom -->
@@ -630,7 +630,7 @@
     // Reset label foto kustom
     const fotoLabel = document.getElementById('fotoLabel');
     if (fotoLabel) {
-        fotoLabel.value = 'Tidak ada file foto terpilih';
+        fotoLabel.value = 'Pilih file foto anda...';
         fotoLabel.classList.add('text-muted');
     }
     // Pastikan type tglLahir kembali ke text agar placeholder tampil
