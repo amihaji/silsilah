@@ -501,7 +501,7 @@
     // *************************      
     // DEKLARASI VARIABEL GLOBAL
     // **************************
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqhmTXdrmbfAQ6lvTtXfrsCYJTYpR72dLa3vIwCB8Wj-vi4MWndqyNLRkbDPnm3TPo/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzYCPl-xlxeCM1VneFgvjcvTEAgzVSVRX2s1xDUjYeOper_eIfdavUSN_YMyl5_m_G/exec";
     let globalData = [];
     let modalInstance;
     let confirmModalInstance;
@@ -768,16 +768,14 @@
      * Update simpan Data di sheet
     *******************************/
     async function simpanData(e) {
-        if (e) e.preventDefault(); // Mencegah reload halaman (PENTING)
-        
+    if (e) e.preventDefault();
         const btn = document.getElementById('btnSimpan');
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...';
-        
-        // document.getElementById('formMessage').style.display = 'none';
-        document.getElementById('formKeluargaMessage').style.display = 'none';
 
+        document.getElementById('formKeluargaMessage').style.display = 'none';
         try {
+            // Ambil elemen pasangan dengan aman (mungkin tidak ada)
             const namaPasanganEl = document.getElementById('namaPasangan');
             let payload = {
                 action: "saveData",
@@ -787,7 +785,7 @@
                     jk: document.getElementById('jk').value,
                     tglLahir: document.getElementById('tglLahir').value,
                     statusKawin: document.getElementById('statusKawin').value,
-                    namaPasangan: document.getElementById('namaPasangan').value,
+                    namaPasangan: namaPasanganEl ? namaPasanganEl.value : "", // <-- PERBAIKAN
                     statusKeluarga: document.getElementById('statusKeluarga').value,
                     alamat: document.getElementById('alamat').value,
                     kota: document.getElementById('kota').value,
@@ -795,27 +793,27 @@
                     ibu: document.getElementById('ibu').value,
                     fotoLama: document.getElementById('fotoLama').value,
                     fotoBase64: null,
-                    almarhum: document.getElementById('wafat').value,      // <-- BARU
-                    tglWafat: document.getElementById('tglWafat').value    // <-- BARU
+                    almarhum: document.getElementById('wafat')?.value || "",     // <-- PERBAIKAN
+                    tglWafat: document.getElementById('tglWafat')?.value || ""    // <-- PERBAIKAN
                 }
             };
 
+            // Upload foto jika ada
             const fileInput = document.getElementById('fotoFile');
             if (fileInput && fileInput.files[0]) {
                 const reader = new FileReader();
                 reader.onload = async function(event) {
                     payload.data.fotoBase64 = event.target.result;
-                    await kirimData(payload); 
+                    await kirimData(payload);
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
-                await kirimData(payload); 
+                await kirimData(payload);
             }
         } catch (err) {
             showMessage("Error: " + err.message, "error", "formKeluargaMessage");
-            const btnReset = document.getElementById('btnSimpan');
-            btnReset.disabled = false;
-            btnReset.innerHTML = 'Simpan Data';
+            btn.disabled = false;
+            btn.innerHTML = 'Simpan Data';
         }
     }
 
@@ -1774,6 +1772,22 @@
     function toggleWafat() {
     const wafatSelect = document.getElementById('wafat');
     const divTglWafat = document.getElementById('divTglWafat');
+    const tglWafatInput = document.getElementById('tglWafat');
+        if (wafatSelect?.value === 'ya') {
+            if (divTglWafat) divTglWafat.style.display = 'flex';
+            if (tglWafatInput) tglWafatInput.required = true;
+        } else {
+            if (divTglWafat) divTglWafat.style.display = 'none';
+            if (tglWafatInput) {
+                tglWafatInput.value = '';
+                tglWafatInput.required = false;
+            }
+        }
+    }
+    
+    function BACKUP_toggleWafat() {
+    const wafatSelect = document.getElementById('wafat');
+    const divTglWafat = document.getElementById('divTglWafat');
     if (wafatSelect.value === 'ya') {
         divTglWafat.style.display = 'flex';
         document.getElementById('tglWafat').required = true;
@@ -1787,7 +1801,63 @@
     /**************************************
     * Fungsi untuk Logika Kondisi Pasangan
     ***************************************/
-    function togglePasangan() {
+   function togglePasangan() {
+        const jk = document.getElementById('jk').value;
+        const statusKawin = document.getElementById('statusKawin').value;
+        const divPasangan = document.getElementById('divPasangan');
+        
+        // Cek apakah elemen input namaPasangan sudah ada
+        let namaPasanganInput = document.getElementById('namaPasangan');
+        
+        // Jika belum ada, buat sekarang
+        if (!namaPasanganInput) {
+            // Buat struktur input group
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'input-group';
+            const span = document.createElement('span');
+            span.className = 'input-group-text';
+    
+            const icon = document.createElement('i');
+            icon.className = jk === "pria" ? "fa fa-female" : "fa fa-male";
+            icon.style.fontSize = jk === "pria" ? "21px" : "24px";
+            span.appendChild(icon);
+    
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'namaPasangan';
+            input.className = 'form-control';
+            input.placeholder = jk === "pria" ? "Input nama istri anda" : "Input nama suami anda";
+            input.maxLength = 40;
+            input.pattern = "[A-Za-z ]+";
+            
+            inputGroup.appendChild(span);
+            inputGroup.appendChild(input);
+            divPasangan.innerHTML = '';
+            divPasangan.appendChild(inputGroup);
+            namaPasanganInput = input;
+        } else {
+            // Update placeholder dan icon jika perlu
+            const span = namaPasanganInput.previousElementSibling;
+            const icon = span.querySelector('i');
+            if (jk === "pria") {
+                icon.className = "fa fa-female";
+                namaPasanganInput.placeholder = "Input nama istri anda";
+            } else {
+                icon.className = "fa fa-male";
+                namaPasanganInput.placeholder = "Input nama suami anda";
+            }
+        }
+        // Tentukan apakah akan ditampilkan
+        let show = false;
+        if (jk === "pria" && (statusKawin === "kawin" || statusKawin === "cerai")) {
+            show = true;
+        } else if (jk === "wanita" && (statusKawin === "kawin" || statusKawin === "cerai")) {
+            show = true;
+        }
+        divPasangan.style.display = show ? "flex" : "none";
+    }
+
+    function BACKUP_togglePasangan() {
         const jk = document.getElementById('jk').value;
         const statusKawin = document.getElementById('statusKawin').value;
         const divPasangan = document.getElementById('divPasangan');
