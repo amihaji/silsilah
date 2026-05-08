@@ -299,44 +299,36 @@
 
   <!-- AREA APLIKASI -->
   <div id="appArea" class="d-none">
-    <!---
-    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">Pohon Silsilah Keluarga</a>
-        <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
-      </div>
-    </nav>
-    -->
     <!-- AREA NAVBAR APLIKASI -->
-    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
-    <div class="container-fluid">
-        <!-- Logo gambar di sebelah kiri -->
-        <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="images/pohonsilsilah.png" alt="Logo Silsilah" width="150" height="40" class="me-2" style="object-fit: contain;">
-        <span class="fw-bold">SilsilahKu</span>
-        </a>
-        
-        <!-- Tombol toggle untuk mobile -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-        </button>
-        
-        <!-- Menu kanan -->
-        <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-            <a class="nav-link" href="#" id="aboutBtn" style="cursor: pointer;">
-                <i class="fas fa-info-circle me-1"></i> About
+    <nav class="navbar navbar-expand-lg mb-4" style="background-color: #e9ecef;">
+        <div class="container-fluid">
+            <!-- Logo gambar di sebelah kiri -->
+            <a class="navbar-brand d-flex align-items-center" href="#" style="color: #1A365D;">
+            <img src="images/pohonsilsilah.png" alt="Logo Silsilah" width="150" height="40" class="me-2" style="object-fit: contain;">
+            <span class="fw-bold" style="color: #1A365D;">SilsilahKu</span>
             </a>
-            </li>
-            <li class="nav-item">
-            <button class="btn btn-outline-light btn-sm ms-2" onclick="logout()">
-                <i class="fas fa-sign-out-alt me-1"></i> Logout
+            
+            <!-- Tombol toggle untuk mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
             </button>
-            </li>
-        </ul>
+            
+            <!-- Menu kanan -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                <a class="nav-link" href="#" id="aboutBtn" style="cursor: pointer; color: #1A365D;">
+                    <i class="fas fa-info-circle me-1"></i> About
+                </a>
+                </li>
+                <li class="nav-item">
+                <button class="btn btn-sm ms-2" onclick="logout()" style="background-color: #6c757d; color: white; border: none;">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </button>
+                </li>
+            </ul>
+            </div>
         </div>
-    </div>
     </nav>
    
       <!-- Tampilkan pesan untuk aksi di tabel -->
@@ -579,7 +571,17 @@
         if (btnBuatDiagram) btnBuatDiagram.onclick = generateDiagram;
         if (btnDownloadPdf) btnDownloadPdf.onclick = downloadDiagramPDF;
         if (btnDownloadExcel) btnDownloadExcel.onclick = downloadDiagramExcel;
+
+        // Pastikan event listener terpasang setelah halaman selesai dimuat
+        const aboutBtn = document.getElementById('aboutBtn');
+        if (aboutBtn) {
+            aboutBtn.addEventListener('click', function(e) { e.preventDefault(); showAbout(); });
+            console.log("Tombol About siap pakai");
+        } else {
+            console.log("Tombol About tidak ditemukan di DOM");
+        }
     });
+
 
     /***********************
     * Tampilan showloader 
@@ -621,27 +623,34 @@
       }
     }
 
+    /*****************************************
+     * Fungsi untuk menampilkan modal Tentang 
+     * **************************************/
     function showAbout() {
+    console.log("About diklik"); // Untuk debugging, lihat di console browser
+    // Hapus modal lama jika sudah ada
     const existingModal = document.getElementById('dynamicAboutModal');
-    if (existingModal) existingModal.remove();
+    if (existingModal) {
+        existingModal.remove();
+    }
     
     const modalHtml = `
         <div class="modal fade" id="dynamicAboutModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
+            <div class="modal-header" style="background-color: #1A365D; color: white;">
                 <h5 class="modal-title">
-                <img src="images/pohonsilsilah.png" alt="logo" width="28" height="28" class="me-2" style="object-fit: contain;">
-                Tentang Aplikasi Silsilah
+                <img src="images/pohonsilsilah.png" alt="logo" width="150" height="40" class="me-2" style="object-fit: contain;">
+                Tentang Aplikasi Pohon Silsilah Keluarga
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="text-center mb-3">
                 <img src="images/pohonsilsilah.png" alt="Logo Silsilah" width="80" height="80" class="mb-2">
+                <h6 class="fw-bold mt-2">Sistem Informasi Pohon Silsilah Keluarga</h6>
+                <p class="text-muted small">Versi 1.0</p>
                 </div>
-                <h6 class="text-center fw-bold">Sistem Informasi Silsilah Keluarga</h6>
-                <p class="text-muted small text-center">Versi 1.0</p>
                 <hr>
                 <p class="small">
                 <i class="fas fa-check-circle text-success me-2"></i>Kelola data anggota keluarga<br>
@@ -651,7 +660,8 @@
                 </p>
                 <hr>
                 <p class="text-center text-muted small mb-0">
-                Dibuat untuk melestarikan sejarah keluarga.
+                Dibuat untuk melestarikan<br>sejarah keluarga.
+                Copyright &copy; 2026 Pohon Silsilah Keluarga - By Amin Abdulhaji
                 </p>
             </div>
             <div class="modal-footer">
@@ -666,10 +676,12 @@
     const modalElement = document.getElementById('dynamicAboutModal');
     const modal = new bootstrap.Modal(modalElement);
     modal.show();
-    modalElement.addEventListener('hidden.bs.modal', () => modalElement.remove());
-    }
     
-    /****************************
+    modalElement.addEventListener('hidden.bs.modal', function() {
+        modalElement.remove();
+    });
+    }
+        /****************************
      * Buat Tabel Data Keluarga
      * **************************/
     function renderTable() {
