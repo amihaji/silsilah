@@ -351,12 +351,12 @@
             <div class="row g-3">
              
               <div class="input-group mt-4">
-                <span class="input-group-text"><i class="fas fa-user-alt" style="font-size:16px"></i></span>
+                <span class="input-group-text"><i class="fas fa-user-alt" style="font-size:17px"></i></span>
                 <input type="text" id="nama" class="form-control" placeholder="Input nama anda tanpa nama ayah" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required >
               </div>
 
               <div class="input-group mt-2">
-                <span class="input-group-text"><i class="fas fa-calendar-alt" style="font-size:17px"></i></span>
+                <span class="input-group-text"><i class="fas fa-calendar-alt" style="font-size:18px"></i></span>
                 <input type="text" id="tglLahir" placeholder="Input tgl lahir" class="form-control" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" required>
               </div>
 
@@ -365,8 +365,8 @@
                 <span class="input-group-text"><i class="fas fa-bed" style="font-size:15px"></i></span>
                 <select id="wafat" class="form-select" onchange="toggleWafat()" required>
                    <option value="">Apakah sudah almarhum...</option>
-                   <option value="ya">ya</option>
-                   <option value="tidak">tidak</option>
+                   <option value="ya">Sudah Almarhum</option>
+                   <option value="tidak">Belum Almarhum</option>
                 </select>
               </div>
               
