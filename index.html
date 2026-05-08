@@ -356,7 +356,7 @@
               </div>
 
               <div class="input-group mt-2">
-                <span class="input-group-text"><i class="fas fa-calendar-alt" style="font-size:18px"></i></span>
+                <span class="input-group-text"><i class="fas fa-calendar-alt" style="font-size:19px"></i></span>
                 <input type="text" id="tglLahir" placeholder="Input tgl lahir" class="form-control" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" required>
               </div>
 
@@ -412,7 +412,7 @@
               </div>
          
               <div class="input-group mt-2">
-                <span class="input-group-text"><i class="fas fa-house-user" style="font-size:16px"></i></span>
+                <span class="input-group-text"><i class="fas fa-house-user" style="font-size:15px"></i></span>
                 <input type="text" id="alamat" class="form-control" placeholder="Input alamat anda" oninput="this.value = this.value.toLowerCase().substring(0, 80)" maxlength="80" >
               </div>
 
@@ -432,7 +432,7 @@
               </div>
 
               <div class="input-group mt-2">
-                <span class="input-group-text"><i class="fas fa-cloud-upload-alt" style="font-size:16px"></i></span>
+                <span class="input-group-text"><i class="fas fa-cloud-upload-alt" style="font-size:15px"></i></span>
                 <!-- Input teks untuk menampilkan nama file atau placeholder -->
                 <input type="text" id="fotoLabel" class="form-control text-muted" value="Tidak ada file foto terpilih" readonly onclick="document.getElementById('fotoFile').click()" style="cursor: pointer; background-color: #fff;">
                 <!-- Tombol kustom -->
@@ -699,71 +699,7 @@
     }
     modalInstance.show();
     }
-
-    function BACKUP_openForm(mode, id = null) {
-    const form = document.getElementById('formKeluarga');
-    if (form) form.reset();
     
-    // Reset label foto kustom
-    const fotoLabel = document.getElementById('fotoLabel');
-    if (fotoLabel) {
-        fotoLabel.value = 'Tidak ada file foto terpilih';
-        fotoLabel.classList.add('text-muted');
-    }
-    // Pastikan type tglLahir kembali ke text agar placeholder tampil
-    const tglLahirInput = document.getElementById('tglLahir');
-    if (tglLahirInput) tglLahirInput.type = 'text';
-
-    document.getElementById('formId').value = "";
-    document.getElementById('fotoLama').value = "";
-    document.getElementById('formKeluargaMessage').style.display = 'none';
-    // Reset Tombol Simpan agar tidak disabled (Fix Hang)
-    const btn = document.getElementById('btnSimpan');
-    if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = 'Simpan Data';
-    }
-
-    // Update Judul Modal 
-    const titleEl = document.getElementById('modalTitle');
-    if (titleEl) {
-        titleEl.innerText = (mode === 'edit') ? "Edit Data Keluarga" : "Tambah Data Keluarga";
-    }
-    if (mode === 'edit' && id) {
-        const item = globalData.find(x => x.id == id);
-        if (item) {
-            document.getElementById('formId').value = item.id;
-            document.getElementById('nama').value = item.nama || "";
-            document.getElementById('jk').value = item.jk || "pria";
-            
-            if (item.tglLahir) {
-                tglLahirInput.type = 'date';
-                tglLahirInput.value = new Date(item.tglLahir).toISOString().split('T')[0];
-            } else {
-                tglLahirInput.type = 'text';
-                tglLahirInput.value = "";
-            }
-
-            document.getElementById('statusKawin').value = item.statusKawin || "lajang";
-            // Panggil togglePasangan() dulu agar input namaPasangan dibuat di DOM
-            if (typeof togglePasangan === 'function') togglePasangan();
-            
-            // Baru kemudian isi nilainya jika elemennya sudah ada
-            const pasanganEl = document.getElementById('namaPasangan');
-            if (pasanganEl) {
-                pasanganEl.value = item.namaPasangan || "";
-            }
-            document.getElementById('statusKeluarga').value = item.statusKeluarga || "anak";
-            document.getElementById('alamat').value = item.alamat || "";
-            document.getElementById('kota').value = item.kota || "";
-            document.getElementById('ayah').value = item.ayah || "";
-            document.getElementById('ibu').value = item.ibu || "";
-            document.getElementById('fotoLama').value = item.foto || "";
-        }
-    }
-    modalInstance.show();
-    }
-
     /******************************
      * Update simpan Data di sheet
     *******************************/
@@ -814,57 +750,6 @@
             showMessage("Error: " + err.message, "error", "formKeluargaMessage");
             btn.disabled = false;
             btn.innerHTML = 'Simpan Data';
-        }
-    }
-
-    async function BACKUP_simpanData(e) {
-        if (e) e.preventDefault(); // Mencegah reload halaman (PENTING)
-        
-        const btn = document.getElementById('btnSimpan');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...';
-        
-        // document.getElementById('formMessage').style.display = 'none';
-        document.getElementById('formKeluargaMessage').style.display = 'none';
-
-        try {
-            const namaPasanganEl = document.getElementById('namaPasangan');
-            let payload = {
-                action: "saveData",
-                data: {
-                    id: document.getElementById('formId').value,
-                    nama: document.getElementById('nama').value,
-                    jk: document.getElementById('jk').value,
-                    tglLahir: document.getElementById('tglLahir').value,
-                    statusKawin: document.getElementById('statusKawin').value,
-                    // namaPasangan: document.getElementById('namaPasangan').value,
-                    namaPasangan: namaPasanganEl ? namaPasanganEl.value : "",
-                    statusKeluarga: document.getElementById('statusKeluarga').value,
-                    alamat: document.getElementById('alamat').value,
-                    kota: document.getElementById('kota').value,
-                    ayah: document.getElementById('ayah').value,
-                    ibu: document.getElementById('ibu').value,
-                    fotoLama: document.getElementById('fotoLama').value,
-                    fotoBase64: null
-                }
-            };
-
-            const fileInput = document.getElementById('fotoFile');
-            if (fileInput && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = async function(event) {
-                    payload.data.fotoBase64 = event.target.result;
-                    await kirimData(payload); 
-                };
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                await kirimData(payload); 
-            }
-        } catch (err) {
-            showMessage("Error: " + err.message, "error", "formKeluargaMessage");
-            const btnReset = document.getElementById('btnSimpan');
-            btnReset.disabled = false;
-            btnReset.innerHTML = 'Simpan Data';
         }
     }
 
@@ -1112,106 +997,6 @@
         }
     }
     
-    function BACKUP_viewDetail(id) {
-        try {
-            const item = globalData.find(x => String(x.id) === String(id));
-            if (!item) {
-                showMessage("Data tidak ditemukan", "error", "tableMessage");
-                return;
-            }
-
-            // Hapus modal dinamis jika sudah ada sebelumnya
-            const existingDynamicModal = document.getElementById('dynamicViewModal');
-            if (existingDynamicModal) {
-                existingDynamicModal.remove();
-            }
-
-            // Handle foto atau avatar untuk view detail
-            const fotoUrl = item.foto && item.foto.includes('http') ? item.foto : null;
-            const initials = getInitials(item.nama);
-            
-            let fotoDisplay = '';
-            if (fotoUrl) {
-                fotoDisplay = `<img src="${fotoUrl}" 
-                class="view-photo" 
-                style="width:150px; height:150px; object-fit:cover; border-radius:50%; border:3px solid #002080" 
-                onerror="this.onerror=null; 
-                this.parentElement.innerHTML='<div class=\'avatar-circle avatar-circle-lg\' style=\'width:150px; height:150px; font-size:64px; margin:0 auto;\'>${initials}</div>';">`;
-            } else {
-                fotoDisplay = `<div class="avatar-circle avatar-circle-lg" 
-                style="width:150px; height:150px; font-size:64px; margin:0 auto; background-color:#416eff;">${initials}</div>`;
-            }
-
-            // Format tanggal lahir
-            let tglLahirFormatted = '-';
-            if (item.tglLahir) {
-                try {
-                    const date = new Date(item.tglLahir);
-                    tglLahirFormatted = date.toLocaleDateString('id-ID');
-                } catch(e) {
-                    tglLahirFormatted = item.tglLahir;
-                }
-            }
-
-            // Buat struktur modal baru
-            const modalHtml = `
-                <div class="modal fade" id="dynamicViewModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
-                    <div class="modal-dialog modal-lg modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header bg-primary text-white">
-                                <h5 class="modal-title">Detail Profil Keluarga</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="row">
-                                    <div class="col-md-4 text-center mb-3">
-                                        ${fotoDisplay}
-                                    </div>
-                                    <div class="col-md-8">
-                                        <table class="table table-sm table-borderless">
-                                            <tr><th width="35%">Nama Lengkap</th><td>: ${item.nama || '-'}</td></tr>
-                                            <tr><th>Jenis Kelamin</th><td>: ${item.jk || '-'}</td></tr>
-                                            <tr><th>Tgl Lahir</th><td>: ${tglLahirFormatted}</td></tr>
-                                            <tr><th>Status Kawin</th><td>: ${item.statusKawin || '-'}</td></tr>
-                                            <tr><th>Nama Pasangan</th><td>: ${item.namaPasangan || '-'}</td></tr>
-                                            <tr><th>Status Keluarga</th><td>: ${item.statusKeluarga || '-'}</td></tr>
-                                            <tr><th>Nama Ayah</th><td>: ${item.ayah || '-'}</td></tr>
-                                            <tr><th>Nama Ibu</th><td>: ${item.ibu || '-'}</td></tr>
-                                            <tr><th>Alamat</th><td>: ${item.alamat || '-'}</td></tr>
-                                            <tr><th>Kota</th><td>: ${item.kota || '-'}</td></tr>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            // Tambahkan ke body
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-            // Tampilkan modal menggunakan Bootstrap
-            const modalElement = document.getElementById('dynamicViewModal');
-            const modal = new bootstrap.Modal(modalElement, {
-                backdrop: true,
-                keyboard: true
-            });
-            modal.show();
-            // Hapus modal setelah ditutup
-            modalElement.addEventListener('hidden.bs.modal', function() {
-                modalElement.remove();
-            });
-        } catch (e) {
-            console.error("View Error:", e);
-            showMessage("Gagal menampilkan detail: " + e.message, "error", "tableMessage");
-        }
-    }
-    
-
     /*************************************
      * Fungsi untuk menghapus record data
      *************************************/
@@ -1784,24 +1569,11 @@
             }
         }
     }
-    
-    function BACKUP_toggleWafat() {
-    const wafatSelect = document.getElementById('wafat');
-    const divTglWafat = document.getElementById('divTglWafat');
-    if (wafatSelect.value === 'ya') {
-        divTglWafat.style.display = 'flex';
-        document.getElementById('tglWafat').required = true;
-    } else {
-        divTglWafat.style.display = 'none';
-        document.getElementById('tglWafat').value = '';
-        document.getElementById('tglWafat').required = false;
-    }
-    }
-
+        
     /**************************************
     * Fungsi untuk Logika Kondisi Pasangan
     ***************************************/
-   function togglePasangan() {
+    function togglePasangan() {
         const jk = document.getElementById('jk').value;
         const statusKawin = document.getElementById('statusKawin').value;
         const divPasangan = document.getElementById('divPasangan');
@@ -1856,37 +1628,7 @@
         }
         divPasangan.style.display = show ? "flex" : "none";
     }
-
-    function BACKUP_togglePasangan() {
-        const jk = document.getElementById('jk').value;
-        const statusKawin = document.getElementById('statusKawin').value;
-        const divPasangan = document.getElementById('divPasangan');
-        let show = false;
-        if (jk === "pria") {
-            if (statusKawin === "kawin" || statusKawin === "cerai") {
-                divPasangan.innerHTML = `
-                    <span class="input-group-text"><i class="fa fa-female" style="font-size:21px"></i></span> 
-                    <input type="text" id="namaPasangan" class="form-control" placeholder="Input nama istri anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required>
-                `;
-                show = true;
-            }
-        } else if (jk === "wanita") {
-            if (statusKawin === "kawin" || statusKawin === "cerai") {
-                divPasangan.innerHTML = `
-                    <span class="input-group-text"><i class="fa fa-male" style="font-size:24px"></i></span> 
-                    <input type="text" id="namaPasangan" class="form-control" placeholder="Input nama suami anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z ]+" required>
-                `;
-                show = true;
-            }
-        }
-        if (show) {
-            divPasangan.style.display = "flex";
-        } else {
-            divPasangan.style.display = "none";
-            divPasangan.innerHTML = "";
-        }
-    }
-
+    
     /***************************
      * Update file upload foto 
      **************************/
