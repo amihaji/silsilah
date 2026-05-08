@@ -362,17 +362,18 @@
 
               <!--TAMBAHAN FIELD ALMARHUM -->
               <div class="input-group mt-4">
+                <span><i class="fas fa-bed" style="font-size:17px"></i></span>
                 <select id="wafat" class="form-select" onchange="toggleWafat()" required>
-                   <option value="">Apakah sudah alamarhum...</option>
+                   <option value="">Apakah sudah almarhum...</option>
                    <option value="ya">ya</option>
                    <option value="tidak">tidak</option>
                 </select>
               </div>
               
-              <!-- TAMBAHAN FIELD TGL WAFAT -->
+              <!-- TAMBAHAN FIELD TGL WAFAT, FIELD INI TAMPIL JIKA FIELD ALMARHUM="y" -->
               <div class="input-group mt-2" id="divTglWafat">
-                <span class="input-group-text"><i class="fas fa-calendar-alt" style="font-size:17px" ></i></span>
-                <input type="text" id="tglWafat" placeholder="Input tgl wafat" class="form-control" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" required>
+                <span class="input-group-text"><i class="fas fa-calendar-times" style="font-size:17px"></i></span>
+                <input type="text" id="tglWafat" placeholder="Input tgl wafatnya" class="form-control" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" required>
               </div>
 
               <div class="input-group mt-2">
