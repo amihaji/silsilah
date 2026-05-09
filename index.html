@@ -77,18 +77,25 @@
         border-radius: 0 !important;
     }
 
-    /* Tabel styling - pastikan menyatu */
+    /* ========== STICKY HEADER TABEL (DESKTOP & MOBILE) ========== */
     .table-responsive {
+        overflow-y: auto;
+        max-height: 65vh;
+        position: relative;
+        -webkit-overflow-scrolling: touch;
         border-radius: 0 !important;
     }
 
-    .table {
-        margin-bottom: 0 !important;
+    .table thead th {
+        position: sticky;
+        top: 0;
+        background-color: #e9ecef !important;
+        z-index: 10;
+        box-shadow: inset 0 1px 0 #dee2e6, inset 0 -1px 0 #dee2e6;
     }
 
-    /* Hilangkan border radius dari semua komponen card */
-    .card {
-        border-radius: 0 !important;
+    .table-light th {
+        background-color: #e9ecef !important;
     }
 
     /* Tampilan  Foto Pada Tabel Data Kelauarga */
@@ -320,18 +327,78 @@
         color: #666;
     }
 
-    /* Untuk mobile device */
+    /* ========== PERBAIKAN KHUSUS MOBILE DEVICE ========== */
     @media (max-width: 768px) {
-        .hero-header {
-            height: 120px;
+        /* Buat navbar collapse menjadi vertikal */
+        .navbar-collapse {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 1050;
         }
-        .hero-header h2 {
-            font-size: 1.2rem;
+        
+        /* Menu navbar jadi vertikal dengan lebar penuh */
+        .navbar-nav {
+            flex-direction: column !important;
+            width: 100% !important;
+            gap: 10px !important;
         }
-        .hero-header p {
-            font-size: 0.8rem;
+        
+        /* Setiap item menu (About & Logout) lebar penuh */
+        .navbar-nav .nav-item {
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            list-style: none;
         }
+        
+        /* Tombol About dan Logout lebar penuh */
+        .navbar-nav .btn {
+            display: block !important;
+            width: 100% !important;
+            text-align: center !important;
+            padding: 10px 12px !important;
+            margin: 0 !important;
+            font-size: 14px !important;
+            border-radius: 8px !important;  /* Dibulatkan sedikit agar rapi, bukan 1px */
+        }
+        
+        /* Warna khusus untuk tombol About (biru) */
+        .navbar-nav .btn-primary {
+            background-color: #007bff !important;
+            border: none !important;
+        }
+        
+        /* Warna khusus untuk tombol Logout (abu-abu) */
+        .navbar-nav .btn-secondary {
+            background-color: #6c757d !important;
+            border: none !important;
+        }
+        
+        /* Hilangkan jarak antar tombol (sudah diatur oleh gap) */
+        .navbar-nav li { margin: 0 !important; padding: 0 !important; }
 
+        /* Header image untuk mobile */
+        .hero-header { height: 120px; }
+        .hero-header h2 { font-size: 1.2rem; }
+        .hero-header p { font-size: 0.8rem;  }
+        
+        /* Atur tinggi tabel responsive di mobile */
+        .table-responsive { max-height: 55vh; }
+        
+        /* Perkecil padding tabel agar muat */
+        .table td, .table th { padding: 8px 6px !important; font-size: 12px !important; }
+        
+        /* Tombol aksi di tabel tetap rapi */
+        .btn-round { width: 30px !important; height: 30px !important; }
+        .btn-round i { font-size: 12px !important; }
+
+        /* Diagram untuk mobile */
         .diagram-foto, .diagram-avatar { width: 45px; height: 45px; font-size: 16px; }
         .diagram-name { font-size: 10px; }
         .diagram-year { font-size: 8px; }
@@ -387,24 +454,29 @@
   <!-- AREA APLIKASI -->
     <div id="appArea" class="d-none">
         <!-- NAVBAR -->
-        <nav class="navbar navbar-expand-lg" style="background-color: #e9ecef; margin-bottom: 0;">
+        <nav class="navbar navbar-expand-lg" style="background-color: #e9ecef; margin-bottom: 0; position: relative;">
             <div class="container-fluid">
+                <!-- Logo -->
                 <a class="navbar-brand d-flex align-items-center" href="#" style="color: #1A365D;">
-                    <img src="images/pohonsilsilah.png" alt="Logo Silsilah" width="150" height="40" class="me-2" style="object-fit: contain;">
+                    <img src="images/pohonsilsilah.png" alt="Logo Silsilah" width="35" height="35" class="me-2" style="object-fit: contain;">
                     <span class="fw-bold" style="color: #1A365D;">keluarga</span>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                
+                <!-- Tombol toggle (hamburger) untuk mobile -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+                
+                <!-- Menu yang akan collapse di mobile -->
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <button class="btn btn-primary btn-sm ms-2" href="#" id="aboutBtn" style="cursor: pointer;">
+                            <button  class="btn btn-primary btn-sm"href="#" id="aboutBtn" style="cursor: pointer;">
                                 <i class="fas fa-info-circle me-1"></i> About
                             </button>
                         </li>
                         <li class="nav-item">
-                            <button class="btn btn-secondary btn-sm ms-2" onclick="logout()" style="cursor: pointer;">
+                            <button class="btn btn-secondary btn-sm" onclick="logout()" style="cursor: pointer;">
                                 <i class="fas fa-sign-out-alt me-1"></i> Logout
                             </button>
                         </li>
