@@ -208,17 +208,26 @@
         max-height: none;
         text-align: center;
         white-space: nowrap;
+        background-color: #ffffff !important;
     }
     /* Scroll hanya di modal body */
     .modal-body {
         max-height: 70vh;
         overflow-y: auto;
         overflow-x: hidden;
+        background-color: #ffffff;
     }
     /* Container diagram tidak punya scroll sendiri */
     #diagramContainer {
         overflow: visible !important;
+        background-color: #ffffff !important;
+        border-radius: 8px;
     }
+    /* Hapus kemungkinan warna abu-abu dari class sebelumnya */
+    .bg-light, .table-light, .card {
+        background-color: #ffffff !important;
+    }
+    
     .tree-root {
         display: inline-flex;
         flex-direction: row;
@@ -228,12 +237,14 @@
         margin: 0;
         padding: 0;
         flex-wrap: wrap;
+        background-color: transparent;
     }
     .family-node {
         position: relative;
         display: inline-block;
         vertical-align: top;
         text-align: center;
+        background-color: transparent;
     }
     .children-wrapper {
         display: flex;
@@ -243,6 +254,7 @@
         gap: 40px;
         position: relative;
         padding-top: 20px;
+        background-color: transparent;
     }
     .couple-group {
         display: flex;
@@ -252,6 +264,7 @@
         align-items: center;
         gap: 1px;
         margin-bottom: 5px;
+        background-color: transparent;
     }
     .couple-connector {
         font-size: 24px;
@@ -400,6 +413,7 @@
         .btn-round i { font-size: 12px !important; }
         
         /* Diagram mobile */
+        .tree-diagram { background-color: #ffffff !important; }
         .diagram-foto, .diagram-avatar { width: 45px; height: 45px; font-size: 16px; }
         .diagram-name { font-size: 10px; }
         .diagram-year { font-size: 8px; }
