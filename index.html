@@ -10,15 +10,28 @@
   <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
   <style>
     :root { --dark-blue: #1A365D; --light-blue: #63B3ED; --light-gray: #EDF2F7; } 
-    body { background-color: var(--white); font-family: 'Segoe UI', sans-serif; }
-    .navbar { background-color: var(--light-gray);}
+    /* Reset margin/padding untuk body dan container */
+    body {
+        background-color: var(--white);
+        font-family: 'Segoe UI', sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* Navbar - hapus margin bottom */
+    .navbar {
+        background-color: var(--light-gray);
+        margin-bottom: 0 !important;
+        border-radius: 0 !important;
+    }
+
     .loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; justify-content:center; align-items:center; flex-direction: column; }
   
-    /* Header Image Banner */
+     /* Header Image Banner - HAPUS semua jarak */
     .hero-header {
-        background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('images/LatarSiluetOrang.jpg');
+        background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('images/header-keluarga.jpg');
         background-size: cover;
-        background-position: top center;
+        background-position: center center;
         background-repeat: no-repeat;
         height: 300px;
         width: 100%;
@@ -27,6 +40,8 @@
         justify-content: center;
         text-align: center;
         color: white;
+        margin: 0 !important;
+        padding: 0 !important;
         position: relative;
     }
     .hero-header h2 {
@@ -40,13 +55,40 @@
         text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
 
-    /* Card untuk tabel */
+    /* Container untuk tabel - hapus padding/margin */
+    .container-fluid.mt-3 {
+        margin-top: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* Card tabel - HAPUS border radius atas dan shadow */
     .card-table {
-        margin-top: 5px !important;       /* 20px */
-        margin-bottom: 30px;
-        border-radius: 0px !important;    /* 12px */
-        overflow: hidden;
-        /* box-shadow: 0 4px 12px rgba(0,0,0,0.08); */
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        overflow: hidden !important;
+    }
+
+    /* Pastikan card-header tidak ada border radius */
+    .card-table .card-header {
+        border-radius: 0 !important;
+    }
+
+    /* Tabel styling - pastikan menyatu */
+    .table-responsive {
+        border-radius: 0 !important;
+    }
+
+    .table {
+        margin-bottom: 0 !important;
+    }
+
+    /* Hilangkan border radius dari semua komponen card */
+    .card {
+        border-radius: 0 !important;
     }
 
     /* Tampilan  Foto Pada Tabel Data Kelauarga */
@@ -280,7 +322,7 @@
 
     /* Untuk mobile device */
     @media (max-width: 768px) {
-       .hero-header {
+        .hero-header {
             height: 120px;
         }
         .hero-header h2 {
@@ -289,7 +331,7 @@
         .hero-header p {
             font-size: 0.8rem;
         }
- 
+
         .diagram-foto, .diagram-avatar { width: 45px; height: 45px; font-size: 16px; }
         .diagram-name { font-size: 10px; }
         .diagram-year { font-size: 8px; }
@@ -343,92 +385,89 @@
   </div>
 
   <!-- AREA APLIKASI -->
-  <div id="appArea" class="d-none">
-    <!-- AREA NAVBAR APLIKASI -->
-    <nav class="navbar navbar-expand-lg mb-4 bg-light" >
-        <div class="container-fluid">
-            <!-- Logo gambar di sebelah kiri -->
-            <a class="navbar-brand d-flex align-items-center" href="#" >
-            <img src="images/pohonsilsilah.png" alt="Logo Silsilah" width="150" height="40" class="me-2" style="object-fit: contain;">
-            <span class="fw-bold" style="color: #1A365D;">Keluarga</span>
-            </a>
-      
-            <!-- Tombol toggle untuk mobile -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <!-- Menu kanan -->
-            <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                <button class="btn btn-outline-primary btn-sm ms-2" id="aboutBtn" style="cursor: pointer; ">
-                    <i class="fas fa-info-circle me-1"></i> About
+    <div id="appArea" class="d-none">
+        <!-- NAVBAR -->
+        <nav class="navbar navbar-expand-lg" style="background-color: #e9ecef; margin-bottom: 0;">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center" href="#" style="color: #1A365D;">
+                    <img src="images/pohonsilsilah.png" alt="Logo Silsilah" width="35" height="35" class="me-2" style="object-fit: contain;">
+                    <span class="fw-bold" style="color: #1A365D;">SilsilahKu</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
                 </button>
-                </li>
-                <li class="nav-item">
-                <button class="btn btn-outline-primary btn-sm ms-2" onclick="logout()" style="cursor: pointer;">
-                    <i class="fas fa-sign-out-alt me-1"></i> Logout
-                </button>
-                </li>
-            </ul>
-            </div>
-        </div>
-    </nav>
-   
-    <!-- Header Image Banner -->
-    <div class="hero-header">
-        <div>
-            <h2>Selamat Datang di Silsilah Keluarga</h2>
-            <p>Melestarikan sejarah dan hubungan keluarga dalam satu platform</p>
-        </div>
-    </div>
-
-    <!-- Tampilkan pesan untuk aksi di tabel -->
-    <div id="tableMessage" class="form-msg"></div>
-    <div class="card p-3 shadow-sm">
-        <div class="d-flex justify-content-between mb-3 align-items-center">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="m-0 fw-bold">Data Anggota Keluarga</h5>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-                <!-- Bagian Cari -->
-                <div class="input-group input-group-sm" style="width: 320px;">
-                    <input type="text" id="cariNama" class="form-control" placeholder="Cari nama...">
-                    <button class="btn btn-primary" onclick="cariData()">
-                        <i class='fas fa-search'></i>
-                    </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="aboutBtn" style="cursor: pointer; color: #1A365D;">
+                                <i class="fas fa-info-circle me-1"></i> About
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <button class="btn btn-sm ms-2" onclick="logout()" style="background-color: #6c757d; color: white; border: none;">
+                                <i class="fas fa-sign-out-alt me-1"></i> Logout
+                            </button>
+                        </li>
+                    </ul>
                 </div>
-                <!-- Bagian Tombol Aksi -->
-                <div class="d-flex gap-2">
-                    <button class="btn btn-primary btn-sm" onclick="openForm('add')">
-                        <i class='fas fa-plus'></i> <span>Tambah</span>
-                    </button>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="openDiagram('buatDiagram')">
-                        <i class='fas fa-sitemap'></i> <span>Diagram</span>
-                    </button>
-                </div>    
+            </div>
+        </nav>
+
+        <!-- HEADER IMAGE BANNER (TANPA JARAK) -->
+        <div class="hero-header">
+            <div>
+                <h2>Selamat Datang di Silsilah Keluarga</h2>
+                <p>Melestarikan sejarah dan hubungan keluarga dalam satu platform</p>
             </div>
         </div>
-  
-        <div class="table-responsive">
-          <table class="table table-sm table-hover align-middle">
-            <thead class="table-light">
-              <tr>
-                <th class="text-center">Foto</th>
-                <th>Nama</th>
-                <th>Status Kawin</th>
-                <th>Nama Pasangan</th>
-                <th>Status Keluarga</th>
-                <th>Nama Ayah</th>
-                <th>Nama Ibu</th>
-                <th class="text-center">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-          </table>
+
+        <!-- AREA TABEL DATA ANGGOTA KELUARGA (TANPA JARAK) -->
+        <div style="width: 100%;">
+            <!-- Tampilkan pesan untuk aksi di tabel -->
+            <div id="tableMessage" class="form-msg"></div>
+            
+            <div class="card p-3 card-table" style="border-radius: 0; box-shadow: none; margin: 0; border: none;">
+                <div class="d-flex justify-content-between mb-3 align-items-center flex-wrap">
+                    <div class="d-flex align-items-center mb-2 mb-sm-0">
+                        <h5 class="m-0 fw-bold">Data Anggota Keluarga</h5>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="input-group input-group-sm" style="width: 320px;">
+                            <input type="text" id="cariNama" class="form-control" placeholder="Cari nama...">
+                            <button class="btn btn-primary" onclick="cariData()">
+                                <i class='fas fa-search'></i>
+                            </button>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-sm" onclick="openForm('add')">
+                                <i class='fas fa-plus'></i> <span>Tambah</span>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="openDiagram('buatDiagram')">
+                                <i class='fas fa-sitemap'></i> <span>Diagram</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center">Foto</th>
+                                <th>Nama</th>
+                                <th>Status Kawin</th>
+                                <th>Nama Pasangan</th>
+                                <th>Status Keluarga</th>
+                                <th>Nama Ayah</th>
+                                <th>Nama Ibu</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
     <!-- TAMPILAN Modal untuk Form INPUT DAN EDIT Anggota -->
