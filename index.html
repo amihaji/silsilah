@@ -167,7 +167,7 @@
         margin-top: 15px;
         margin-bottom: 15px;
         margin-left: 12px;    /* Jarak sisi kiri dari form */
-        margin-right: 12px;   /* Jarak sisi kanan dari form */
+        margin-right: 15px;   /* Jarak sisi kanan dari form */
         font-size: 14px;
         display: flex;
         align-items: center;
@@ -1757,7 +1757,8 @@
     function downloadDiagramPDF() {
         const container = document.getElementById('diagramContainer');
         if (!container || container.innerHTML.includes('Silakan pilih') || container.innerHTML.includes('Tidak dapat membangun')) {
-            showMessage("Tidak ada diagram untuk diunduh. Buat diagram terlebih dahulu.", "warning", "tableMessage");
+            // showMessage("Tidak ada diagram untuk diunduh. Buat diagram terlebih dahulu.", "warning", "tableMessage");
+            showMessage("Tidak ada diagram untuk diunduh. Buat diagram terlebih dahulu.", "warning", "formMessageDynamic");
             return;
         }
         
@@ -1772,11 +1773,11 @@
         
         html2pdf().set(opt).from(container).save().then(() => {
             showLoader(false);
-            showMessage("PDF berhasil diunduh", "success", "tableMessage");
+            showMessage("PDF berhasil diunduh", "success", "formMessageDynamic");
         }).catch(err => {
             console.error("PDF Error:", err);
             showLoader(false);
-            showMessage("Gagal membuat PDF: " + err.message, "error", "tableMessage");
+            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
         });
     }
 
@@ -1785,7 +1786,8 @@
     ***************************/
     function downloadDiagramExcel() {
         if (!globalData || globalData.length === 0) {
-            showMessage("Tidak ada data untuk diekspor", "warning", "tableMessage");
+            // showMessage("Tidak ada data untuk diekspor", "warning", "tableMessage");
+            showMessage("Tidak ada data untuk diekspor", "warning", "formMessageDynamic");
             return;
         }
         showLoader(true, "Menyiapkan Excel...");
@@ -1810,11 +1812,11 @@
             XLSX.writeFile(wb, "data_keluarga.xlsx");
             
             showLoader(false);
-            showMessage("File Excel berhasil diunduh", "success", "tableMessage");
+            showMessage("File Excel berhasil diunduh", "success", "formMessageDynamic");
         } catch (error) {
             console.error("Excel Error:", error);
             showLoader(false);
-            showMessage("Gagal membuat Excel: " + error.message, "error", "tableMessage");
+            showMessage("Gagal membuat Excel: " + error.message, "error", "formMessageDynamic");
         }
     }
 
