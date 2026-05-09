@@ -167,8 +167,8 @@
         border-radius: 6px;
         margin-top: 15px;
         margin-bottom: 15px;
-        margin-left: 10px;    /* Jarak sisi kiri dari form */
-        margin-right: 10px;   /* Jarak sisi kanan dari form */
+        margin-left: 15px !important;    /* Jarak sisi kiri dari form */
+        margin-right: 15px !important;   /* Jarak sisi kanan dari form */
         font-size: 14px;
         display: flex;
         align-items: center;
@@ -178,7 +178,7 @@
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .msg-success { background-color: #0f5132; color: #ffffff; border: 1px solid #00351c; }
     .msg-error { background-color: #a5000e; color: #ffffff; border: 1px solid #520000; }
-    .msg-warning { background-color: #ffd556; color: #ffffff; border: 1px solid #e4ba00; }
+    .msg-warning { background-color: #ffd556; color: #000000; border: 1px solid #e4ba00; }
     .msg-info { background-color: #0057a8; color: #ffffff; border: 1px solid #2f90ff; }
 
     /* Avatar bulat untuk inisial */
@@ -1939,10 +1939,10 @@
         el.className = `form-msg msg-${type}`;
         el.innerHTML = `<span>${icons[type] || ''}</span> <span>${msg}</span>`;
         el.style.display = 'flex';
-        // Sembunyikan otomatis dalam 5 detik
+        // Sembunyikan otomatis dalam 3 detik
         setTimeout(() => {
             el.style.display = 'none';
-        }, 5000);
+        }, 3000);
     }
    </script>
 </body>
