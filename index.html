@@ -199,15 +199,25 @@
     /* Ganti style foto-thumb */
     .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #023a7a; }
 
-    /* Diagram tree - support banyak level */
+    /* Diagram tree - support banyak level (SINGLE SCROLL) */
     .tree-diagram {
         font-family: 'Segoe UI', sans-serif;
         padding: 20px;
         overflow-x: auto;
-        overflow-y: auto;
-        max-height: 70vh;
+        overflow-y: visible;
+        max-height: none;
         text-align: center;
         white-space: nowrap;
+    }
+    /* Scroll hanya di modal body */
+    .modal-body {
+        max-height: 70vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    /* Container diagram tidak punya scroll sendiri */
+    #diagramContainer {
+        overflow: visible !important;
     }
     .tree-root {
         display: inline-flex;
@@ -228,7 +238,7 @@
     .children-wrapper {
         display: flex;
         flex-direction: row;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         justify-content: center;
         gap: 40px;
         position: relative;
@@ -240,24 +250,23 @@
         flex-wrap: nowrap;
         justify-content: center;
         align-items: center;
-        gap: 1px;             /* kurangi dari 15px/20px menjadi 5px = untuk mengatur jarak suami dan istri */
-        margin-bottom: 5px;   /* 30px jarak antara pasangan dan garis horizontal */
+        gap: 1px;
+        margin-bottom: 5px;
     }
     .couple-connector {
-        font-size: 24px;      /* Ukuran simbol "x" dan "+" */
+        font-size: 24px;
         font-weight: bold;
         display: inline-flex;
-        align-items:center;
+        align-items: center;
         justify-content: center;
-        min-width: 10px;     /* kurangi dari 40px = untuk mengatur jarak suami dan istri */
-        margin: 0 2px;       /* kurangi margin samping = untuk mengatur jarak suami dan istri */
+        min-width: 10px;
+        margin: 0 2px;
         color: #2c3e66;
     }
-
-    /* GARIS HORIZONTAL TIDAK BERLEBIH */
+    /* GARIS HORIZONTAL */
     .children-connector {
         position: relative;
-        display : inline-block;    /* lebar mengikuti isi (children-wrapper) */
+        display: inline-block;
     }
     .children-connector::before {
         content: '';
@@ -280,29 +289,23 @@
         background-color: #555;
         z-index: 1;
     }
-    .children-wrapper {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        justify-content: center;
-        gap: 40px;
-        position: relative;
-        padding-top: 20px;
-    }
     /* Garis vertikal dari garis horizontal ke setiap anak */
     .family-node::before {
         content: '';
         position: absolute;
-        top: -20px;            /* Garis vertikal naik setinggi padding-top */
+        top: -20px;
         left: 50%;
         transform: translateX(-50%);
         width: 2px;
-        height: 25px;          /* 20px Tinggi garis vertikal "T" */
+        height: 25px;
         background-color: #555;
         z-index: 1;
     }
     /* Tampilan node */
-    .diagram-node { text-align: center; margin: 5px; }
+    .diagram-node {
+        text-align: center;
+        margin: 5px;
+    }
     .diagram-foto {
         width: 60px;
         height: 60px;
@@ -324,14 +327,35 @@
         font-size: 20px;
         margin: 0 auto;
     }
-    .diagram-name { font-size: 12px; font-weight: 600; margin-top: 5px; }
-    .diagram-year { font-size: 10px; color: #666; }
+    .diagram-name {
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 5px;
+    }
+    .diagram-year {
+        font-size: 10px;
+        color: #666;
+    }
+    /* SINGLE SCROLL - KHUSUS UNTUK MODAL DIAGRAM */
+    #dynamicDiagramModal .modal-body {
+        max-height: 70vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    #dynamicDiagramModal .tree-diagram {
+        overflow-x: auto;
+        overflow-y: visible;
+        max-height: none;
+    }
+    #dynamicDiagramModal #diagramContainer {
+        overflow: visible !important;
+    }
 
-    /*********************************/
-    /* Tampilhan Untuk Mobile Device */
-    /*********************************/
-     @media (max-width: 768px) {
-        /* Buat navbar collapse menjadi vertikal */
+    /**************************
+    /* Untuk mobile device   */
+    /*************************/
+    @media (max-width: 768px) {
+        /* Navbar mobile */
         .navbar-collapse {
             position: absolute;
             top: 100%;
@@ -339,28 +363,20 @@
             right: 0;
             background-color: #e9ecef;
             padding: 15px;
-            /* border-radius: 0 0 12px 12px; */
-            border-radius: 0 0 0 0; 
-            /* box-shadow: 0 4px 8px rgba(0,0,0,0.1); */
+            border-radius: 0 0 0 0;
             z-index: 1050;
         }
-        
-        /* Menu navbar jadi vertikal dengan lebar penuh */
         .navbar-nav {
             flex-direction: column !important;
             width: 100% !important;
             gap: 10px !important;
         }
-        
-        /* Setiap item menu (About & Logout) lebar penuh */
         .navbar-nav .nav-item {
             width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
             list-style: none;
         }
-        
-        /* Tombol About dan Logout lebar penuh */
         .navbar-nav .btn {
             display: block !important;
             width: 100% !important;
@@ -368,35 +384,31 @@
             padding: 10px 12px !important;
             margin: 0 !important;
             font-size: 14px !important;
-            border-radius: 8px !important;  /* Dibulatkan sedikit agar rapi, bukan 1px */
+            border-radius: 8px !important;
         }
-        
-        /* Hilangkan jarak antar tombol (sudah diatur oleh gap) */
         .navbar-nav li { margin: 0 !important; padding: 0 !important; }
-
-        /* Header image untuk mobile */
+        
+        /* Header image mobile */
         .hero-header { height: 120px; }
         .hero-header h2 { font-size: 1.2rem; }
-        .hero-header p { font-size: 0.8rem;  }
+        .hero-header p { font-size: 0.8rem; }
         
-        /* Atur tinggi tabel responsive di mobile */
+        /* Tabel mobile */
         .table-responsive { max-height: 55vh; }
-        
-        /* Perkecil padding tabel agar muat */
         .table td, .table th { padding: 8px 6px !important; font-size: 12px !important; }
-        
-        /* Tombol aksi di tabel tetap rapi */
         .btn-round { width: 30px !important; height: 30px !important; }
         .btn-round i { font-size: 12px !important; }
-
-        /* Diagram untuk mobile */
+        
+        /* Diagram mobile */
         .diagram-foto, .diagram-avatar { width: 45px; height: 45px; font-size: 16px; }
         .diagram-name { font-size: 10px; }
         .diagram-year { font-size: 8px; }
         .children-wrapper { gap: 20px; }
         .couple-group { gap: 10px; }
-        .children-wrapper { gap: 20px; }
         .tree-root { gap: 20px; }
+        
+        /* Modal body mobile */
+        #dynamicDiagramModal .modal-body { max-height: 60vh; }
     }
   </style>
 </head>
