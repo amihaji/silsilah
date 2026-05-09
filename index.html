@@ -1711,12 +1711,12 @@
     function generateDiagram() {
         const selectEl = document.getElementById('pilihNamaDiagram');
         if (!selectEl) {
-            showMessage("Error: Dropdown tidak ditemukan", "error", "dynamicDiagramModal");
+            showMessage("Error: Dropdown tidak ditemukan", "error", "tableMessage");
             return;
         }
         const selectedValue = selectEl.value;
         if (!selectedValue) {
-            showMessage("Silakan pilih keluarga (Nama Ayah) terlebih dahulu!", "warning", "dynamicDiagramModal");
+            showMessage("Silakan pilih keluarga (Nama Ayah) terlebih dahulu!", "warning", "tableMessage");
             return;
         }
         showLoader(true, "Membuat diagram pohon...");
@@ -1734,7 +1734,7 @@
                         </div>
                     `;
                     container.innerHTML = treeHtml;
-                    showMessage("Diagram berhasil dibuat", "success", "dynamicDiagramModal");
+                    showMessage("Diagram berhasil dibuat", "success", "tableMessage");
                 } else {
                     container.innerHTML = `<div class="text-center text-danger p-5">
                         <i class="fas fa-exclamation-triangle"></i> Tidak dapat membangun diagram pohon untuk keluarga yang dipilih.<br>
@@ -1745,7 +1745,7 @@
             }
         } catch (err) {
             console.error("Error generateDiagram:", err);
-            showMessage("Gagal membuat diagram: " + err.message, "error", "dynamicDiagramModal");
+            showMessage("Gagal membuat diagram: " + err.message, "error", "tableMessage");
         } finally {
             showLoader(false);
         }
