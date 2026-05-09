@@ -199,14 +199,15 @@
     /* Ganti style foto-thumb */
     .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #023a7a; }
 
-    /* Diagram pohon silsilah */
+    /* Diagram tree - support banyak level */
     .tree-diagram {
         font-family: 'Segoe UI', sans-serif;
         padding: 20px;
         overflow-x: auto;
         overflow-y: auto;
-        max-height: 550px;
+        max-height: 70vh;
         text-align: center;
+        white-space: nowrap;
     }
     .tree-root {
         display: inline-flex;
@@ -216,12 +217,22 @@
         list-style: none;
         margin: 0;
         padding: 0;
+        flex-wrap: wrap;
     }
     .family-node {
         position: relative;
         display: inline-block;
         vertical-align: top;
         text-align: center;
+    }
+    .children-wrapper {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 40px;
+        position: relative;
+        padding-top: 20px;
     }
     .couple-group {
         display: flex;
@@ -316,8 +327,10 @@
     .diagram-name { font-size: 12px; font-weight: 600; margin-top: 5px; }
     .diagram-year { font-size: 10px; color: #666; }
 
-    /* ========== PERBAIKAN KHUSUS MOBILE DEVICE ========== */
-    @media (max-width: 768px) {
+    /*********************************/
+    /* Tampilhan Untuk Mobile Device */
+    /*********************************/
+     @media (max-width: 768px) {
         /* Buat navbar collapse menjadi vertikal */
         .navbar-collapse {
             position: absolute;
@@ -382,6 +395,8 @@
         .diagram-year { font-size: 8px; }
         .children-wrapper { gap: 20px; }
         .couple-group { gap: 10px; }
+        .children-wrapper { gap: 20px; }
+        .tree-root { gap: 20px; }
     }
   </style>
 </head>
@@ -1746,8 +1761,87 @@
 
     /************************************************
     * Membangun struktur tree berdasarkan Nama Ayah
+    * (Rekursif hingga keturunan level tak terbatas)
     *************************************************/
     function buildFamilyTreeByAyah(ayahName) {
+        if (!ayahName) return null;
+        const normalize = (str) => (str || "").toLowerCase().trim().replace(/\s+/g, " ");
+        const targetNorm = normalize(ayahName);
+        // Cari data ayah
+        let ayahRecord = null;
+        for (let item of globalData) {
+            if (normalize(item.nama) === targetNorm) {
+                ayahRecord = item;
+                break;
+            }
+        }
+        // Jika tidak ada, buat node virtual
+        let ayahData;
+        if (ayahRecord) {
+            ayahData = { ...ayahRecord };
+        } else {
+            ayahData = {
+                id: `virtual-${Date.now()}`,
+                nama: ayahName,
+                jk: "pria",
+                tglLahir: "",
+                tglWafat: "",
+                almarhum: "tidak",
+                foto: "",
+                namaPasangan: "",
+                statusKeluarga: "Kepala Keluarga",
+                alamat: "", kota: "", ayah: "", ibu: ""
+            };
+        }
+        // Cari pasangan ayah (istri)
+        let spouse = null;
+        for (let item of globalData) {
+            if (normalize(item.namaPasangan) === targetNorm && item.id !== ayahData.id) {
+                spouse = item;
+                break;
+            }
+        }
+        
+        // FUNGSI REKURSIF UNTUK MENCARI SEMUA KETURUNAN
+        function findDescendants(parentName, visited = new Set()) {
+            const descendants = [];
+            const parentNorm = normalize(parentName);
+            for (let item of globalData) {
+                // Cek apakah item adalah anak dari parentName (berdasarkan ayah atau ibu)
+                const isChild = (normalize(item.ayah) === parentNorm || normalize(item.ibu) === parentNorm);
+                if (isChild && !visited.has(item.id)) {
+                    visited.add(item.id);
+                    // Cari pasangan anak (menantu)
+                    let childSpouse = null;
+                    for (let spouseItem of globalData) {
+                        if (normalize(spouseItem.namaPasangan) === normalize(item.nama) && spouseItem.id !== item.id) {
+                            childSpouse = spouseItem;
+                            break;
+                        }
+                        // Cek juga jika pasangan terdaftar sebagai suami/istri berdasarkan statusKeluarga
+                        if ((normalize(spouseItem.nama) === normalize(item.namaPasangan)) && spouseItem.id !== item.id) {
+                            childSpouse = spouseItem;
+                            break;
+                        }
+                    }
+                    // Cari keturunan dari anak ini (cucu, cicit, dst) - REKURSIF
+                    const grandchildren = findDescendants(item.nama, visited);
+                    descendants.push({
+                        ...item,
+                        spouse: childSpouse,
+                        children: grandchildren
+                    });
+                }
+            }
+            return descendants;
+        }
+        // Cari semua anak dari ayah ini (level 1)
+        const anakList = findDescendants(ayahData.nama);
+        return { ...ayahData, spouse: spouse, children: anakList };
+    }
+
+
+    function BACKUP_buildFamilyTreeByAyah(ayahName) {
         if (!ayahName) return null;
         const normalize = (str) => (str || "").toLowerCase().trim().replace(/\s+/g, " ");
         const targetNorm = normalize(ayahName);
