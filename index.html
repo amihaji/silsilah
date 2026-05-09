@@ -1563,6 +1563,11 @@
                                             <i class="fas fa-file-excel"></i> Excel
                                         </button>
                                     </div>
+
+                                    <!-- Tampilkan pesan dibawah tombol -->
+                                    <div id="formMessage" class="form-msg"></div>
+                                    <div id="dynamicDiagramModal" class="form-msg"></div>
+
                                 </div>
                                 <div id="diagramContainer" style="min-height: 450px; max-height: 550px; overflow: auto; padding: 15px; background: #f5f5f5; border-radius: 8px;">
                                     <div class="text-center text-muted p-5">Silakan pilih keluarga (Nama Ayah) dan klik tombol Diagram</div>
@@ -1706,12 +1711,12 @@
     function generateDiagram() {
         const selectEl = document.getElementById('pilihNamaDiagram');
         if (!selectEl) {
-            showMessage("Error: Dropdown tidak ditemukan", "error", "tableMessage");
+            showMessage("Error: Dropdown tidak ditemukan", "error", "dynamicDiagramModal");
             return;
         }
         const selectedValue = selectEl.value;
         if (!selectedValue) {
-            showMessage("Silakan pilih keluarga (Nama Ayah) terlebih dahulu!", "warning", "tableMessage");
+            showMessage("Silakan pilih keluarga (Nama Ayah) terlebih dahulu!", "warning", "dynamicDiagramModal");
             return;
         }
         showLoader(true, "Membuat diagram pohon...");
@@ -1729,7 +1734,7 @@
                         </div>
                     `;
                     container.innerHTML = treeHtml;
-                    showMessage("Diagram berhasil dibuat", "success", "tableMessage");
+                    showMessage("Diagram berhasil dibuat", "success", "dynamicDiagramModal");
                 } else {
                     container.innerHTML = `<div class="text-center text-danger p-5">
                         <i class="fas fa-exclamation-triangle"></i> Tidak dapat membangun diagram pohon untuk keluarga yang dipilih.<br>
@@ -1740,7 +1745,7 @@
             }
         } catch (err) {
             console.error("Error generateDiagram:", err);
-            showMessage("Gagal membuat diagram: " + err.message, "error", "tableMessage");
+            showMessage("Gagal membuat diagram: " + err.message, "error", "dynamicDiagramModal");
         } finally {
             showLoader(false);
         }
