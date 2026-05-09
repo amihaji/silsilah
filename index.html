@@ -167,8 +167,8 @@
         border-radius: 6px;
         margin-top: 15px;
         margin-bottom: 15px;
-        margin-left: 15px;    /* Jarak sisi kiri dari form */
-        margin-right: 15px;   /* Jarak sisi kanan dari form */
+        margin-left: 10px;    /* Jarak sisi kiri dari form */
+        margin-right: 10px;   /* Jarak sisi kanan dari form */
         font-size: 14px;
         display: flex;
         align-items: center;
@@ -365,22 +365,7 @@
             border-radius: 8px !important;  /* Dibulatkan sedikit agar rapi, bukan 1px */
         }
         
-        /* Warna khusus untuk tombol About (biru) */
-        /*
-        .navbar-nav .btn-primary {
-            background-color: #007bff !important;
-            border: none !important;
-        }
-        
-        /* Warna khusus untuk tombol Logout (abu-abu) */
-        /*
-        .navbar-nav .btn-secondary {
-            background-color: #6c757d !important;
-            border: none !important;
-        }
-        */
-
-       /* Hilangkan jarak antar tombol (sudah diatur oleh gap) */
+        /* Hilangkan jarak antar tombol (sudah diatur oleh gap) */
         .navbar-nav li { margin: 0 !important; padding: 0 !important; }
 
         /* Header image untuk mobile */
@@ -436,7 +421,7 @@
               </div>
 
               <!-- Tampilkan pesan diatas tombol -->
-              <div id="loginMessage" class="form-msg"></div>
+              <div id="loginMessage" class="form-msg mx-0"></div>
               <button type="submit" class="btn btn-primary w-100">Login</button>
  
               <footer class="section footer-classic context-light mt-2">
