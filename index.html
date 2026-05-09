@@ -98,7 +98,6 @@
         z-index: 10;
         box-shadow: inset 0 1px 0 #dee2e6, inset 0 -1px 0 #dee2e6;
     }
-
     .table-light th { background-color: #e9ecef !important;}
 
     /* Tampilan  Foto Pada Tabel Data Kelauarga */
@@ -314,15 +313,8 @@
         font-size: 20px;
         margin: 0 auto;
     }
-    .diagram-name {
-        font-size: 12px;
-        font-weight: 600;
-        margin-top: 5px;
-    }
-    .diagram-year {
-        font-size: 10px;
-        color: #666;
-    }
+    .diagram-name { font-size: 12px; font-weight: 600; margin-top: 5px; }
+    .diagram-year { font-size: 10px; color: #666; }
 
     /* ========== PERBAIKAN KHUSUS MOBILE DEVICE ========== */
     @media (max-width: 768px) {
@@ -334,8 +326,9 @@
             right: 0;
             background-color: #e9ecef;
             padding: 15px;
-            border-radius: 0 0 12px 12px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            /* border-radius: 0 0 12px 12px; */
+            border-radius: 0 0 0 0; 
+            /* box-shadow: 0 4px 8px rgba(0,0,0,0.1); */
             z-index: 1050;
         }
         
@@ -551,7 +544,6 @@
                 <input type="text" id="tglLahir" placeholder="Input tgl lahir" class="form-control" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" required>
               </div>
 
-              <!--TAMBAHAN FIELD ALMARHUM -->
               <div class="input-group mt-2">
                 <span class="input-group-text"><i class="fas fa-bed" style="font-size:14px"></i></span>
                 <select id="wafat" class="form-select" onchange="toggleWafat()" required>
@@ -561,7 +553,6 @@
                 </select>
               </div>
               
-              <!-- TAMBAHAN FIELD TGL WAFAT, FIELD INI TAMPIL JIKA FIELD ALMARHUM="y" -->
               <div class="input-group mt-2" id="divTglWafat" style="display:none;">  
                 <span class="input-group-text"><i class="fas fa-calendar-times" style="font-size:17px"></i></span>
                 <input type="text" id="tglWafat" placeholder="Input tgl wafatnya" class="form-control" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" >
