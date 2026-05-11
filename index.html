@@ -203,8 +203,7 @@
     .tree-diagram {
         font-family: 'Segoe UI', sans-serif;
         padding: 20px;
-        overflow-x: visible;
-        overflow-y: visible;
+        overflow: visible; /* Biarkan visible untuk mencetak ke PDF */
         text-align: center;
         white-space: nowrap;
         background-color: #ffffff !important;
@@ -244,8 +243,8 @@
         max-height: 550px;
         background-color: #ffffff !important;
         text-align: center;
-       white-space: nowrap !important;
     }
+
     /* Diagram tree - biarkan lebar sesuai konten */
     .tree-diagram {
         font-family: 'Segoe UI', sans-serif;
@@ -282,27 +281,24 @@
         color: #2d6a4f; 
     }
 
-    /* Tree root - flex wrap biar tidak paksa horizontal */
+    /* === PERBAIKAN SCROLL HORIZONTAL UNTUK FLEXBOX === */
     .tree-root {
-        display: inline-flex;
-        flex-direction: row;
-        justify-content: center;
+        display: inline-flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
         gap: 40px;
         list-style: none;
         margin: 0;
         padding: 0;
-        flex-wrap: nowrap; /* PASTIKAN NOWRAP agar scroll horizontal muncul */
+        /* Ini adalah kunci utamanya */
+        min-width: 100%;
+        width: max-content;
     }
 
-    /* Pastikan children-wrapper juga nowrap */
-    .children-wrapper {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap !important;
-        justify-content: center;
-        gap: 40px;
-        position: relative;
-        padding-top: 20px;
+    /* Pastikan wrapper diagram tidak memotong scroll */
+    .diagram-wrapper {
+        display: inline-block;
+        min-width: 100%;
     }
 
     /* Scroll hanya di modal body */
@@ -316,6 +312,10 @@
     /* Hapus kemungkinan warna abu-abu dari class sebelumnya */
     .bg-light, .table-light, .card {
         background-color: #ffffff !important;
+    }
+    /* Kunci untuk memaksa elemen flex agar bisa di-scroll */
+    .family-node, .children-wrapper {
+        min-width: 0; /* Ini penting! */
     }
     .family-node {
         position: relative;
@@ -427,20 +427,13 @@
         font-size: 10px;
         color: #666;
     }
-    /* SINGLE SCROLL - KHUSUS UNTUK MODAL DIAGRAM */
-    #dynamicDiagramModal .modal-body {
-        max-height: 70vh;
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
+  
     #dynamicDiagramModal .tree-diagram {
         overflow-x: auto;
         overflow-y: visible;
         max-height: none;
     }
-    #dynamicDiagramModal #diagramContainer {
-        overflow: visible !important;
-    }
+  
 
     /**************************
     /* Untuk mobile device   */
@@ -1927,6 +1920,53 @@
     * Download sebagai PDF
     ************************/
     function downloadDiagramPDF() {
+        const container = document.getElementById('diagramContainer');
+        // ... validasi jika container kosong ...
+
+        showLoader(true, "Menyiapkan PDF...");
+
+        // BUAT CLONE TEMPORER UNTUK PDF
+        const originalContainer = container;
+        const pdfContainer = originalContainer.cloneNode(true);
+        pdfContainer.style.width = 'auto';
+        pdfContainer.style.overflow = 'visible';
+        pdfContainer.style.maxHeight = 'none';
+        pdfContainer.style.padding = '20px';
+        document.body.appendChild(pdfContainer);
+
+        // BERSIHKAN CSS YANG BISA MENGGANGGU PDF
+        const styleFix = document.createElement('style');
+        styleFix.textContent = `
+            .tree-diagram { overflow: visible !important; white-space: nowrap !important; }
+            .tree-root { display: inline-flex !important; flex-wrap: nowrap !important; min-width: max-content !important; width: auto !important; }
+            .family-node, .children-wrapper { min-width: auto !important; }
+        `;
+        pdfContainer.appendChild(styleFix);
+
+        // SESUAIKAN OPSI PDF UNTUK LANDSCAPE
+        const opt = {
+            margin: [0.5, 0.5, 0.5, 0.5],
+            filename: 'pohon_silsilah.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, logging: false, useCORS: true },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+        };
+
+        html2pdf().set(opt).from(pdfContainer).save()
+            .then(() => {
+                document.body.removeChild(pdfContainer);
+                showLoader(false);
+                showMessage("PDF berhasil diunduh", "success", "formMessageDynamic");
+            })
+            .catch(err => {
+                document.body.removeChild(pdfContainer);
+                console.error("PDF Error:", err);
+                showLoader(false);
+                showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
+            });
+    }
+    
+    function BACKUP_downloadDiagramPDF() {
         const container = document.getElementById('diagramContainer');
         if (!container || container.innerHTML.includes('Silakan pilih') || container.innerHTML.includes('Tidak dapat membangun')) {
             // showMessage("Tidak ada diagram untuk diunduh. Buat diagram terlebih dahulu.", "warning", "tableMessage");
