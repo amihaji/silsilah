@@ -265,6 +265,7 @@
         overflow-y: auto;
         overflow-x: hidden;
         background-color: #ffffff;
+        padding-bottom: 20px; /* tambahan agar nyaman */
     }
 
     /* Hapus kemungkinan warna abu-abu dari class sebelumnya */
@@ -387,11 +388,19 @@
     }
   
     #dynamicDiagramModal .tree-diagram {
-        overflow-x: auto;
-        overflow-y: hidden;     /* tambahkan hidden */
+        overflow: visible; /* MATIKAN SEMUA SCROLL DI SINI */
         max-height: none;
     }
-  
+ 
+    /* PASTIKAN TIDAK ADA SCROLL VERTIKAL DI DALAM DIAGRAM */
+    #dynamicDiagramModal .tree-root,
+    #dynamicDiagramModal .family-node,
+    #dynamicDiagramModal .children-wrapper,
+    #dynamicDiagramModal .couple-group,
+    #dynamicDiagramModal .diagram-node {
+        overflow-y: visible !important;
+        overflow-x: visible !important;
+    }
 
     /**************************
     /* Untuk mobile device   */
