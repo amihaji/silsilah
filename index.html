@@ -1727,16 +1727,17 @@
                                         <div id="formMessageDynamic" class="form-msg mx-0"></div>
                                     </div>
                                 </div>
-                              
-                                <!-- JUDUL DINAMIS DIAGRAM -->
-                                <div id="diagramTitle" style="text-align: center; margin-bottom: 15px;">
-                                    <h4 class="fw-bold" style="color: #1A365D; border-bottom: 2px solid #1A365D; display: inline-block; padding-bottom: 5px;">
-                                        Silsilah Keluarga
-                                    </h4>
+                             
+                                <!-- JUDUL DINAMIS DIAGRAM - DIPERBAIKI -->
+                                <div class="diagram-title-wrapper">
+                                    <div class="diagram-title" id="diagramTitle">
+                                        <i class="fas fa-tree"></i> Silsilah Keluarga
+                                    </div>
                                 </div>
                                 <div id="diagramContainer" style="min-height: 450px; max-height: 550px; overflow: auto; padding: 15px; background: #f5f5f5; border-radius: 8px;">
                                     <div class="text-center text-muted p-5">Silakan pilih keluarga (Nama Ayah) dan klik tombol Diagram</div>
                                 </div>
+
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -2093,6 +2094,76 @@
             const container = document.getElementById('diagramContainer');
             const titleContainer = document.getElementById('diagramTitle');
             
+            // Fungsi untuk mengubah huruf pertama setiap kata menjadi kapital
+            function toTitleCase(str) {
+                return str.replace(/\b\w/g, function(char) {
+                    return char.toUpperCase();
+                });
+            }
+            
+            if (container) {
+                if (rootNode) {
+                    const treeHtml = `
+                        <div class="tree-diagram">
+                            <ul class="tree-root">
+                                ${renderTreeDiagram(rootNode)}
+                            </ul>
+                        </div>
+                    `;
+                    container.innerHTML = treeHtml;
+                    
+                    // UPDATE JUDUL DINAMIS
+                    if (titleContainer) {
+                        const keluargaName = selectedValue;
+                        const keluargaNameCapitalized = toTitleCase(keluargaName);
+                        
+                        // Reset dan update judul
+                        titleContainer.innerHTML = '';
+                        titleContainer.className = 'diagram-title';
+                        titleContainer.innerHTML = `<i class="fas fa-tree"></i> Silsilah Keluarga ${keluargaNameCapitalized}`;
+                    }
+                    
+                    showMessage(`Diagram silsilah keluarga ${selectedValue} berhasil dibuat`, "success", "formMessageDynamic");
+                } else {
+                    container.innerHTML = `<div class="text-center text-danger p-5">
+                        <i class="fas fa-exclamation-triangle"></i> Tidak dapat membangun diagram pohon untuk keluarga yang dipilih.<br>
+                        Pastikan data dengan nama "${selectedValue}" tersedia sebagai seorang Ayah di database.
+                    </div>`;
+                    // Reset judul jika gagal
+                    if (titleContainer) {
+                        titleContainer.innerHTML = '';
+                        titleContainer.className = 'diagram-title';
+                        titleContainer.innerHTML = `<i class="fas fa-tree"></i> Silsilah Keluarga`;
+                    }
+                    console.warn("Gagal build tree untuk:", selectedValue);
+                }
+            }
+        } catch (err) {
+            console.error("Error generateDiagram:", err);
+            showMessage("Gagal membuat diagram: " + err.message, "error", "formMessageDynamic");
+        } finally {
+            showLoader(false);
+        }
+    }
+
+    function BACKUP_generateDiagram() {
+        const selectEl = document.getElementById('pilihNamaDiagram');
+        if (!selectEl) {
+            showMessage("Error: Dropdown tidak ditemukan", "error", "formMessageDynamic");
+            return;
+        }
+        const selectedValue = selectEl.value;
+        if (!selectedValue) {
+            showMessage("Silakan pilih keluarga (Nama Ayah) terlebih dahulu!", "warning", "formMessageDynamic");
+            return;
+        }
+        
+        showLoader(true, "Membuat diagram pohon...");
+        try {
+            const rootNode = buildFamilyTreeByAyah(selectedValue);
+            const container = document.getElementById('diagramContainer');
+            const titleContainer = document.getElementById('diagramTitle');
+            
             if (container) {
                 if (rootNode) {
                     const treeHtml = `
@@ -2138,51 +2209,7 @@
             showLoader(false);
         }
     }
-
-    function BACKUP_generateDiagram() {
-        const selectEl = document.getElementById('pilihNamaDiagram');
-        if (!selectEl) {
-            showMessage("Error: Dropdown tidak ditemukan", "error", "formMessageDynamic");
-            return;
-        }
-        const selectedValue = selectEl.value;
-        if (!selectedValue) {
-            // showMessage("Silakan pilih keluarga (Nama Ayah) terlebih dahulu!", "warning", "tableMessage");
-            showMessage("Silakan pilih keluarga (Nama Ayah) terlebih dahulu!", "warning", "formMessageDynamic");
-            return;
-        }
-        showLoader(true, "Membuat diagram pohon...");
-        try {
-            const rootNode = buildFamilyTreeByAyah(selectedValue);
-            const container = document.getElementById('diagramContainer');
-            
-            if (container) {
-                if (rootNode) {
-                    const treeHtml = `
-                        <div class="tree-diagram">
-                            <ul class="tree-root">
-                                ${renderTreeDiagram(rootNode)}
-                            </ul>
-                        </div>
-                    `;
-                    container.innerHTML = treeHtml;
-                    showMessage("Diagram berhasil dibuat", "success", "formMessageDynamic");
-                } else {
-                    container.innerHTML = `<div class="text-center text-danger p-5">
-                        <i class="fas fa-exclamation-triangle"></i> Tidak dapat membangun diagram pohon untuk keluarga yang dipilih.<br>
-                        Pastikan data dengan nama "${selectedValue}" tersedia sebagai seorang Ayah di database.
-                    </div>`;
-                    console.warn("Gagal build tree untuk:", selectedValue);
-                }
-            }
-        } catch (err) {
-            console.error("Error generateDiagram:", err);
-            showMessage("Gagal membuat diagram: " + err.message, "error", "formMessageDynamic");
-        } finally {
-            showLoader(false);
-        }
-    }
-
+    
     /***********************
     * Download sebagai PDF
     ************************/
