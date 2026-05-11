@@ -239,8 +239,8 @@
     /* Container diagram scroll - HARUS overflow-x auto */
     #diagramContainer {
         overflow-x: auto;       /* scroll horizontal tetap aktif */
-        overflow-y: visible;    /* atau hidden, matikan scroll vertikal */
-        max-height: none;       /* 550px hapus batasan tinggi */
+        overflow-y: hidden;     /* matikan scroll vertikal di sini - kunci utama */
+        max-height: none;       /* hapus batasan tinggi */
         background-color: #ffffff !important;
         text-align: center;
     }
@@ -388,7 +388,7 @@
   
     #dynamicDiagramModal .tree-diagram {
         overflow-x: auto;
-        overflow-y: visible;
+        overflow-y: hidden;     /* tambahkan hidden */
         max-height: none;
     }
   
@@ -453,11 +453,16 @@
         .tree-root { gap: 20px; }
         .children-wrapper { gap: 20px !important; }
         .diagram-header-title h4 { font-size: 1rem !important; white-space: nowrap; }
-        #diagramContainer { max-height: 60vh !important; }
-
-        /* Modal body mobile */
-        #dynamicDiagramModal .modal-body { max-height: 60vh; }
-    }
+        /* Ganti dengan: */
+        #diagramContainer {
+            max-height: none;
+            overflow-y: hidden;
+        }
+        #dynamicDiagramModal .modal-body {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+   }
   </style>
 </head>
 <body>
