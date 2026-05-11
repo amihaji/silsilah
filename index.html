@@ -2166,7 +2166,6 @@
             showMessage("Silakan pilih keluarga (Nama Ayah) terlebih dahulu!", "warning", "formMessageDynamic");
             return;
         }
-        
         showLoader(true, "Membuat diagram pohon...");
         try {
             const rootNode = buildFamilyTreeByAyah(selectedValue);
@@ -2186,7 +2185,8 @@
                     // Reset container style
                     container.style.overflowX = "auto";
                     container.style.overflowY = "auto";
-                    
+                    container.style.whiteSpace = "nowrap";
+
                     const fullHtml = `
                         <div class="diagram-wrapper" style="display: inline-block; min-width: 100%;">
                             <div class="diagram-header-title" style="text-align: center; margin-bottom: 25px; width: 100%;">
@@ -2202,8 +2202,7 @@
                         </div>
                     `;
                     container.innerHTML = fullHtml;
-                    
-                    showMessage(`Diagram silsilah keluarga ${selectedValue} berhasil dibuat`, "success", "tableMessage");
+                    showMessage(`Diagram silsilah keluarga ${selectedValue} berhasil dibuat`, "success", "formMessageDynamic");
                 } else {
                     container.innerHTML = `<div class="text-center text-danger p-5">
                         <i class="fas fa-exclamation-triangle"></i> Tidak dapat membangun diagram pohon untuk keluarga yang dipilih.<br>
@@ -2219,6 +2218,7 @@
             showLoader(false);
         }
     }
+
     function BACKUP_generateDiagram() {
         const selectEl = document.getElementById('pilihNamaDiagram');
         if (!selectEl) {
