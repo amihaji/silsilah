@@ -238,9 +238,9 @@
 
     /* Container diagram scroll - HARUS overflow-x auto */
     #diagramContainer {
-        overflow-x: auto !important;
-        overflow-y: auto !important;
-        max-height: 550px;
+        overflow-x: auto;       /* scroll horizontal tetap aktif */
+        overflow-y: visible;    /* atau hidden, matikan scroll vertikal */
+        max-height: none;       /* 550px hapus batasan tinggi */
         background-color: #ffffff !important;
         text-align: center;
     }
@@ -1965,7 +1965,7 @@
                 showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
             });
     }
-    
+
     function BACKUP_downloadDiagramPDF() {
         const container = document.getElementById('diagramContainer');
         if (!container || container.innerHTML.includes('Silakan pilih') || container.innerHTML.includes('Tidak dapat membangun')) {
