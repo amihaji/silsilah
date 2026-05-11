@@ -199,7 +199,29 @@
     /* Ganti style foto-thumb */
     .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #023a7a; }
 
-    /* Diagram tree - support banyak level (SINGLE SCROLL) */
+    /* Judul Diagram - Styling */
+    .diagram-title-wrapper {
+        text-align: center !important;
+        width: 100% !important;
+        margin-bottom: 30px !important;
+        margin-top: 10px !important;
+        display: block !important;
+    }
+    .diagram-title {
+        color: #1A365D !important;
+        font-weight: bold !important;
+        font-size: 1.5rem !important;
+        display: inline-block !important;
+        border-bottom: 3px solid #1A365D !important;
+        padding-bottom: 8px !important;
+        margin-bottom: 0 !important;
+        text-align: center !important;
+    }
+    .diagram-title i {
+        margin-right: 10px !important;
+        color: #2d6a4f !important;
+    }
+    /* Diagram tree - support banyak level (SINGLE SCROLL) */ 
     .tree-diagram {
         font-family: 'Segoe UI', sans-serif;
         padding: 20px;
@@ -413,6 +435,8 @@
         .btn-round i { font-size: 12px !important; }
         
         /* Diagram mobile */
+        .diagram-title { font-size: 1.1rem !important; }
+        .diagram-title-wrapper { margin-bottom: 20px !important; }
         .tree-diagram { background-color: #ffffff !important; }
         .diagram-foto, .diagram-avatar { width: 45px; height: 45px; font-size: 16px; }
         .diagram-name { font-size: 10px; }
@@ -1722,22 +1746,23 @@
                                             <i class="fas fa-file-excel"></i> Excel
                                         </button>
                                     </div>
+                                    
                                     <!-- Tampilkan pesan dibawah tombol -->
                                     <div class="col-12">
                                         <div id="formMessageDynamic" class="form-msg mx-0"></div>
                                     </div>
                                 </div>
-                             
-                                <!-- JUDUL DINAMIS DIAGRAM - DIPERBAIKI -->
-                                <div class="diagram-title-wrapper">
-                                    <div class="diagram-title" id="diagramTitle">
+                                
+                                <!-- JUDUL DIAGRAM - DITENGAH -->
+                                <div style="text-align: center; width: 100%; margin-bottom: 30px; margin-top: 10px;">
+                                    <div id="diagramTitle" style="color: #1A365D; font-weight: bold; font-size: 1.5rem; display: inline-block; border-bottom: 3px solid #1A365D; padding-bottom: 8px;">
                                         <i class="fas fa-tree"></i> Silsilah Keluarga
                                     </div>
                                 </div>
+                                
                                 <div id="diagramContainer" style="min-height: 450px; max-height: 550px; overflow: auto; padding: 15px; background: #f5f5f5; border-radius: 8px;">
                                     <div class="text-center text-muted p-5">Silakan pilih keluarga (Nama Ayah) dan klik tombol Diagram</div>
                                 </div>
-
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -1997,7 +2022,6 @@
         return { ...ayahData, spouse: spouse, children: anakList };
     }
 
-
     function BACKUP_buildFamilyTreeByAyah(ayahName) {
         if (!ayahName) return null;
         const normalize = (str) => (str || "").toLowerCase().trim().replace(/\s+/g, " ");
@@ -2117,10 +2141,14 @@
                         const keluargaName = selectedValue;
                         const keluargaNameCapitalized = toTitleCase(keluargaName);
                         
-                        // Reset dan update judul
-                        titleContainer.innerHTML = '';
-                        titleContainer.className = 'diagram-title';
+                        // Update judul dengan mempertahankan styling inline
                         titleContainer.innerHTML = `<i class="fas fa-tree"></i> Silsilah Keluarga ${keluargaNameCapitalized}`;
+                        titleContainer.style.color = "#1A365D";
+                        titleContainer.style.fontWeight = "bold";
+                        titleContainer.style.fontSize = "1.5rem";
+                        titleContainer.style.display = "inline-block";
+                        titleContainer.style.borderBottom = "3px solid #1A365D";
+                        titleContainer.style.paddingBottom = "8px";
                     }
                     
                     showMessage(`Diagram silsilah keluarga ${selectedValue} berhasil dibuat`, "success", "formMessageDynamic");
@@ -2131,9 +2159,13 @@
                     </div>`;
                     // Reset judul jika gagal
                     if (titleContainer) {
-                        titleContainer.innerHTML = '';
-                        titleContainer.className = 'diagram-title';
                         titleContainer.innerHTML = `<i class="fas fa-tree"></i> Silsilah Keluarga`;
+                        titleContainer.style.color = "#1A365D";
+                        titleContainer.style.fontWeight = "bold";
+                        titleContainer.style.fontSize = "1.5rem";
+                        titleContainer.style.display = "inline-block";
+                        titleContainer.style.borderBottom = "3px solid #1A365D";
+                        titleContainer.style.paddingBottom = "8px";
                     }
                     console.warn("Gagal build tree untuk:", selectedValue);
                 }
