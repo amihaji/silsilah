@@ -237,16 +237,51 @@
         color: #2d6a4f;
     }
 
-    /* Container diagram scroll */
+    /* Container diagram scroll - HARUS overflow-x auto */
     #diagramContainer {
-        overflow-x: auto;
-        overflow-y: auto;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
         max-height: 550px;
         background-color: #ffffff !important;
         text-align: center;
     }
+    /* Diagram tree - biarkan lebar sesuai konten */
+    .tree-diagram {
+        font-family: 'Segoe UI', sans-serif;
+        padding: 20px;
+        overflow: visible;
+        text-align: center;
+        background-color: #ffffff !important;
+        display: inline-block;
+        min-width: 100%;
+    }
+    /* Wrapper untuk judul dan diagram */
+    .diagram-wrapper {
+        display: inline-block;
+        min-width: 100%;
+    }
+    /* Judul diagram */
+    .diagram-header-title {
+        text-align: center;
+        margin-bottom: 25px;
+        width: 100%;
+    }
+    .diagram-header-title h4 {
+        color: #1A365D;
+        font-weight: bold;
+        font-size: 1.3rem;
+        display: inline-block;
+        border-bottom: 3px solid #1A365D;
+        padding-bottom: 5px;
+        margin: 0;
+        white-space: nowrap;
+    }
+    .diagram-header-title i {
+        margin-right: 8px;
+        color: #2d6a4f; 
+    }
 
-    /* Tree root */
+    /* Tree root - flex wrap biar tidak paksa horizontal */
     .tree-root {
         display: inline-flex;
         flex-direction: row;
@@ -255,7 +290,18 @@
         list-style: none;
         margin: 0;
         padding: 0;
-        flex-wrap: wrap;
+        flex-wrap: nowrap; /* PASTIKAN NOWRAP agar scroll horizontal muncul */
+    }
+
+    /* Pastikan children-wrapper juga nowrap */
+    .children-wrapper {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap !important;
+        justify-content: center;
+        gap: 40px;
+        position: relative;
+        padding-top: 20px;
     }
 
     /* Scroll hanya di modal body */
@@ -265,27 +311,10 @@
         overflow-x: hidden;
         background-color: #ffffff;
     }
-    /* Container diagram tidak punya scroll sendiri */
-    #diagramContainer {
-        overflow: visible !important;
-        background-color: #ffffff !important;
-        border-radius: 8px;
-    }
+
     /* Hapus kemungkinan warna abu-abu dari class sebelumnya */
     .bg-light, .table-light, .card {
         background-color: #ffffff !important;
-    }
-    
-    .tree-root {
-        display: inline-flex;
-        flex-direction: row;
-        justify-content: center;
-        gap: 40px;
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        flex-wrap: wrap;
-        background-color: transparent;
     }
     .family-node {
         position: relative;
@@ -470,7 +499,10 @@
         .children-wrapper { gap: 20px; }
         .couple-group { gap: 10px; }
         .tree-root { gap: 20px; }
-        
+        .children-wrapper { gap: 20px !important; }
+        .diagram-header-title h4 { font-size: 1rem !important; white-space: nowrap; }
+        #diagramContainer { max-height: 60vh !important; }
+
         /* Modal body mobile */
         #dynamicDiagramModal .modal-body { max-height: 60vh; }
     }
@@ -2139,7 +2171,6 @@
             const rootNode = buildFamilyTreeByAyah(selectedValue);
             const container = document.getElementById('diagramContainer');
             
-            // Fungsi untuk mengubah huruf pertama setiap kata menjadi kapital
             function toTitleCase(str) {
                 return str.replace(/\b\w/g, function(char) {
                     return char.toUpperCase();
@@ -2151,16 +2182,19 @@
                     const keluargaName = selectedValue;
                     const keluargaNameCapitalized = toTitleCase(keluargaName);
                     
-                    // Judul ditempatkan di dalam wrapper yang sama dengan diagram
+                    // Reset container style
+                    container.style.overflowX = "auto";
+                    container.style.overflowY = "auto";
+                    
                     const fullHtml = `
-                        <div class="diagram-wrapper">
-                            <div class="diagram-header-title">
-                                <h4>
+                        <div class="diagram-wrapper" style="display: inline-block; min-width: 100%;">
+                            <div class="diagram-header-title" style="text-align: center; margin-bottom: 25px; width: 100%;">
+                                <h4 style="color: #1A365D; font-weight: bold; font-size: 1.3rem; display: inline-block; border-bottom: 3px solid #1A365D; padding-bottom: 5px; margin: 0; white-space: nowrap;">
                                     <i class="fas fa-tree"></i> Silsilah Keluarga ${keluargaNameCapitalized}
                                 </h4>
                             </div>
-                            <div class="tree-diagram">
-                                <ul class="tree-root">
+                            <div class="tree-diagram" style="display: inline-block; min-width: 100%; padding: 20px; text-align: center;">
+                                <ul class="tree-root" style="display: inline-flex; flex-direction: row; justify-content: center; gap: 40px; list-style: none; margin: 0; padding: 0; flex-wrap: nowrap;">
                                     ${renderTreeDiagram(rootNode)}
                                 </ul>
                             </div>
@@ -2184,7 +2218,6 @@
             showLoader(false);
         }
     }
-
     function BACKUP_generateDiagram() {
         const selectEl = document.getElementById('pilihNamaDiagram');
         if (!selectEl) {
