@@ -201,11 +201,13 @@
     /* Ganti style foto-thumb */
     .foto-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #023a7a; }
 
+    /***************************************/ 
     /* Diagram tree - support banyak level */
+    /***************************************/
     .tree-diagram {
         font-family: 'Segoe UI', sans-serif;
         padding: 20px;
-        overflow: visible; /* Biarkan visible untuk mencetak ke PDF */
+        overflow: visible;        /* Biarkan visible untuk mencetak ke PDF */
         text-align: center;
         white-space: nowrap;
         background-color: #ffffff !important;
@@ -238,7 +240,7 @@
         color: #2d6a4f;
     }
 
-    /* === PERBAIKAN SCROLL HORIZONTAL UNTUK FLEXBOX === */
+    /* SCROLL HORIZONTAL UNTUK FLEXBOX */
     .tree-root {
         display: inline-flex !important;
         flex-direction: row !important;
@@ -247,8 +249,7 @@
         list-style: none;
         margin: 0;
         padding: 0;
-        /* Ini adalah kunci utamanya */
-        min-width: 100%;
+        min-width: 100%;    /* Ini adalah kunci utamanya */
         width: max-content;
     }
 
@@ -276,6 +277,7 @@
         text-align: center;
         background-color: transparent;
     }
+    /*
     .children-wrapper {
         display: flex;
         flex-direction: row;
@@ -286,6 +288,8 @@
         padding-top: 20px;
         background-color: transparent;
     }
+    */
+        
     .couple-group {
         display: flex;
         flex-direction: row;
@@ -307,21 +311,18 @@
         color: #2c3e66;
     }
  
-    /* GARIS HORIZONTAL */
-    .children-connector {
-        position: relative;
-        display: inline-block;
-    }
+    /* Garis horisontal */
+    .children-connector { position: relative; display: inline-block; }
     .children-connector::after {
         content: '';
         position: absolute;
         top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: calc(100% - 40px);    /* kurangi 40px (20px kiri + 20px kanan) */
+        left: 0;
+        right: 0;
         height: 2px;
         background-color: #555;
         z-index: 1;
+        display: none; /* Sembunyikan garis default */
     }
     .children-connector::before {
         content: '';
@@ -334,7 +335,22 @@
         background-color: #555;
         z-index: 1;
     }
-
+    /* Garis horizontal yang menyesuaikan dengan posisi anak pertama dan terakhir */
+    .children-wrapper { position: relative; }
+    .children-wrapper::before {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #555;
+        z-index: 1;
+        width: auto;
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+    
     /* Garis vertikal dari garis horizontal ke setiap anak */
     .family-node::before {
         content: '';
@@ -347,6 +363,7 @@
         background-color: #555;
         z-index: 1;
     }
+
     /* Tampilan node */
     .diagram-node {
         text-align: center;
@@ -382,11 +399,9 @@
         font-size: 10px;
         color: #666;
     }
-    /* ============================================ */
-    /* CSS UNTUK DIAGRAM - VERSI FINAL              */
-    /* ============================================ */
-
-    /* 1. Container diagram umum (opsional) */
+    /***** Akhir Diagram tree *****/
+    
+    /* Container diagram umum (opsional) */
     #diagramContainer {
         overflow-x: auto;
         overflow-y: hidden;
@@ -394,25 +409,21 @@
         background-color: #ffffff !important;
         text-align: center;
     }
-
-    /* 2. Khusus untuk modal diagram - perbaikan total */
+    /* Khusus untuk modal diagram - perbaikan total */
     #dynamicDiagramModal .modal-body {
         max-height: 70vh;
         overflow-y: auto;
         overflow-x: hidden;
     }
-
     #dynamicDiagramModal #diagramContainer {
         overflow-x: auto;
         overflow-y: hidden;
         max-height: none;
     }
-
     #dynamicDiagramModal .tree-diagram {
         overflow: visible !important;
         max-height: none !important;
     }
-
     #dynamicDiagramModal .table-responsive {
         overflow: visible !important;
         max-height: none !important;
