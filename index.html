@@ -277,7 +277,7 @@
         text-align: center;
         background-color: transparent;
     }
-    /* Jarak garis vertikal keatas */
+    /* Untuk mengatur Jarak garis vertikal keatas */
     .children-wrapper {
         display: flex;
         flex-direction: row;
@@ -1553,6 +1553,99 @@
     * Render Diagram: Pasangan Selevel, Anak di Bawah (Rekursif)
     ************************************************************/
     function renderTreeDiagram(node) {
+    if (!node) return '';
+        // Menampilkan tgl lahir dan tgl wafat
+        const getYearRangeForNode = (person) => {
+        let birthYear = '';
+        let deathYear = '';
+        if (person.tglLahir) {
+            try {
+                const date = new Date(person.tglLahir);
+                birthYear = date.getFullYear();
+            } catch(e) { birthYear = ''; }
+        }
+        if (person.almarhum === 'ya' && person.tglWafat) {
+            try {
+                const date = new Date(person.tglWafat);
+                deathYear = date.getFullYear();
+            } catch(e) { deathYear = ''; }
+        }
+        if (deathYear) return `${birthYear} - ${deathYear}`;
+        if (birthYear) return `${birthYear}`;
+        return '';
+    };
+    
+    // Menampilkan foto atau avatar
+    const renderFoto = (person) => {
+        const initials = getInitials(person.nama);
+        const yearRange = getYearRangeForNode(person);
+        if (person.foto && person.foto.includes('http')) {
+            return `<img src="${person.foto}" class="diagram-foto" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'diagram-avatar\'>${initials}</div><div class=\'diagram-name\'>${person.nama || '-'}</div><div class=\'diagram-year\'>${yearRange}</div>';">`;
+        } else {
+            return `<div class="diagram-avatar">${initials}</div>`;
+        }
+    };
+    
+    // Menampilkan suami
+    const suamiHtml = `
+        <div class="diagram-node">
+            ${renderFoto(node)}
+            <div class="diagram-name">${node.nama || '-'}</div>
+            <div class="diagram-year">${getYearRangeForNode(node)}</div>
+        </div>
+    `;
+    
+    // Menampilkan istri
+    let istriHtml = '';
+    if (node.spouse && node.spouse.nama) {
+        istriHtml = `
+            <div class="diagram-node">
+                ${renderFoto(node.spouse)}
+                <div class="diagram-name">${node.spouse.nama || '-'}</div>
+                <div class="diagram-year">${getYearRangeForNode(node.spouse)}</div>
+            </div>
+        `;
+    }
+    
+    // Tentukan simbol berdasarkan status kawin: "+" untuk kawin, "x" untuk cerai
+    let connectorSymbol = '+';
+    if (node.statusKawin && node.statusKawin.toLowerCase() === 'cerai') {
+        connectorSymbol = 'x';
+    }
+    
+    // Menampilkan pasangan
+    const coupleHtml = `
+        <div class="couple-group">
+            ${suamiHtml}
+            ${istriHtml ? `<div class="couple-connector">${connectorSymbol}</div>${istriHtml}` : ''}
+        </div>
+    `;
+    
+    // Jika tidak punya anak
+    if (!node.children || node.children.length === 0) {
+        return `<div class="family-node">${coupleHtml}</div>`;
+    }
+    
+    // Proses anak-anak secara rekursif
+    let childrenHtml = '';
+    node.children.forEach(child => {
+        childrenHtml += renderTreeDiagram(child);
+    });
+    
+    // Bungkus dengan container khusus untuk garis "⊥"
+    // Bungkus dengan container khusus untuk garis "⊥"
+    return `
+        <div class="family-node">
+            ${coupleHtml}
+            <div class="children-wrapper" style="position: relative; margin-top: 25px;">
+                <div class="children-line" style="position: absolute; top: -12px; left: 0; right: 0; height: 2px; background-color: #555; z-index: 0;"></div>
+                ${childrenHtml}
+            </div>
+        </div>
+    `;
+    }
+    
+    function BACKUP_renderTreeDiagram(node) {
     if (!node) return '';
         // Menampilkan tgl lahir dan tgl wafat
         const getYearRangeForNode = (person) => {
