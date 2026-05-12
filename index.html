@@ -83,14 +83,25 @@
     }
 
     /* ========== STICKY HEADER TABEL (DESKTOP & MOBILE) ========== */
-    /* BATASI HANYA UNTUK TABEL DI HALAMAN UTAMA, BUKAN MODAL */
-    .appArea .table-responsive {
-        overflow-y: auto;
-        max-height: 65vh;
+    .table-responsive {
+        overflow-y: visible;  /* DIUBAH: dari auto ke visible */
+        max-height: none;     /* DIUBAH: hapus batasan */
         position: relative;
         -webkit-overflow-scrolling: touch;
         border-radius: 0 !important;
     }
+    .table-responsive tbody {
+        display: block;
+        max-height: 65vh;
+        overflow-y: auto;
+    }
+    .table-responsive thead,
+    .table-responsive tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+    /* Scroll untuk tabel - header tetap sticky */
     .table thead th {
         position: sticky;
         top: 0;
