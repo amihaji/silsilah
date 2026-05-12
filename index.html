@@ -84,23 +84,13 @@
 
     /* ========== STICKY HEADER TABEL (DESKTOP & MOBILE) ========== */
     .table-responsive {
-        overflow-y: visible;  /* DIUBAH: dari auto ke visible */
-        max-height: none;     /* DIUBAH: hapus batasan */
+        overflow-y: auto;
+        max-height: 65vh;
         position: relative;
         -webkit-overflow-scrolling: touch;
         border-radius: 0 !important;
     }
-    .table-responsive tbody {
-        display: block;
-        max-height: 65vh;
-        overflow-y: auto;
-    }
-    .table-responsive thead,
-    .table-responsive tbody tr {
-        display: table;
-        width: 100%;
-        table-layout: fixed;
-    }
+   
     /* Scroll untuk tabel - header tetap sticky */
     .table thead th {
         position: sticky;
@@ -468,7 +458,18 @@
         .hero-header p { font-size: 0.8rem; }
         
         /* Tabel mobile */
-        .table td, .table th { padding: 8px 6px !important; font-size: 12px !important; }
+        .table-responsive { 
+            max-height: 55vh;
+            overflow-x: auto;
+        }
+        .table {
+            min-width: 600px; /* biarkan lebar sesuai data, bisa discroll horizontal */
+        }
+        .table td, .table th { 
+            padding: 8px 6px !important; 
+            font-size: 12px !important;
+            white-space: nowrap; /* mencegah teks wrap */
+        }
         .btn-round { width: 30px !important; height: 30px !important; }
         .btn-round i { font-size: 12px !important; }
         
