@@ -311,64 +311,53 @@
     }
  
     /* Garis horisontal */
-    .children-connector { position: relative; display: inline-block; }
-   
-   
-    /*
-    .children-connector::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background-color: #555;
-        z-index: 1;
-        display: none; 
-    } 
-    */
-    
+    .children-connector { 
+        position: relative; 
+        display: inline-block;
+    }
     .children-connector::before {
         content: '';
         position: absolute;
-        top: -30px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 2px;
-        height: 30px;
-        background-color: #555;
-        z-index: 1;
-    }
-    /* Garis horizontal yang menyesuaikan dengan posisi anak pertama dan terakhir */
-    .children-wrapper { position: relative; }
-
-    /*
-    .children-wrapper::before {
-        content: '';
-        position: absolute;
-        top: -20px;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background-color: #555;
-        z-index: 1;
-        width: auto;
-        margin-left: 20px;
-        margin-right: 20px;
-    }
-    */
-
-    /* Garis vertikal dari garis horizontal ke setiap anak */
-    .family-node::before {
-        content: '';
-        position: absolute;
-        top: -20px;
+        top: -25px;
         left: 50%;
         transform: translateX(-50%);
         width: 2px;
         height: 25px;
         background-color: #555;
         z-index: 1;
+    }
+    .children-connector::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 20px;
+        right: 20px;
+        height: 2px;
+        background-color: #555;
+        z-index: 1;
+    }
+    /* Garis vertikal dari garis horizontal ke setiap anak */
+    .family-node::before {
+        content: '';
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 25px;
+        background-color: #555;
+        z-index: 1;
+    }
+    /* Garis horizontal yang menyesuaikan dengan posisi anak pertama dan terakhir */
+    .children-wrapper { 
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: center;
+        gap: 40px;
+        padding-top: 20px;
+        background-color: transparent;
     }
 
     /* Tampilan node */
@@ -1640,17 +1629,14 @@
         childrenHtml += renderTreeDiagram(child);
     });
     
-    // Hitung jumlah anak untuk menentukan lebar garis yang tepat
-    const childrenCount = node.children.length;
-    const lineWidth = childrenCount * 100; // 100px per anak (kurang lebih)
-    
-    // Bungkus dengan container khusus untuk garis
+    // Bungkus dengan container khusus untuk garis "⊥"
     return `
         <div class="family-node">
             ${coupleHtml}
-            <div class="children-wrapper" style="position: relative; margin-top: 25px; display: inline-flex; gap: 40px;">
-                <div class="children-line" style="position: absolute; top: -12px; left: 20px; right: 20px; height: 2px; background-color: #555; z-index: 0;"></div>
-                ${childrenHtml}
+            <div class="children-connector">
+                <div class="children-wrapper">
+                    ${childrenHtml}
+                </div>
             </div>
         </div>
     `;
