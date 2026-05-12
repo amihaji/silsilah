@@ -306,10 +306,22 @@
         margin: 0 2px;
         color: #2c3e66;
     }
+ 
     /* GARIS HORIZONTAL */
     .children-connector {
         position: relative;
         display: inline-block;
+    }
+    .children-connector::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 40px);    /* kurangi 40px (20px kiri + 20px kanan) */
+        height: 2px;
+        background-color: #555;
+        z-index: 1;
     }
     .children-connector::before {
         content: '';
@@ -322,16 +334,7 @@
         background-color: #555;
         z-index: 1;
     }
-    .children-connector::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background-color: #555;
-        z-index: 1;
-    }
+
     /* Garis vertikal dari garis horizontal ke setiap anak */
     .family-node::before {
         content: '';
