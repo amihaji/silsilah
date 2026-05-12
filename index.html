@@ -320,18 +320,18 @@
     .children-connector::before {
         content: '';
         position: absolute;
-        top: -45px;         /* mengeser posisi garis vertikal dari bawah ke atas */    
+        top: -45px;         /* mengeser posisi garis vertikal -25px anak ke orang tua sebelum garis horisontal */    
         left: 50%;
         transform: translateX(-50%);
-        width: 2px;
-        height: 46px;      /* panjang garis vertikal 20 px anak ke orang tua */
+        width: 2px; 
+        height: 46px;       /* panjang garis vertikal 20px anak ke orang tua */
         background-color: #555;
         z-index: 1;
     }
     .children-connector::after {
         content: '';
         position: absolute;
-        top: 0;
+        top: 10;          /* mengeser posisi garis vertikal 0px dari garis horisontal kearah orangnya */
         left: 20px;
         right: 20px;
         height: 2px;
