@@ -138,6 +138,30 @@
       border-radius: 8px; 
       border: 3px solid var(--light-blue);
     }
+    .detail-profile-table {
+        width: auto !important;
+        min-width: 0 !important;
+        margin: 0 auto;
+    }
+    .detail-profile-table th,
+    .detail-profile-table td {
+        padding: 3px 2px !important;
+        font-size: 14px;
+        vertical-align: top;
+    }
+    .detail-profile-table th {
+        white-space: nowrap;
+        padding-right: 4px !important;
+    }
+    .detail-profile-table .separator {
+        width: 1%;
+        white-space: nowrap;
+        padding-left: 0 !important;
+        padding-right: 4px !important;
+    }
+    .detail-profile-table .value-cell {
+        padding-left: 0 !important;
+    }
 
     /* Header biru terang untuk semua panel modal */
     .card-header, .modal-header { background-color: #007bff !important; color: white !important; }
@@ -1326,19 +1350,19 @@
                                         ${fotoDisplay}
                                     </div>
                                     <div class="col-md-16">
-                                        <table class="table table-sm table-borderless mb-0">
-                                            <tr><th class="pe-1 text-nowrap">Nama</th><td class="ps-0">: ${item.nama || '-'}</td></tr>
-                                            <tr><th class="pe-1 text-nowrap">Jenis Kelamin</th><td class="ps-0">: ${item.jk || '-'}</td></tr>
-                                            <tr><th class="pe-1 text-nowrap">Tgl Lahir</th><td class="ps-0">: ${tglLahirFormatted}</td></tr>
-                                            <tr><th class="pe-1 text-nowrap">Almarhum</th><td class="ps-0">: ${item.almarhum === 'ya' ? 'Ya' : 'Tidak'}</td></tr>
-                                            <tr><th class="pe-1 text-nowrap">Tgl Wafat</th><td class="ps-0">: ${tglWafatFormatted}</td></tr>
-                                            <tr><th class="pe-1 text-nowrap">Status Kawin</th><td class="ps-0">: ${item.statusKawin || '-'}</td></tr>
-                                            <tr><th class="pe-1 text-nowrap">Nama Pasangan</th><td class="ps-0">: ${item.namaPasangan || '-'}</td></tr>
-                                            <tr><th class="pe-1 text-nowrap">Status Keluarga</th><td class="ps-0">: ${item.statusKeluarga || '-'}</td></tr>
-                                            <tr><th class="pe-1 text-nowrap">Nama Ayah</th><td class="ps-0">: ${item.ayah || '-'}</td></tr>
-                                            <tr><th class="pe-1 text-nowrap">Nama Ibu</th><td class="ps-0">: ${item.ibu || '-'}</td></tr>
-                                            <tr><th class="pe-1 text-nowrap">Alamat</th><td class="ps-0">: ${item.alamat || '-'}</td></tr>
-                                            <tr><th class="pe-1 text-nowrap">Kota</th><td class="ps-0">: ${item.kota || '-'}</td></tr>
+                                        <table class="table table-sm table-borderless mb-0 detail-profile-table">
+                                            <tr><th>Nama</th><td class="separator">:</td><td class="value-cell">${item.nama || '-'}</td></tr>
+                                            <tr><th>Jenis Kelamin</th><td class="separator">:</td><td class="value-cell">${item.jk || '-'}</td></tr>
+                                            <tr><th>Tgl Lahir</th><td class="separator">:</td><td class="value-cell">${tglLahirFormatted}</td></tr>
+                                            <tr><th>Almarhum</th><td class="separator">:</td><td class="value-cell">${item.almarhum === 'ya' ? 'Ya' : 'Tidak'}</td></tr>
+                                            <tr><th>Tgl Wafat</th><td class="separator">:</td><td class="value-cell">${tglWafatFormatted}</td></tr>
+                                            <tr><th>Status Kawin</th><td class="separator">:</td><td class="value-cell">${item.statusKawin || '-'}</td></tr>
+                                            <tr><th>Nama Pasangan</th><td class="separator">:</td><td class="value-cell">${item.namaPasangan || '-'}</td></tr>
+                                            <tr><th>Status Keluarga</th><td class="separator">:</td><td class="value-cell">${item.statusKeluarga || '-'}</td></tr>
+                                            <tr><th>Nama Ayah</th><td class="separator">:</td><td class="value-cell">${item.ayah || '-'}</td></tr>
+                                            <tr><th>Nama Ibu</th><td class="separator">:</td><td class="value-cell">${item.ibu || '-'}</td></tr>
+                                            <tr><th>Alamat</th><td class="separator">:</td><td class="value-cell">${item.alamat || '-'}</td></tr>
+                                            <tr><th>Kota</th><td class="separator">:</td><td class="value-cell">${item.kota || '-'}</td></tr>
                                         </table>
                                     </div>
                                 </div>
