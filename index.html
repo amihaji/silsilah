@@ -291,7 +291,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: 10px;           /* 10px jarak minimum antara suami dgn istri */
+        min-width: 1px;            /* 10px jarak minimum antara suami dgn istri */
         margin: -71px 3px 0 3px;   /* margin :(top right bottom left) -53 untuk menaikkan posisi simbol */
     }
     .connector-kawin { color: #0d6efd; } /* warna biru untuk simbol '+' */
@@ -1604,10 +1604,10 @@
     }
     
     // Tentukan simbol  & warna berdasarkan status kawin
-    let connectorSymbol = '&#9472&#9472<i class="fas fa-plus-circle">&#9472&#9472</i>';   // simbol: -+-
+    let connectorSymbol = '&#9472<i class="fas fa-plus-circle">&#9472</i>';   // simbol: -+-
     let connectorClass = 'connector-kawin'; // Default biru '+'
     if (node.statusKawin && node.statusKawin.toLowerCase() === 'cerai') {
-        connectorSymbol = '&#9472&#9472<i class="fas fa-times-circle">&#9472&#9472</i>';  // simbol: -x-
+        connectorSymbol = '&#9472<i class="fas fa-times-circle">&#9472</i>';  // simbol: -x-
         connectorClass = 'connector-cerai'; // Merah jika cerai 'x'
     }
     // Menampilkan pasangan
