@@ -251,11 +251,10 @@
     /* Scroll hanya di modal body */
     .modal-body {
         max-height: 70vh;              /* Batas maximum Tinggi 70vh */
-        /* max-height: none !important; */
         overflow-y: auto;
         overflow-x: hidden;
         background-color: #ffffff;
-        padding-bottom: 10px;        /* tambahan agar nyaman */
+        padding-bottom: 10px;          /* tambahan agar nyaman */
     }
 
     /* Hapus kemungkinan warna abu-abu dari class sebelumnya */
@@ -281,7 +280,7 @@
         flex-wrap: nowrap;
         justify-content: center;
         align-items: center;
-        margin-bottom: 2px;     /* 5px jarak baris group antara level */
+        margin-bottom: 2px;              /* 5px jarak baris group antara level */
         background-color: transparent;
     }
     /* Konektor pasanngan */
@@ -313,26 +312,14 @@
     .children-connector::before {
         content: '';
         position: absolute;
-        top: -81px;
+        top: -81px;                   /* -81px Mengatur letak posisi garis vertikal ketas dan kebawah */ 
         left: 50%;
         transform: translateX(-50%);
         width: 2px; 
-        height: 72px;       /* Berhenti tepat di garis horizontal (-81 ke -9) */
+        height: 74px;                 /* 70px Panjang garis vertikal dari ortu ke anak */
         background-color: #555;
         z-index: 1;
     }
-    /* Hapus garis horisontal lama agar tidak melebihi batas */
-    /* .children-connector::after {
-        content: '';
-        position: absolute;
-        top: 1px;
-        left: 20px;
-        right: 20px;
-        height: 2px;
-        background-color: #555;
-        z-index: 1;
-    } */
-    
     /* Garis vertikal dari garis horizontal ke setiap anak */
     .family-node::before {
         content: '';
