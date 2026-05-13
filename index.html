@@ -287,7 +287,6 @@
     /* Konektor pasanngan */
     .couple-connector {
         font-size: 24px;
-        /* font-weight: bold; */
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -316,11 +315,11 @@
     .children-connector::before {
         content: '';
         position: absolute;
-        top: -40px;         /* mengeser posisi garis vertikal -45px anak ke orang tua sebelum garis horisontal */    
+        top: -38px;         /* mengeser posisi garis vertikal -45px anak ke orang tua sebelum garis horisontal */    
         left: 50%;
         transform: translateX(-50%);
         width: 2px; 
-        height: 44px;       /* panjang garis vertikal 20px anak ke orang tua */
+        height: 42px;       /* panjang garis vertikal 20px anak ke orang tua */
         background-color: #555;
         z-index: 1;
     }
@@ -1696,21 +1695,13 @@
             </div>
         `;
     }
-    
-    // Tentukan simbol berdasarkan status kawin: "+" untuk kawin, "x" untuk cerai
-    /*
-    let connectorSymbol = '+';
-    if (node.statusKawin && node.statusKawin.toLowerCase() === 'cerai') {
-        connectorSymbol = 'x';
-    }
-    */
 
     // Tentukan simbol & warna berdasarkan status kawin
     let connectorSymbol = '<i class="fas fa-plus-circle"></i>';
-    let connectorClass = 'connector-kawin'; // Default biru
+    let connectorClass = 'connector-kawin'; // Default biru '+'
     if (node.statusKawin && node.statusKawin.toLowerCase() === 'cerai') {
         connectorSymbol = '<i class="fas fa-times-circle"></i>';
-        connectorClass = 'connector-cerai'; // Merah jika cerai
+        connectorClass = 'connector-cerai'; // Merah jika cerai 'x'
     }
     
     // Menampilkan pasangan
