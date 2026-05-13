@@ -294,7 +294,8 @@
         min-width: 10px;       /* 10px jarak minimum antara suami dgn istri */
         margin: 0 3px;         /* ruang 2px agar simbol penghubung tidak menempel pada pasangan */
     }
-   
+    .connector-kawin { color: #0d6efd; } /* warna biru untuk simbol '+' */
+    .connector-cerai { color: #e20e0e; } /* warna merah untuk simbol 'x' */
  
     /* Untuk mengatur Jarak garis vertikal keatas */
     .children-wrapper {
@@ -315,7 +316,7 @@
     .children-connector::before {
         content: '';
         position: absolute;
-        top: -100px;         /* mengeser posisi garis vertikal -37px diatas garis horisontal */    
+        top: -102px;         /* mengeser posisi garis vertikal -37px diatas garis horisontal */    
         left: 50%;
         transform: translateX(-50%);
         width: 2px; 
@@ -333,9 +334,7 @@
         background-color: #555;
         z-index: 1;
     }
-    .connector-kawin { color: #0d6efd; } /* warna biru untuk simbol '+' */
-    .connector-cerai { color: #e20e0e; } /* warna merah untuk simbol 'x' */
-
+    
     /* Garis vertikal dari garis horizontal ke setiap anak */
     .family-node::before {
         content: '';
@@ -1613,13 +1612,15 @@
     }
     
     // Menampilkan pasangan
+    /*
     const coupleHtml = `
         <div class="couple-group">
             ${suamiHtml}
             ${istriHtml ? `<div class="couple-connector ${connectorClass}">${connectorSymbol}</div>${istriHtml}` : ''}
         </div>
     `;
-    
+    */
+
     // Jika tidak punya anak
     if (!node.children || node.children.length === 0) {
         return `<div class="family-node">${coupleHtml}</div>`;
@@ -1640,6 +1641,13 @@
                     ${childrenHtml}
                 </div>
             </div>
+        </div>
+    `;
+    // Menampilkan pasangan dan simbol
+    const coupleHtml = `
+        <div class="couple-group">
+            ${suamiHtml}
+            ${istriHtml ? `<div class="couple-connector ${connectorClass}">${connectorSymbol}</div>${istriHtml}` : ''}
         </div>
     `;
     }
