@@ -145,32 +145,33 @@
     .detail-profile-modal .modal-body {
         padding: 16px 18px !important;
     }
-    .detail-profile-table {
-        width: auto !important;
-        min-width: 0 !important;
+    .detail-profile-grid {
+        display: grid;
+        grid-template-columns: minmax(104px, 118px) 10px minmax(0, 1fr);
+        gap: 2px 4px;
+        width: 100%;
+        max-width: 420px;
         margin: 0 auto;
-    }
-    .detail-profile-table th,
-    .detail-profile-table td {
-        padding: 1px 0 !important;
         font-size: 14px;
-        vertical-align: top;
         line-height: 1.35;
     }
-    .detail-profile-table th {
+    .detail-profile-grid .label-cell,
+    .detail-profile-grid .separator,
+    .detail-profile-grid .value-cell {
+        padding: 0;
+        margin: 0;
+        min-width: 0;
+    }
+    .detail-profile-grid .label-cell {
         white-space: nowrap;
-        padding-right: 2px !important;
     }
-    .detail-profile-table .separator {
-        width: 1%;
-        white-space: nowrap;
-        padding-left: 0 !important;
-        padding-right: 2px !important;
+    .detail-profile-grid .separator {
+        text-align: center;
     }
-    .detail-profile-table .value-cell {
-        padding-left: 0 !important;
+    .detail-profile-grid .value-cell {
+        overflow-wrap: anywhere;
     }
-
+    
     /* Header biru terang untuk semua panel modal */
     .card-header, .modal-header { background-color: #007bff !important; color: white !important; }
     /* Membuat tombol close jadi putih */
@@ -463,6 +464,22 @@
         max-height: none !important;
     }
     
+    @media (max-width: 576px) {
+        .detail-profile-modal {
+            max-width: calc(100vw - 24px) !important;
+            margin: 0 auto;
+        }
+        .detail-profile-modal .modal-body {
+            padding: 14px 14px !important;
+        }
+        .detail-profile-grid {
+            grid-template-columns: minmax(92px, 104px) 8px minmax(0, 1fr);
+            gap: 2px 3px;
+            max-width: 100%;
+            font-size: 13px;
+        }
+    }
+
     /**************************
     /* Untuk mobile device   */
     /*************************/
@@ -1339,7 +1356,7 @@
                     const date = new Date(item.tglWafat);
                     tglWafatFormatted = date.toLocaleDateString('id-ID');
                 } catch(e) {
-                    tglWafatFormatted = item.tglLahir;
+                    tglWafatFormatted = item.tglWafat;
                 }
             }
             
@@ -1358,20 +1375,20 @@
                                         ${fotoDisplay}
                                     </div>
                                     <div class="col-md-16">
-                                        <table class="table table-sm table-borderless mb-0 detail-profile-table">
-                                            <tr><th>Nama</th><td class="separator">:</td><td class="value-cell">${item.nama || '-'}</td></tr>
-                                            <tr><th>Jenis Kelamin</th><td class="separator">:</td><td class="value-cell">${item.jk || '-'}</td></tr>
-                                            <tr><th>Tgl Lahir</th><td class="separator">:</td><td class="value-cell">${tglLahirFormatted}</td></tr>
-                                            <tr><th>Almarhum</th><td class="separator">:</td><td class="value-cell">${item.almarhum === 'ya' ? 'Ya' : 'Tidak'}</td></tr>
-                                            <tr><th>Tgl Wafat</th><td class="separator">:</td><td class="value-cell">${tglWafatFormatted}</td></tr>
-                                            <tr><th>Status Kawin</th><td class="separator">:</td><td class="value-cell">${item.statusKawin || '-'}</td></tr>
-                                            <tr><th>Nama Pasangan</th><td class="separator">:</td><td class="value-cell">${item.namaPasangan || '-'}</td></tr>
-                                            <tr><th>Status Keluarga</th><td class="separator">:</td><td class="value-cell">${item.statusKeluarga || '-'}</td></tr>
-                                            <tr><th>Nama Ayah</th><td class="separator">:</td><td class="value-cell">${item.ayah || '-'}</td></tr>
-                                            <tr><th>Nama Ibu</th><td class="separator">:</td><td class="value-cell">${item.ibu || '-'}</td></tr>
-                                            <tr><th>Alamat</th><td class="separator">:</td><td class="value-cell">${item.alamat || '-'}</td></tr>
-                                            <tr><th>Kota</th><td class="separator">:</td><td class="value-cell">${item.kota || '-'}</td></tr>
-                                        </table>
+                                        <div class="detail-profile-grid">
+                                            <div class="label-cell">Nama</div><div class="separator">:</div><div class="value-cell">${item.nama || '-'}</div>
+                                            <div class="label-cell">Jenis Kelamin</div><div class="separator">:</div><div class="value-cell">${item.jk || '-'}</div>
+                                            <div class="label-cell">Tgl Lahir</div><div class="separator">:</div><div class="value-cell">${tglLahirFormatted}</div>
+                                            <div class="label-cell">Almarhum</div><div class="separator">:</div><div class="value-cell">${item.almarhum === 'ya' ? 'Ya' : 'Tidak'}</div>
+                                            <div class="label-cell">Tgl Wafat</div><div class="separator">:</div><div class="value-cell">${tglWafatFormatted}</div>
+                                            <div class="label-cell">Status Kawin</div><div class="separator">:</div><div class="value-cell">${item.statusKawin || '-'}</div>
+                                            <div class="label-cell">Nama Pasangan</div><div class="separator">:</div><div class="value-cell">${item.namaPasangan || '-'}</div>
+                                            <div class="label-cell">Status Keluarga</div><div class="separator">:</div><div class="value-cell">${item.statusKeluarga || '-'}</div>
+                                            <div class="label-cell">Nama Ayah</div><div class="separator">:</div><div class="value-cell">${item.ayah || '-'}</div>
+                                            <div class="label-cell">Nama Ibu</div><div class="separator">:</div><div class="value-cell">${item.ibu || '-'}</div>
+                                            <div class="label-cell">Alamat</div><div class="separator">:</div><div class="value-cell">${item.alamat || '-'}</div>
+                                            <div class="label-cell">Kota</div><div class="separator">:</div><div class="value-cell">${item.kota || '-'}</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
