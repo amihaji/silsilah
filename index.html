@@ -1610,17 +1610,14 @@
         connectorSymbol = '<i class="fas fa-times-circle"></i>';
         connectorClass = 'connector-cerai'; // Merah jika cerai 'x'
     }
-    
     // Menampilkan pasangan
-    /*
     const coupleHtml = `
         <div class="couple-group">
             ${suamiHtml}
             ${istriHtml ? `<div class="couple-connector ${connectorClass}">${connectorSymbol}</div>${istriHtml}` : ''}
         </div>
     `;
-    */
-
+   
     // Jika tidak punya anak
     if (!node.children || node.children.length === 0) {
         return `<div class="family-node">${coupleHtml}</div>`;
@@ -1632,14 +1629,6 @@
         childrenHtml += renderTreeDiagram(child);
     });
 
-    // Menampilkan pasangan dan simbol
-    const coupleHtml = `
-        <div class="couple-group">
-            ${suamiHtml}
-            ${istriHtml ? `<div class="couple-connector ${connectorClass}">${connectorSymbol}</div>${istriHtml}` : ''}
-        </div>
-    `;
-    
     // Bungkus dengan container khusus untuk garis "⊥"
     return `
         <div class="family-node">
