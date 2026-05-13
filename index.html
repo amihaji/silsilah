@@ -78,11 +78,9 @@
     }
 
     /* Pastikan card-header tidak ada border radius */
-    .card-table .card-header {
-        border-radius: 0 !important;
-    }
+    .card-table .card-header { border-radius: 0 !important; }
 
-    /* ========== STICKY HEADER TABEL (DESKTOP & MOBILE) ========== */
+    /* STICKY HEADER TABEL (DESKTOP & MOBILE) */
     .table-responsive {
         overflow-y: auto;
         max-height: 65vh;
@@ -1802,11 +1800,6 @@
                                             <i class="fas fa-file-excel"></i> Excel
                                         </button>
                                     </div>
-                                      
-                                    <!-- Tampilkan pesan dibawah tombol -->
-                                    <div class="col-12">
-                                        <div id="formMessageDynamic" class="form-msg mx-0"></div>
-                                    </div>
                                 </div>
                                 
                                 <!-- KOSONGKAN - JUDUL AKAN DIBUAT OLEH generateDiagram -->
@@ -1815,9 +1808,11 @@
                                 </div>
                             </div>    
                             
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                            </div>
+                            <div class="modal-footer d-flex align-items-center">
+                                 <!-- Tampilkan pesan disamping tombol -->
+                                 <div id="formMessageDynamic" class="form-msg m-0 flex-grow-1 text-start"></div>
+                                 <button type="button" class="btn btn-secondary ms-auto" data-bs-dismiss="modal">Tutup</button>
+                             </div>
                         </div>
                     </div>
                 </div>
@@ -2247,7 +2242,8 @@
            warning: '<i class="fas fa-exclamation-triangle"></i>',
            info: '<i class="fas fa-info-circle"></i>'
         };
-        el.className = `form-msg msg-${type}`;
+        el.classList.remove('msg-success', 'msg-error', 'msg-warning', 'msg-info');
+        el.classList.add('form-msg', `msg-${type}`);
         el.innerHTML = `<span>${icons[type] || ''}</span> <span>${msg}</span>`;
         el.style.display = 'flex';
         // Sembunyikan otomatis dalam 3 detik
