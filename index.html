@@ -1604,10 +1604,10 @@
     }
     
     // Tentukan simbol & warna berdasarkan status kawin
-    let connectorSymbol = '<i class="fas fa-plus-circle"></i>';
+    let connectorSymbol = '-<i class="fas fa-plus-circle">-</i>';
     let connectorClass = 'connector-kawin'; // Default biru '+'
     if (node.statusKawin && node.statusKawin.toLowerCase() === 'cerai') {
-        connectorSymbol = '<i class="fas fa-minus" "fas fa-times-circle" "fas fa-minus"></i>';
+        connectorSymbol = '-<i class="fas fa-times-circle">-</i>';
         connectorClass = 'connector-cerai'; // Merah jika cerai 'x'
     }
     // Menampilkan pasangan
