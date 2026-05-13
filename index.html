@@ -1603,11 +1603,11 @@
         `;
     }
     
-    // Tentukan simbol & warna berdasarkan status kawin
-    let connectorSymbol = '&#9472<i class="fas fa-plus-circle">&#9472</i>';
+    // Tentukan simbol  & warna berdasarkan status kawin
+    let connectorSymbol = '&#9472&#9472<i class="fas fa-plus-circle">&#9472&#9472</i>';   // simbol: -+-
     let connectorClass = 'connector-kawin'; // Default biru '+'
     if (node.statusKawin && node.statusKawin.toLowerCase() === 'cerai') {
-        connectorSymbol = '&#9472<i class="fas fa-times-circle">&#9472</i>';
+        connectorSymbol = '&#9472&#9472<i class="fas fa-times-circle">&#9472&#9472</i>';  // simbol: -x-
         connectorClass = 'connector-cerai'; // Merah jika cerai 'x'
     }
     // Menampilkan pasangan
