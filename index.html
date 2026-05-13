@@ -1601,10 +1601,10 @@
         `;
     }
     
-    // Tentukan simbol berdasarkan status kawin: "+" untuk kawin, "x" untuk cerai
-    let connectorSymbol = '+';
+    // Tentukan simbol berdasarkan status kawin: '+' dan  status cerai ='x'
+    let connectorSymbol = '<i class="fas fa-plus-circle"></i>';  // simbol '+'
     if (node.statusKawin && node.statusKawin.toLowerCase() === 'cerai') {
-        connectorSymbol = 'x';
+        connectorSymbol = '<i class="fas fa-times-circle"></i>'; // simbol 'x' 
     }
     
     // Menampilkan pasangan
@@ -1699,6 +1699,7 @@
     if (node.statusKawin && node.statusKawin.toLowerCase() === 'cerai') {
         connectorSymbol = 'x';
     }
+    
     
     // Menampilkan pasangan
     const coupleHtml = `
