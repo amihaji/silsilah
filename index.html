@@ -1667,7 +1667,7 @@
             const ayahList = Array.from(ayahSet).sort();
             
             // Isi dropdown options dari daftar Ayah
-            let dropdownOptions = '<option value="">-- Pilih Keluarga (Nama Ayah) --</option>';
+            let dropdownOptions = '<option value="">Pilih Nama Ayah . . .</option>';
             ayahList.forEach(ayah => {
                 // Gunakan nilai asli, hindari karakter kutip bermasalah
                 const safeAyah = ayah.replace(/"/g, '&quot;');
@@ -1862,7 +1862,7 @@
         }
         const selectedValue = selectEl.value;
         if (!selectedValue) {
-            showMessage("Silakan pilih keluarga (Nama Ayah) terlebih dahulu!", "warning", "formMessageDynamic");
+            showMessage("Silakan pilih Nama Ayah terlebih dahulu!", "warning", "formMessageDynamic");
             return;
         }
         showLoader(true, "Membuat diagram pohon...");
