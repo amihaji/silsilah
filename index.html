@@ -346,25 +346,24 @@
         z-index: 1;
     }
 
-    /* Garis horizontal baru yang hanya menghubungkan anak-anak */
+    /* Garis horizontal baru yang menghubungkan anak-anak (menutup gap 40px) */
     .family-node::after {
         content: '';
         position: absolute;
         top: -19px;
-        left: 0;
-        right: 0;
+        left: -20px; /* -20px untuk menutup setengah gap (40px/2) */
+        right: -20px;
         height: 2px;
         background-color: #555;
         z-index: 1;
     }
     .family-node:first-child::after {
         left: 50%;
-        width: 50%;
+        right: -20px;
     }
     .family-node:last-child::after {
         right: 50%;
-        width: 50%;
-        left: auto;
+        left: -20px;
     }
     .family-node:only-child::after {
         display: none;
