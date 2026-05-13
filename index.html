@@ -1631,6 +1631,14 @@
     node.children.forEach(child => {
         childrenHtml += renderTreeDiagram(child);
     });
+
+    // Menampilkan pasangan dan simbol
+    const coupleHtml = `
+        <div class="couple-group">
+            ${suamiHtml}
+            ${istriHtml ? `<div class="couple-connector ${connectorClass}">${connectorSymbol}</div>${istriHtml}` : ''}
+        </div>
+    `;
     
     // Bungkus dengan container khusus untuk garis "⊥"
     return `
@@ -1641,13 +1649,6 @@
                     ${childrenHtml}
                 </div>
             </div>
-        </div>
-    `;
-    // Menampilkan pasangan dan simbol
-    const coupleHtml = `
-        <div class="couple-group">
-            ${suamiHtml}
-            ${istriHtml ? `<div class="couple-connector ${connectorClass}">${connectorSymbol}</div>${istriHtml}` : ''}
         </div>
     `;
     }
