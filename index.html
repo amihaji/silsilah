@@ -124,7 +124,6 @@
     .btn-round:focus,
     .btn-round:focus-visible,
     .btn-round:active {
-        background-color: #e9ecef !important;
         box-shadow: none !important;
         outline: none !important;
     }
@@ -136,6 +135,18 @@
     .btn-round.btn-warning       { background-color: #ffffff !important;   color: #ffc107 !important; }
     .btn-round.btn-danger:hover  { background-color: #dc3545 !important; color: white !important; }
     .btn-round.btn-danger        { background-color: #ffffff !important;   color: #dc3545 !important; }
+    .table-hover > tbody > tr:hover .btn-round.btn-info:not(:hover) {
+        background-color: #e9ecef !important;
+        color: #0dcaf0 !important;
+    }
+    .table-hover > tbody > tr:hover .btn-round.btn-warning:not(:hover) {
+        background-color: #e9ecef !important;
+        color: #ffc107 !important;
+    }
+    .table-hover > tbody > tr:hover .btn-round.btn-danger:not(:hover) {
+        background-color: #e9ecef !important;
+        color: #dc3545 !important;
+    }
 
     /* Tampilan Foto Untuk Detail Data Keluarga */
     .view-photo { 
