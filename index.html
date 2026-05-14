@@ -464,6 +464,7 @@
         max-height: none !important;
     }
     
+    /**********
     @media (max-width: 576px) {
         .detail-profile-modal {
             max-width: calc(100vw - 24px) !important;
@@ -479,6 +480,7 @@
             font-size: 13px;
         }
     }
+    *********/
 
     /**************************
     /* Untuk mobile device   */
@@ -550,14 +552,22 @@
         .tree-root { gap: 20px; }
         .children-wrapper { gap: 20px !important; }
         .diagram-header-title h4 { font-size: 1rem !important; white-space: nowrap; }
-        /* Ganti dengan: */
-        #diagramContainer {
-            max-height: none;
-            overflow-y: hidden;
+       
+        #diagramContainer { max-height: none; overflow-y: hidden; }
+        #dynamicDiagramModal .modal-body { max-height: 60vh; overflow-y: auto; }
+        
+        .detail-profile-modal {
+            max-width: calc(100vw - 24px) !important;
+            margin: 0 auto;
         }
-        #dynamicDiagramModal .modal-body {
-            max-height: 60vh;
-            overflow-y: auto;
+        .detail-profile-modal .modal-body {
+            padding: 14px 14px !important;
+        }
+        .detail-profile-grid {
+            grid-template-columns: minmax(92px, 104px) 8px minmax(0, 1fr);
+            gap: 2px 3px;
+            max-width: 100%;
+            font-size: 13px;
         }
    }
   </style>
@@ -803,7 +813,6 @@
             </div>
           </div>
           <!-- Tampilkan pesan diatas tombol -->
-          <!-- <div id="formMessage" class="form-msg"></div> -->
           <div id="formKeluargaMessage" class="form-msg"></div>
                     
           <!-- Tampilkan tombol disini -->
