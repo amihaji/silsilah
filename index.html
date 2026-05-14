@@ -494,24 +494,6 @@
         max-height: none !important;
     }
     
-    /**********
-    @media (max-width: 576px) {
-        .detail-profile-modal {
-            max-width: calc(100vw - 24px) !important;
-            margin: 0 auto;
-        }
-        .detail-profile-modal .modal-body {
-            padding: 14px 14px !important;
-        }
-        .detail-profile-grid {
-            grid-template-columns: minmax(92px, 104px) 8px minmax(0, 1fr);
-            gap: 2px 3px;
-            max-width: 100%;
-            font-size: 13px;
-        }
-    }
-    *********/
-
     /**************************
     /* Untuk mobile device   */
     /*************************/
@@ -2032,51 +2014,115 @@
     /***********************
     * Download sebagai PDF
     ************************/
-    function downloadDiagramPDF() {
+    async function downloadDiagramPDF() {
         const container = document.getElementById('diagramContainer');
-        // ... validasi jika container kosong ...
+        const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
+        const selectEl = document.getElementById('pilihNamaDiagram');
+        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
+        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
+
+        if (!container || !treeDiagram) {
+            showMessage("Silakan buat diagram silsilah terlebih dahulu sebelum mengunduh PDF", "warning", "formMessageDynamic");
+            return;
+        }
 
         showLoader(true, "Menyiapkan PDF...");
 
-        // BUAT CLONE TEMPORER UNTUK PDF
-        const originalContainer = container;
-        const pdfContainer = originalContainer.cloneNode(true);
-        pdfContainer.style.width = 'auto';
-        pdfContainer.style.overflow = 'visible';
+        const pdfContainer = container.cloneNode(true);
+        pdfContainer.style.position = 'fixed';
+        pdfContainer.style.left = '-100000px';
+        pdfContainer.style.top = '0';
+        pdfContainer.style.width = 'max-content';
+        pdfContainer.style.maxWidth = 'none';
         pdfContainer.style.maxHeight = 'none';
+        pdfContainer.style.overflow = 'visible';
         pdfContainer.style.padding = '20px';
+        pdfContainer.style.background = '#ffffff';
+        pdfContainer.style.borderRadius = '0';
+        pdfContainer.style.zIndex = '-1';
         document.body.appendChild(pdfContainer);
 
-        // BERSIHKAN CSS YANG BISA MENGGANGGU PDF
         const styleFix = document.createElement('style');
         styleFix.textContent = `
-            .tree-diagram { overflow: visible !important; white-space: nowrap !important; }
-            .tree-root { display: inline-flex !important; flex-wrap: nowrap !important; min-width: max-content !important; width: auto !important; }
-            .family-node, .children-wrapper { min-width: auto !important; }
+            .tree-diagram { overflow: visible !important; white-space: nowrap !important; display: inline-block !important; min-width: auto !important; width: max-content !important; }
+            .tree-root { display: inline-flex !important; flex-wrap: nowrap !important; min-width: max-content !important; width: max-content !important; }
+            .family-node, .children-wrapper { min-width: max-content !important; }
         `;
         pdfContainer.appendChild(styleFix);
 
-        // SESUAIKAN OPSI PDF UNTUK LANDSCAPE
-        const opt = {
-            margin: [0.5, 0.5, 0.5, 0.5],
-            filename: 'pohon_silsilah.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, logging: false, useCORS: true },
-            jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
-        };
+        try {
+            const contentWidth = pdfContainer.scrollWidth || pdfContainer.offsetWidth;
+            const contentHeight = pdfContainer.scrollHeight || pdfContainer.offsetHeight;
+            const maxCanvasSide = 16384;
+            const maxCanvasArea = 268000000;
+            const scaleBySide = Math.min(maxCanvasSide / contentWidth, maxCanvasSide / contentHeight);
+            const scaleByArea = Math.sqrt(maxCanvasArea / (contentWidth * contentHeight));
+            const captureScale = Math.max(0.75, Math.min(2, scaleBySide, scaleByArea));
 
-        html2pdf().set(opt).from(pdfContainer).save()
-            .then(() => {
-                document.body.removeChild(pdfContainer);
-                showLoader(false);
-                showMessage("PDF berhasil diunduh", "success", "formMessageDynamic");
-            })
-            .catch(err => {
-                document.body.removeChild(pdfContainer);
-                console.error("PDF Error:", err);
-                showLoader(false);
-                showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
+            const canvas = await html2canvas(pdfContainer, {
+                scale: Number.isFinite(captureScale) ? captureScale : 1,
+                logging: false,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                windowWidth: contentWidth,
+                windowHeight: contentHeight
             });
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const margin = 10;
+            const usableWidth = pageWidth - (margin * 2);
+            const usableHeight = pageHeight - (margin * 2);
+            const pageCanvasHeight = Math.floor((usableHeight * canvas.width) / usableWidth);
+
+            let renderedHeight = 0;
+            let pageIndex = 0;
+
+            while (renderedHeight < canvas.height) {
+                const sliceHeight = Math.min(pageCanvasHeight, canvas.height - renderedHeight);
+                const pageCanvas = document.createElement('canvas');
+                pageCanvas.width = canvas.width;
+                pageCanvas.height = sliceHeight;
+
+                const pageCtx = pageCanvas.getContext('2d');
+                pageCtx.fillStyle = '#ffffff';
+                pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+                pageCtx.drawImage(
+                    canvas,
+                    0, renderedHeight, canvas.width, sliceHeight,
+                    0, 0, pageCanvas.width, pageCanvas.height
+                );
+
+                const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.98);
+                const imageHeight = (sliceHeight * usableWidth) / canvas.width;
+
+                if (pageIndex > 0) {
+                    pdf.addPage();
+                }
+
+                pdf.addImage(pageImgData, 'JPEG', margin, margin, usableWidth, imageHeight);
+                renderedHeight += sliceHeight;
+                pageIndex++;
+            }
+
+            pdf.save(safeFileName);
+            showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
+        } catch (err) {
+            console.error("PDF Error:", err);
+            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
+        } finally {
+            if (pdfContainer.parentNode) {
+                pdfContainer.parentNode.removeChild(pdfContainer);
+            }
+            showLoader(false);
+        }
     }
 
     /**************************
