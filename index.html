@@ -2059,14 +2059,20 @@
             const scaleByArea = Math.sqrt(maxCanvasArea / (contentWidth * contentHeight));
             const captureScale = Math.max(0.75, Math.min(2, scaleBySide, scaleByArea));
 
-            const canvas = await html2canvas(pdfContainer, {
-                scale: Number.isFinite(captureScale) ? captureScale : 1,
-                logging: false,
-                useCORS: true,
-                backgroundColor: '#ffffff',
-                windowWidth: contentWidth,
-                windowHeight: contentHeight
-            });
+            if (typeof html2pdf === 'undefined') {
+                throw new Error('Library html2pdf tidak tersedia');
+            }
+
+            const canvas = await html2pdf().set({
+                html2canvas: {
+                    scale: Number.isFinite(captureScale) ? captureScale : 1,
+                    logging: false,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    windowWidth: contentWidth,
+                    windowHeight: contentHeight
+                }
+            }).from(pdfContainer).toCanvas().get('canvas');
 
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF({
