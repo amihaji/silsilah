@@ -2008,11 +2008,200 @@
         }
     }
 
-    /*************************************************
-     * DOWNLOAD PDF - TIDAK KOSONG, TIDAK TERPOTONG
-     * Menggunakan clone + waitForImages + html2pdf
-     *************************************************/
+    /***************************************************
+     * DOWNLOAD PDF - MENGGUNAKAN FUNGSI PRINT BROWSER
+     * 100% Menampilkan diagram apa adanya (tidak kosong)
+     ***************************************************/
     async function downloadDiagramPDF() {
+        const container = document.getElementById('diagramContainer');
+        const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
+        const selectEl = document.getElementById('pilihNamaDiagram');
+        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
+
+        if (!container || !treeDiagram) {
+            showMessage("Silakan buat diagram silsilah terlebih dahulu", "warning", "formMessageDynamic");
+            return;
+        }
+
+        showLoader(true, "Menyiapkan PDF...");
+
+        try {
+            // Simpan judul asli halaman
+            const originalTitle = document.title;
+            document.title = `Silsilah_Keluarga_${selectedName}`;
+
+            // Buat elemen iframe tersembunyi untuk print
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'fixed';
+            iframe.style.right = '0';
+            iframe.style.bottom = '0';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = '0';
+            document.body.appendChild(iframe);
+
+            const iframeDoc = iframe.contentWindow.document;
+            
+            // Salin seluruh konten diagram ke iframe
+            iframeDoc.open();
+            iframeDoc.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Silsilah Keluarga ${selectedName}</title>
+                    <meta charset="UTF-8">
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { 
+                            font-family: 'Segoe UI', sans-serif;
+                            background: white;
+                            padding: 20px;
+                        }
+                        .diagram-wrapper {
+                            display: inline-block;
+                            min-width: 100%;
+                        }
+                        .diagram-header-title {
+                            text-align: center;
+                            margin-bottom: 25px;
+                            width: 100%;
+                        }
+                        .diagram-header-title h4 {
+                            color: #1A365D;
+                            font-weight: bold;
+                            font-size: 1.3rem;
+                            border-bottom: 3px solid #1A365D;
+                            padding-bottom: 5px;
+                            display: inline-block;
+                        }
+                        .tree-diagram {
+                            display: inline-block;
+                            text-align: center;
+                            padding: 20px;
+                        }
+                        .tree-root {
+                            display: inline-flex;
+                            flex-direction: row;
+                            gap: 40px;
+                            list-style: none;
+                            margin: 0;
+                            padding: 0;
+                        }
+                        .family-node {
+                            position: relative;
+                            display: inline-block;
+                            text-align: center;
+                        }
+                        .couple-group {
+                            display: flex;
+                            flex-direction: row;
+                            justify-content: center;
+                            align-items: center;
+                            margin-bottom: 2px;
+                        }
+                        .couple-connector {
+                            font-size: 24px;
+                            margin: -71px -3px 0px -3px;
+                        }
+                        .connector-kawin { color: #0d6efd; }
+                        .connector-cerai { color: #e20e0e; }
+                        .children-wrapper {
+                            display: flex;
+                            flex-direction: row;
+                            justify-content: center;
+                            gap: 40px;
+                            padding-top: 20px;
+                            position: relative;
+                        }
+                        .children-connector::before {
+                            content: '';
+                            position: absolute;
+                            top: -80px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 2px;
+                            height: 81px;
+                            background-color: #555;
+                        }
+                        .family-node::before {
+                            content: '';
+                            position: absolute;
+                            top: -19px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 2px;
+                            height: 25px;
+                            background-color: #555;
+                        }
+                        .family-node::after {
+                            content: '';
+                            position: absolute;
+                            top: -19px;
+                            left: -20px;
+                            right: -20px;
+                            height: 2px;
+                            background-color: #555;
+                        }
+                        .family-node:first-child::after { left: 50%; right: -20px; }
+                        .family-node:last-child::after { right: 50%; left: -20px; }
+                        .family-node:only-child::after { display: none; }
+                        .diagram-node { text-align: center; margin: 5px; }
+                        .diagram-foto {
+                            width: 60px;
+                            height: 60px;
+                            object-fit: cover;
+                            border-radius: 50%;
+                            border: 2px solid #1A365D;
+                            background: white;
+                        }
+                        .diagram-avatar {
+                            width: 60px;
+                            height: 60px;
+                            background-color: #1A365D;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            font-weight: bold;
+                            font-size: 20px;
+                            margin: 0 auto;
+                        }
+                        .diagram-name { font-size: 12px; font-weight: 600; margin-top: 5px; }
+                        .diagram-year { font-size: 10px; color: #666; }
+                        @media print {
+                            body { margin: 0; padding: 0; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${container.cloneNode(true).innerHTML}
+                </body>
+                </html>
+            `);
+            iframeDoc.close();
+
+            // Tunggu sebentar agar iframe merender
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Panggil print pada iframe
+            iframe.contentWindow.print();
+
+            // Tutup iframe setelah print selesai (atau setelah beberapa detik)
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+                document.title = originalTitle;
+            }, 1000);
+
+            showMessage(`PDF ${selectedName} siap dicetak. Gunakan "Save as PDF" di dialog print.`, "success", "formMessageDynamic");
+        } catch (err) {
+            console.error("Print Error:", err);
+            showMessage("Gagal membuka print dialog: " + err.message, "error", "formMessageDynamic");
+        } finally {
+            showLoader(false);
+        }
+    }
+    async function BACKUP_downloadDiagramPDF() {
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
         const selectEl = document.getElementById('pilihNamaDiagram');
@@ -2068,98 +2257,6 @@
         }
     }
 
-    /***************************************************************
-     * Helper: menunggu semua gambar di dalam elemen selesai dimuat
-     ***************************************************************/
-    function waitForImages(element) {
-        const images = element.querySelectorAll('img');
-        const promises = Array.from(images).map(img => {
-            if (img.complete) return Promise.resolve();
-            return new Promise(resolve => {
-                img.onload = resolve;
-                img.onerror = resolve; // tetap lanjut meskipun gambar error
-            });
-        });
-        return Promise.all(promises);
-    }
-
-    async function BACKUP_downloadDiagramPDF() {
-        const container = document.getElementById('diagramContainer');
-        const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
-        const selectEl = document.getElementById('pilihNamaDiagram');
-        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
-        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
-
-        if (!container || !treeDiagram) {
-            showMessage("Silakan buat diagram silsilah terlebih dahulu sebelum mengunduh PDF", "warning", "formMessageDynamic");
-            return;
-        }
-
-        showLoader(true, "Menyiapkan PDF (proses mungkin lama untuk diagram besar)...");
-
-        // Clone diagram agar tidak mengganggu tampilan asli
-        const cloneContainer = container.cloneNode(true);
-        cloneContainer.style.position = 'fixed';
-        cloneContainer.style.left = '-10000px';
-        cloneContainer.style.top = '0';
-        cloneContainer.style.width = 'max-content';
-        cloneContainer.style.minWidth = '100%';
-        cloneContainer.style.maxWidth = 'none';
-        cloneContainer.style.overflow = 'visible';
-        cloneContainer.style.backgroundColor = '#ffffff';
-        cloneContainer.style.padding = '20px';
-        cloneContainer.style.zIndex = '-1';
-
-        // Pastikan child elemen tidak membatasi
-        const cloneTree = cloneContainer.querySelector('.tree-diagram');
-        if (cloneTree) {
-            cloneTree.style.overflow = 'visible';
-            cloneTree.style.maxHeight = 'none';
-            cloneTree.style.display = 'inline-block';
-            cloneTree.style.minWidth = 'max-content';
-        }
-        const cloneRoot = cloneContainer.querySelector('.tree-root');
-        if (cloneRoot) {
-            cloneRoot.style.display = 'inline-flex';
-            cloneRoot.style.flexWrap = 'nowrap';
-            cloneRoot.style.minWidth = 'max-content';
-        }
-
-        document.body.appendChild(cloneContainer);
-
-        try {
-            // Opsi html2pdf yang optimal untuk diagram besar
-            const opt = {
-                margin:        [10, 10, 10, 10], // atas, kanan, bawah, kiri (mm)
-                filename:      safeFileName,
-                image:         { type: 'jpeg', quality: 0.98 },
-                html2canvas:   { 
-                    scale: 2.5,                // resolusi tinggi
-                    useCORS: true,
-                    logging: false,
-                    windowWidth: cloneContainer.scrollWidth,
-                    windowHeight: cloneContainer.scrollHeight
-                },
-                jsPDF:         { 
-                    unit: 'mm', 
-                    format: 'a4', 
-                    orientation: 'landscape' 
-                },
-                pagebreak:     { mode: 'legacy' } // biarkan html2pdf menangani pemotongan halaman
-            };
-
-            await html2pdf().set(opt).from(cloneContainer).save();
-            showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
-        } catch (err) {
-            console.error("PDF Error:", err);
-            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
-        } finally {
-            // Hapus clone dari DOM
-            if (cloneContainer.parentNode) cloneContainer.parentNode.removeChild(cloneContainer);
-            showLoader(false);
-        }
-    }
-    
     /**************************
     * Download sebagai Excel
     ***************************/
