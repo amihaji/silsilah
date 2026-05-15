@@ -2011,10 +2011,143 @@
         }
     }
 
-    /***********************
-    * Download sebagai PDF
-    ************************/
+     /************************************************************
+     * Download sebagai PDF (DIAGRAM BESAR TIDAK TERPOTONG)
+     * Menggunakan html2canvas + jsPDF manual dengan pemotongan kanvas
+     ************************************************************/
     async function downloadDiagramPDF() {
+        const container = document.getElementById('diagramContainer');
+        const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
+        const selectEl = document.getElementById('pilihNamaDiagram');
+        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
+        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
+
+        if (!container || !treeDiagram) {
+            showMessage("Silakan buat diagram silsilah terlebih dahulu sebelum mengunduh PDF", "warning", "formMessageDynamic");
+            return;
+        }
+
+        showLoader(true, "Menyiapkan PDF (mungkin butuh waktu lama untuk diagram besar)...");
+
+        // Clone node diagram untuk dimanipulasi tanpa mengganggu tampilan asli
+        const pdfContainer = container.cloneNode(true);
+        pdfContainer.style.position = 'fixed';
+        pdfContainer.style.left = '-100000px';
+        pdfContainer.style.top = '0';
+        pdfContainer.style.width = 'max-content';
+        pdfContainer.style.minWidth = '100%';
+        pdfContainer.style.maxWidth = 'none';
+        pdfContainer.style.maxHeight = 'none';
+        pdfContainer.style.overflow = 'visible';
+        pdfContainer.style.padding = '20px';
+        pdfContainer.style.background = '#ffffff';
+        pdfContainer.style.borderRadius = '0';
+        pdfContainer.style.zIndex = '-1';
+        
+        // Koreksi styling untuk memastikan semua elemen anak terlihat dengan baik
+        const treeElem = pdfContainer.querySelector('.tree-diagram');
+        if (treeElem) {
+            treeElem.style.overflow = 'visible';
+            treeElem.style.maxHeight = 'none';
+            treeElem.style.display = 'inline-block';
+            treeElem.style.minWidth = 'max-content';
+        }
+        const rootElem = pdfContainer.querySelector('.tree-root');
+        if (rootElem) {
+            rootElem.style.display = 'inline-flex';
+            rootElem.style.flexWrap = 'nowrap';
+            rootElem.style.minWidth = 'max-content';
+        }
+
+        document.body.appendChild(pdfContainer);
+
+        try {
+            // Pastikan library html2canvas dan jsPDF tersedia
+            if (typeof html2canvas === 'undefined') throw new Error('Library html2canvas tidak tersedia');
+            if (typeof jspdf === 'undefined') throw new Error('Library jsPDF tidak tersedia');
+
+            // Render seluruh konten diagram menjadi satu kanvas besar
+            const canvas = await html2canvas(pdfContainer, {
+                scale: window.devicePixelRatio || 2, // Skala lebih tinggi untuk kualitas cetak
+                logging: false,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                windowWidth: pdfContainer.scrollWidth,
+                windowHeight: pdfContainer.scrollHeight
+            });
+
+            // Hapus container clone dari DOM
+            if (pdfContainer.parentNode) pdfContainer.parentNode.removeChild(pdfContainer);
+
+            // Inisialisasi jsPDF dengan orientasi Landscape
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const margin = 10; // margin dalam mm
+            
+            // Hitung dimensi gambar yang akan muat di halaman (dalam mm)
+            const imgWidth = pageWidth - (margin * 2);
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            // Tinggi gambar yang muat dalam satu halaman PDF (mm)
+            const pageImgHeight = pageHeight - (margin * 2);
+            
+            // Hitung berapa banyak halaman yang dibutuhkan
+            const totalPages = Math.ceil(imgHeight / pageImgHeight);
+            
+            // Iterasi untuk memotong kanvas per halaman
+            for (let currentPage = 0; currentPage < totalPages; currentPage++) {
+                // Tentukan area kanvas yang akan dipotong untuk halaman ini
+                const yOffset = currentPage * pageImgHeight;
+                const yEnd = Math.min(yOffset + pageImgHeight, imgHeight);
+                const sliceHeightPx = (yEnd - yOffset) * (canvas.width / imgWidth);
+                const yOffsetPx = yOffset * (canvas.width / imgWidth);
+                
+                // Buat kanvas sementara untuk potongan halaman
+                const pageCanvas = document.createElement('canvas');
+                pageCanvas.width = canvas.width;
+                pageCanvas.height = sliceHeightPx;
+                const ctx = pageCanvas.getContext('2d');
+                
+                // Gambar potongan dari kanvas utama
+                ctx.drawImage(
+                    canvas,
+                    0, yOffsetPx, canvas.width, sliceHeightPx,
+                    0, 0, pageCanvas.width, pageCanvas.height
+                );
+                
+                // Konversi potongan kanvas ke data URL
+                const imgData = pageCanvas.toDataURL('image/jpeg', 1.0);
+                
+                // Tambahkan halaman baru jika bukan halaman pertama
+                if (currentPage !== 0) {
+                    pdf.addPage();
+                }
+                
+                // Tambahkan gambar potongan ke halaman PDF
+                pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, yEnd - yOffset);
+            }
+            
+            pdf.save(safeFileName);
+            showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
+            
+        } catch (err) {
+            console.error("PDF Error:", err);
+            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
+            // Bersihkan container clone jika terjadi error
+            if (pdfContainer.parentNode) pdfContainer.parentNode.removeChild(pdfContainer);
+        } finally {
+            showLoader(false);
+        }
+    }
+
+    async function BACKUP_downloadDiagramPDF() {
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
         const selectEl = document.getElementById('pilihNamaDiagram');
