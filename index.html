@@ -1907,7 +1907,99 @@
     /************************************************************
      * DOWNLOAD PDF DARI DIAGRAM HTML (TIDAK TERPOTONG & MULTI HALAMAN)
      ************************************************************/
+    /************************************************************
+     * DOWNLOAD PDF - UKURAN KERTAS SESUAI DIAGRAM
+     * Landscape jika lebar > tinggi, Portrait jika sebaliknya
+     ************************************************************/
     async function downloadDiagramAsPDF() {
+        const container = document.getElementById('diagramContainer');
+        const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
+        const selectEl = document.getElementById('pilihNamaDiagram');
+        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
+        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
+
+        if (!container || !treeDiagram) {
+            showMessage("Silakan buat diagram silsilah terlebih dahulu", "warning", "formMessageDynamic");
+            return;
+        }
+
+        showLoader(true, "Membuat PDF...");
+
+        try {
+            // Scroll ke awal
+            const originalScrollLeft = container.scrollLeft;
+            const originalScrollTop = container.scrollTop;
+            container.scrollLeft = 0;
+            container.scrollTop = 0;
+
+            // Tunggu sebentar untuk rendering sempurna
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            // Capture diagram dengan html2canvas
+            const canvas = await html2canvas(container, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            });
+
+            // Kembalikan scroll
+            container.scrollLeft = originalScrollLeft;
+            container.scrollTop = originalScrollTop;
+
+            const imgWidth = canvas.width;
+            const imgHeight = canvas.height;
+            
+            console.log("Ukuran gambar:", imgWidth, "x", imgHeight);
+
+            // Tentukan orientasi berdasarkan ukuran gambar
+            const isLandscape = imgWidth > imgHeight;
+            
+            // Konversi pixel ke mm (1 inch = 25.4 mm, 1 inch = 96 pixel)
+            const pxToMm = 25.4 / 96;
+            
+            // Hitung ukuran kertas dalam mm (dengan margin 10mm)
+            const margin = 10;
+            let paperWidthMm = (imgWidth * pxToMm) + (margin * 2);
+            let paperHeightMm = (imgHeight * pxToMm) + (margin * 2);
+            
+            // Batasi ukuran maksimal (jsPDF batas ~14400px = 3810mm)
+            const maxMm = 3800;
+            if (paperWidthMm > maxMm) paperWidthMm = maxMm;
+            if (paperHeightMm > maxMm) paperHeightMm = maxMm;
+            
+            // Buat PDF dengan ukuran kertas sesuai diagram
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: isLandscape ? 'landscape' : 'portrait',
+                unit: 'mm',
+                format: [paperWidthMm, paperHeightMm]
+            });
+            
+            // Hitung posisi gambar di tengah kertas
+            const imgWidthMm = imgWidth * pxToMm;
+            const imgHeightMm = imgHeight * pxToMm;
+            const xPos = (paperWidthMm - imgWidthMm) / 2;
+            const yPos = (paperHeightMm - imgHeightMm) / 2;
+            
+            // Tambahkan gambar ke PDF
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            pdf.addImage(imgData, 'JPEG', xPos, yPos, imgWidthMm, imgHeightMm);
+            
+            // Simpan PDF
+            pdf.save(safeFileName);
+            
+            showMessage(`PDF ${selectedName} berhasil diunduh (${isLandscape ? 'Landscape' : 'Portrait'})`, "success", "formMessageDynamic");
+            
+        } catch (err) {
+            console.error("PDF Error:", err);
+            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
+        } finally {
+            showLoader(false);
+        }
+    }
+
+    async function BACKUP_downloadDiagramAsPDF() {
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
         const selectEl = document.getElementById('pilihNamaDiagram');
@@ -1987,88 +2079,6 @@
         }
     }
 
-    async function BACKUP_downloadDiagramAsPDF() {
-        const container = document.getElementById('diagramContainer');
-        const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
-        const selectEl = document.getElementById('pilihNamaDiagram');
-        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
-        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
-
-        if (!container || !treeDiagram) {
-            showMessage("Silakan buat diagram silsilah terlebih dahulu", "warning", "formMessageDynamic");
-            return;
-        }
-
-        showLoader(true, "Mengkonversi diagram ke PDF...");
-
-        try {
-            // Scroll ke posisi awal
-            const originalScrollLeft = container.scrollLeft;
-            const originalScrollTop = container.scrollTop;
-            container.scrollLeft = 0;
-            container.scrollTop = 0;
-
-            // Capture diagram HTML yang sudah tampil
-            const canvas = await html2canvas(container, {
-                scale: 2.5,
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff',
-                windowWidth: container.scrollWidth,
-                windowHeight: container.scrollHeight
-            });
-
-            // Kembalikan posisi scroll
-            container.scrollLeft = originalScrollLeft;
-            container.scrollTop = originalScrollTop;
-
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({
-                orientation: 'landscape',
-                unit: 'mm',
-                format: 'a4'
-            });
-            
-            const pageWidth = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
-            const margin = 10;
-            const imgWidth = pageWidth - (margin * 2);
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            const pageImgHeight = pageHeight - (margin * 2);
-            const totalPages = Math.ceil(imgHeight / pageImgHeight);
-            
-            if (totalPages === 1) {
-                const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
-                pdf.save(safeFileName);
-                showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
-            } else {
-                for (let i = 0; i < totalPages; i++) {
-                    const yOffset = i * pageImgHeight;
-                    const yEnd = Math.min(yOffset + pageImgHeight, imgHeight);
-                    const sliceHeightPx = (yEnd - yOffset) * (canvas.width / imgWidth);
-                    const yOffsetPx = yOffset * (canvas.width / imgWidth);
-                    
-                    const pageCanvas = document.createElement('canvas');
-                    pageCanvas.width = canvas.width;
-                    pageCanvas.height = sliceHeightPx;
-                    const ctx = pageCanvas.getContext('2d');
-                    ctx.drawImage(canvas, 0, yOffsetPx, canvas.width, sliceHeightPx, 0, 0, pageCanvas.width, pageCanvas.height);
-                    
-                    const imgData = pageCanvas.toDataURL('image/jpeg', 1.0);
-                    if (i !== 0) pdf.addPage();
-                    pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, yEnd - yOffset);
-                }
-                pdf.save(safeFileName);
-                showMessage(`PDF ${selectedName} berhasil diunduh (${totalPages} halaman)`, "success", "formMessageDynamic");
-            }
-        } catch (err) {
-            console.error("PDF Error:", err);
-            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
-        } finally {
-            showLoader(false);
-        }
-    }
     
     /************************************************
     * Membangun struktur tree berdasarkan Nama Ayah
