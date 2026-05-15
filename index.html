@@ -1760,7 +1760,7 @@
             const ayahList = Array.from(ayahSet).sort();
             
             // Isi dropdown options dari daftar Ayah
-            let dropdownOptions = '<option value="">Silahkan pilih nama ayah . . .</option>';
+            let dropdownOptions = '<option value="">Silahkan pilih kepala keluarga . . .</option>';
             ayahList.forEach(ayah => {
                 // Gunakan nilai asli, hindari karakter kutip bermasalah
                 const safeAyah = ayah.replace(/"/g, '&quot;');
@@ -1794,15 +1794,15 @@
                                             <i class="fas fa-sitemap"></i> Silsilah
                                         </button>
                                         <button class="btn btn-outline-primary btn-sm" id="btnDownloadPdf" title="Download PDF">
-                                            <i class="fas fa-file-pdf"></i> PDF
+                                            <i class="fas fa-file-pdf"></i> Download PDF
                                         </button>
                                         <button class="btn btn-outline-secondary btn-sm" id="btnDownloadExcel" title="Download Excel">
-                                            <i class="fas fa-file-excel"></i> Excel
+                                            <i class="fas fa-file-excel"></i> Download Excel
                                         </button>
                                     </div>
                                 </div>
                                 <div id="diagramContainer" style="min-height: 450px; overflow: auto; padding: 15px; background: #ffffff; border-radius: 8px;">
-                                    <div class="text-center text-muted p-5">Silakan pilih Nama Ayah dan klik Silsilah</div>
+                                    <div class="text-center text-muted p-5">Silahkan pilih kepala keluarga dan klik Silsilah</div>
                                 </div>
                             </div>    
                             
@@ -1953,7 +1953,7 @@
         }
         const selectedValue = selectEl.value;
         if (!selectedValue) {
-            showMessage("Silakan pilih Nama Ayah terlebih dahulu!", "warning", "formMessageDynamic");
+            showMessage("Silahkan pilih kepala keluarga terlebih dahulu!", "warning", "formMessageDynamic");
             return;
         }
         showLoader(true, "Membuat diagram pohon...");
