@@ -872,8 +872,9 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
   <script>
     // *************************      
@@ -883,9 +884,6 @@
     let globalData = [];
     let modalInstance;
     let confirmModalInstance;
-    // Variabel global untuk menyimpan PDF yang telah dibuat
-    let generatedPDFBlob = null;
-    let currentPDFName = '';
     
     document.addEventListener('DOMContentLoaded', function() {
         // Daftarkan modal utama
@@ -1737,9 +1735,261 @@
     }
         
     /*********************
-     * Buka modal diagram 
+     * Buka modal diagram (HTML asli seperti REV-5)
      *********************/
     function openDiagram() {
+        try {
+            // Hapus modal dinamis jika sudah ada sebelumnya
+            const existingModal = document.getElementById('dynamicDiagramModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Ambil daftar unik Nama Ayah
+            const ayahSet = new Set();
+            if (globalData && globalData.length > 0) {
+                globalData.forEach(item => {
+                    if (item.ayah && item.ayah.trim() !== '') {
+                        ayahSet.add(item.ayah.trim());
+                    }
+                });
+            }
+            
+            const ayahList = Array.from(ayahSet).sort();
+            let dropdownOptions = '<option value="">Silahkan pilih nama ayah . . .</option>';
+            ayahList.forEach(ayah => {
+                const safeAyah = ayah.replace(/"/g, '&quot;');
+                dropdownOptions += `<option value="${safeAyah}">${ayah}</option>`;
+            });
+            
+            if (ayahList.length === 0) {
+                dropdownOptions = '<option value="">-- Tidak ada data ayah --</option>';
+            }
+            
+            // Modal dengan diagram HTML asli
+            const modalHtml = `
+                <div class="modal fade" id="dynamicDiagramModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
+                    <div class="modal-dialog modal-xl modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-sitemap me-2"></i> Diagram Pohon Silsilah
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                                
+                            <div class="modal-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-12 d-flex gap-2 align-items-center flex-wrap">
+                                        <select id="pilihNamaDiagram" class="form-select" style="flex:2; min-width:250px;">
+                                            ${dropdownOptions}
+                                        </select>
+                                        <button class="btn btn-primary btn-sm" id="btnBuatDiagram">
+                                            <i class="fas fa-sitemap"></i> Tampilkan Silsilah
+                                        </button>
+                                        <button class="btn btn-success btn-sm" id="btnDownloadPDF" style="display:none;">
+                                            <i class="fas fa-download"></i> Download PDF
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Tempat diagram HTML -->
+                                <div id="diagramContainer" style="min-height: 450px; overflow: auto; padding: 15px; background: #ffffff; border-radius: 8px;">
+                                    <div class="text-center text-muted p-5">Silakan pilih Nama Ayah dan klik Tampilkan Silsilah</div>
+                                </div>
+                            </div>    
+                            
+                            <div class="modal-footer">
+                                <div id="formMessageDynamic" class="form-msg m-0 me-3 flex-grow-1 text-start"></div>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            const modalElement = document.getElementById('dynamicDiagramModal');
+            const modal = new bootstrap.Modal(modalElement, { backdrop: true, keyboard: true });
+            modal.show();
+            
+            modalElement.addEventListener('hidden.bs.modal', function() {
+                modalElement.remove();
+            });
+            
+            // Event listener untuk tombol Tampilkan Silsilah
+            const btnBuat = document.getElementById('btnBuatDiagram');
+            if (btnBuat) {
+                btnBuat.onclick = function() {
+                    generateHTMLDiagram();
+                };
+            }
+            
+            // Event listener untuk tombol Download PDF
+            const btnDownload = document.getElementById('btnDownloadPDF');
+            if (btnDownload) {
+                btnDownload.onclick = function() {
+                    downloadDiagramAsPDF();
+                };
+            }
+            
+        } catch (e) {
+            console.error("Error openDiagram:", e);
+            showMessage("Gagal membuka diagram: " + e.message, "error", "tableMessage");
+        }
+    }
+
+    /************************************************************
+     * GENERATE DIAGRAM HTML (SAMA PERSIS SEPERTI REV-5)
+     ************************************************************/
+    function generateHTMLDiagram() {
+        const selectEl = document.getElementById('pilihNamaDiagram');
+        if (!selectEl) return;
+        const selectedValue = selectEl.value;
+        if (!selectedValue) {
+            showMessage("Silakan pilih Nama Ayah terlebih dahulu!", "warning", "formMessageDynamic");
+            return;
+        }
+        
+        showLoader(true, "Membuat diagram...");
+        try {
+            const rootNode = buildFamilyTreeByAyah(selectedValue);
+            const container = document.getElementById('diagramContainer');
+            
+            function toTitleCase(str) {
+                return str.replace(/\b\w/g, function(char) {
+                    return char.toUpperCase();
+                });
+            }
+            
+            if (container && rootNode) {
+                const keluargaNameCapitalized = toTitleCase(selectedValue);
+                
+                container.style.overflowX = "auto";
+                container.style.overflowY = "auto";
+                container.style.whiteSpace = "nowrap";
+
+                const fullHtml = `
+                    <div class="diagram-wrapper" style="display: inline-block; min-width: 100%;">
+                        <div class="diagram-header-title" style="text-align: center; margin-bottom: 25px; width: 100%;">
+                            <h4 style="color: #1A365D; font-weight: bold; font-size: 1.3rem; 
+                                display: inline-block; border-bottom: 3px solid #1A365D; padding-bottom: 5px; 
+                                margin: 0; white-space: nowrap;">
+                                <i class="fas fa-tree"></i> Silsilah Keluarga ${keluargaNameCapitalized}
+                            </h4>
+                        </div>
+                        <div class="tree-diagram" style="display: inline-block; min-width: 100%; padding: 20px; text-align: center;">
+                            <ul class="tree-root" style="display: inline-flex; flex-direction: row; justify-content: center; gap: 40px; list-style: none; margin: 0; padding: 0; flex-wrap: nowrap;">
+                                ${renderTreeDiagram(rootNode)}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML = fullHtml;
+                
+                // Sembunyikan tombol download dulu, nanti muncul setelah user klik tombol PDF
+                const btnDownload = document.getElementById('btnDownloadPDF');
+                if (btnDownload) btnDownload.style.display = 'inline-block';
+                
+                showMessage(`Diagram silsilah keluarga ${selectedValue} berhasil dibuat`, "success", "formMessageDynamic");
+            } else {
+                container.innerHTML = `<div class="text-center text-danger p-5">Tidak dapat membangun diagram pohon untuk keluarga yang dipilih.</div>`;
+            }
+        } catch (err) {
+            console.error("Error generateHTMLDiagram:", err);
+            showMessage("Gagal membuat diagram: " + err.message, "error", "formMessageDynamic");
+        } finally {
+            showLoader(false);
+        }
+    }
+
+    /************************************************************
+     * DOWNLOAD PDF DARI DIAGRAM HTML YANG TAMPIL (TIDAK KOSONG)
+     ************************************************************/
+    async function downloadDiagramAsPDF() {
+        const container = document.getElementById('diagramContainer');
+        const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
+        const selectEl = document.getElementById('pilihNamaDiagram');
+        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
+        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
+
+        if (!container || !treeDiagram) {
+            showMessage("Silakan buat diagram silsilah terlebih dahulu", "warning", "formMessageDynamic");
+            return;
+        }
+
+        showLoader(true, "Mengkonversi diagram ke PDF...");
+
+        try {
+            // Scroll ke posisi awal
+            const originalScrollLeft = container.scrollLeft;
+            const originalScrollTop = container.scrollTop;
+            container.scrollLeft = 0;
+            container.scrollTop = 0;
+
+            // Capture diagram HTML yang sudah tampil
+            const canvas = await html2canvas(container, {
+                scale: 2.5,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff',
+                windowWidth: container.scrollWidth,
+                windowHeight: container.scrollHeight
+            });
+
+            // Kembalikan posisi scroll
+            container.scrollLeft = originalScrollLeft;
+            container.scrollTop = originalScrollTop;
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+            
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const margin = 10;
+            const imgWidth = pageWidth - (margin * 2);
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            const pageImgHeight = pageHeight - (margin * 2);
+            const totalPages = Math.ceil(imgHeight / pageImgHeight);
+            
+            if (totalPages === 1) {
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
+                pdf.save(safeFileName);
+                showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
+            } else {
+                for (let i = 0; i < totalPages; i++) {
+                    const yOffset = i * pageImgHeight;
+                    const yEnd = Math.min(yOffset + pageImgHeight, imgHeight);
+                    const sliceHeightPx = (yEnd - yOffset) * (canvas.width / imgWidth);
+                    const yOffsetPx = yOffset * (canvas.width / imgWidth);
+                    
+                    const pageCanvas = document.createElement('canvas');
+                    pageCanvas.width = canvas.width;
+                    pageCanvas.height = sliceHeightPx;
+                    const ctx = pageCanvas.getContext('2d');
+                    ctx.drawImage(canvas, 0, yOffsetPx, canvas.width, sliceHeightPx, 0, 0, pageCanvas.width, pageCanvas.height);
+                    
+                    const imgData = pageCanvas.toDataURL('image/jpeg', 1.0);
+                    if (i !== 0) pdf.addPage();
+                    pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, yEnd - yOffset);
+                }
+                pdf.save(safeFileName);
+                showMessage(`PDF ${selectedName} berhasil diunduh (${totalPages} halaman)`, "success", "formMessageDynamic");
+            }
+        } catch (err) {
+            console.error("PDF Error:", err);
+            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
+        } finally {
+            showLoader(false);
+        }
+    }
+    function BACKUP_openDiagram() {
         try {
             // Hapus modal dinamis jika sudah ada sebelumnya
             const existingModal = document.getElementById('dynamicDiagramModal');
@@ -1761,8 +2011,9 @@
             const ayahList = Array.from(ayahSet).sort();
             
             // Isi dropdown options dari daftar Ayah
-            let dropdownOptions = '<option value="">-- Pilih Nama Ayah --</option>';
+            let dropdownOptions = '<option value="">Silahkan pilih nama ayah . . .</option>';
             ayahList.forEach(ayah => {
+                // Gunakan nilai asli, hindari karakter kutip bermasalah
                 const safeAyah = ayah.replace(/"/g, '&quot;');
                 dropdownOptions += `<option value="${safeAyah}">${ayah}</option>`;
             });
@@ -1783,40 +2034,38 @@
                                 </h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                                
+                                  
                             <div class="modal-body">
                                 <div class="row mb-3">
                                     <div class="col-md-12 d-flex gap-2 align-items-center flex-wrap">
                                         <select id="pilihNamaDiagram" class="form-select" style="flex:2; min-width:250px;">
                                             ${dropdownOptions}
                                         </select>
-                                        <button class="btn btn-primary btn-sm" id="btnBuatDiagram">
-                                            <i class="fas fa-sitemap"></i> Buat Silsilah PDF
+                                        <button class="btn btn-primary btn-sm" id="btnBuatDiagram" title="Buat Diagram">
+                                            <i class="fas fa-sitemap"></i> Silsilah
                                         </button>
-                                        <button class="btn btn-success btn-sm" id="btnDownloadPDF" style="display:none;">
-                                            <i class="fas fa-download"></i> Download PDF
+                                        <button class="btn btn-outline-primary btn-sm" id="btnDownloadPdf" title="Download PDF">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </button>
+                                        <button class="btn btn-outline-secondary btn-sm" id="btnDownloadExcel" title="Download Excel">
+                                            <i class="fas fa-file-excel"></i> Excel
                                         </button>
                                     </div>
                                 </div>
-                                
-                                <!-- Tempat preview PDF -->
-                                <div id="pdfPreviewContainer" style="min-height: 500px; background: #f5f5f5; border-radius: 8px; overflow: auto; text-align: center; padding: 10px;">
-                                    <div class="text-center text-muted p-5">
-                                        <i class="fas fa-file-pdf fa-4x mb-3"></i>
-                                        <p>Silakan pilih Nama Ayah dan klik "Buat Silsilah PDF"</p>
-                                    </div>
+                                <div id="diagramContainer" style="min-height: 450px; overflow: auto; padding: 15px; background: #ffffff; border-radius: 8px;">
+                                    <div class="text-center text-muted p-5">Silakan pilih Nama Ayah dan klik Silsilah</div>
                                 </div>
                             </div>    
                             
-                            <div class="modal-footer">
-                                <div id="formMessageDynamic" class="form-msg m-0 me-3 flex-grow-1 text-start"></div>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                            </div>
+                            <div class="modal-footer d-flex align-items-center">
+                                 <!-- Tampilkan pesan disamping tombol -->
+                                 <div id="formMessageDynamic" class="form-msg m-0 me-3 flex-grow-1 text-start"></div>
+                                 <button type="button" class="btn btn-secondary ms-auto" data-bs-dismiss="modal">Tutup</button>
+                             </div>
                         </div>
                     </div>
                 </div>
             `;
-            
             // Tambahkan ke body
             document.body.insertAdjacentHTML('beforeend', modalHtml);
             
@@ -1833,7 +2082,7 @@
                 modalElement.remove();
             });
             
-            // Event listener untuk tombol Buat Silsilah
+            // Event listener untuk tombol Diagram
             const btnBuat = document.getElementById('btnBuatDiagram');
             if (btnBuat) {
                 btnBuat.onclick = function() {
@@ -1841,11 +2090,19 @@
                 };
             }
             
-            // Event listener untuk tombol Download PDF
-            const btnDownload = document.getElementById('btnDownloadPDF');
-            if (btnDownload) {
-                btnDownload.onclick = function() {
-                    downloadPDF();
+            // Event listener untuk tombol PDF
+            const btnPdf = document.getElementById('btnDownloadPdf');
+            if (btnPdf) {
+                btnPdf.onclick = function() {
+                    downloadDiagramPDF();
+                };
+            }
+            
+            // Event listener untuk tombol Excel
+            const btnExcel = document.getElementById('btnDownloadExcel');
+            if (btnExcel) {
+                btnExcel.onclick = function() {
+                    downloadDiagramExcel();
                 };
             }
             
@@ -1854,6 +2111,7 @@
             showMessage("Gagal membuka diagram: " + e.message, "error", "tableMessage");
         }
     }
+
     /************************************************
     * Membangun struktur tree berdasarkan Nama Ayah
     * (Rekursif hingga keturunan level tak terbatas)
@@ -1938,238 +2196,190 @@
     /**************************************************************************
     * Generate Diagram (memanggil buildFamilyTreeByAyah dan renderTreeDiagram)
     ***************************************************************************/
-
-    /************************************************************
-     * BUAT PDF LANGSUNG DARI DATA (Tanpa HTML)
-     ************************************************************/
-    async function generateDiagram() {
+    function BACKUP_generateDiagram() {
         const selectEl = document.getElementById('pilihNamaDiagram');
-        if (!selectEl) return;
+        if (!selectEl) {
+            showMessage("Error: Dropdown tidak ditemukan", "error", "formMessageDynamic");
+            return;
+        }
         const selectedValue = selectEl.value;
         if (!selectedValue) {
             showMessage("Silakan pilih Nama Ayah terlebih dahulu!", "warning", "formMessageDynamic");
             return;
         }
-        
-        showLoader(true, "Membuat PDF Silsilah...");
+        showLoader(true, "Membuat diagram pohon...");
         try {
             const rootNode = buildFamilyTreeByAyah(selectedValue);
-            if (!rootNode) throw new Error("Tidak dapat membangun struktur keluarga");
+            const container = document.getElementById('diagramContainer');
             
-            // Hitung dimensi yang dibutuhkan
-            const treeData = calculateTreeDimensions(rootNode);
-            const pageWidth = Math.max(treeData.width + 40, 300);
-            const pageHeight = Math.max(treeData.height + 40, 200);
+            function toTitleCase(str) {
+                return str.replace(/\b\w/g, function(char) {
+                    return char.toUpperCase();
+                });
+            }
             
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({
-                orientation: pageWidth > pageHeight ? 'landscape' : 'portrait',
-                unit: 'mm',
-                format: [pageWidth, pageHeight]
-            });
-            
-            // Gambar tree ke PDF
-            drawTreeToPDF(pdf, rootNode, pageWidth / 2, 25, 50, 70);
-            
-            // Simpan PDF sebagai blob untuk preview
-            generatedPDFBlob = pdf.output('blob');
-            currentPDFName = selectedValue;
-            
-            // Tampilkan preview PDF
-            const previewUrl = URL.createObjectURL(generatedPDFBlob);
-            const previewContainer = document.getElementById('pdfPreviewContainer');
-            previewContainer.innerHTML = `
-                <iframe src="${previewUrl}" style="width:100%; height:600px; border:none; border-radius:8px;"></iframe>
-            `;
-            
-            // Tampilkan tombol download
-            document.getElementById('btnDownloadPDF').style.display = 'inline-block';
-            
-            showMessage(`PDF Silsilah ${selectedValue} berhasil dibuat`, "success", "formMessageDynamic");
+            if (container) {
+                if (rootNode) {
+                    const keluargaName = selectedValue;
+                    const keluargaNameCapitalized = toTitleCase(keluargaName);
+                    
+                    // Reset container style
+                    container.style.overflowX = "auto";
+                    container.style.overflowY = "auto";
+                    container.style.whiteSpace = "nowrap";
+
+                    const fullHtml = `
+                        <div class="diagram-wrapper" style="display: inline-block; min-width: 100%;">
+                            <div class="diagram-header-title" style="text-align: center; margin-bottom: 25px; width: 100%;">
+                                 <h4 style="color: #1A365D; font-weight: bold; font-size: 1.3rem; 
+                                    display: inline-block; border-bottom: 3px solid #1A365D; padding-bottom: 5px; 
+                                    margin: 0; white-space: nowrap; position: relative; top: 20px;">
+                                    <i class="fas fa-tree"></i> Silsilah Keluarga ${keluargaNameCapitalized}
+                                 </h4>
+                             </div>
+                            <div class="tree-diagram" style="display: inline-block; min-width: 100%; padding: 20px; text-align: center;">
+                                <ul class="tree-root" style="display: inline-flex; flex-direction: row; justify-content: center; gap: 40px; list-style: none; margin: 0; padding: 0; flex-wrap: nowrap;">
+                                    ${renderTreeDiagram(rootNode)}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML = fullHtml;
+                    showMessage(`Diagram silsilah keluarga ${selectedValue} berhasil dibuat`, "success", "formMessageDynamic");
+                } else {
+                    container.innerHTML = `<div class="text-center text-danger p-5">
+                        <i class="fas fa-exclamation-triangle"></i> Tidak dapat membangun diagram pohon untuk keluarga yang dipilih.<br>
+                        Pastikan data dengan nama "${selectedValue}" tersedia sebagai seorang Ayah di database.
+                    </div>`;
+                    console.warn("Gagal build tree untuk:", selectedValue);
+                }
+            }
         } catch (err) {
-            console.error(err);
-            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
+            console.error("Error generateDiagram:", err);
+            showMessage("Gagal membuat diagram: " + err.message, "error", "formMessageDynamic");
         } finally {
             showLoader(false);
         }
     }
 
-    /************************************************************
-     * DOWNLOAD PDF YANG SUDAH DITAMPILKAN
-     ************************************************************/
-    function downloadPDF() {
-        if (!generatedPDFBlob) {
-            showMessage("Tidak ada PDF. Silakan buat silsilah terlebih dahulu.", "warning", "formMessageDynamic");
+    /***********************
+    * Download sebagai PDF
+    ************************/
+    async function BACKUP_downloadDiagramPDF() {
+        const container = document.getElementById('diagramContainer');
+        const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
+        const selectEl = document.getElementById('pilihNamaDiagram');
+        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
+        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
+
+        if (!container || !treeDiagram) {
+            showMessage("Silakan buat diagram silsilah terlebih dahulu sebelum mengunduh PDF", "warning", "formMessageDynamic");
             return;
         }
-        
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(generatedPDFBlob);
-        link.href = url;
-        link.download = `Silsilah_${currentPDFName.replace(/[<>:"/\\|?*]+/g, '_')}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        
-        showMessage("PDF berhasil diunduh", "success", "formMessageDynamic");
-    }
 
-    /************************************************************
-     * HITUNG DIMENSI TREE (lebar dan tinggi)
-     ************************************************************/
-    function calculateTreeDimensions(node, level = 0, position = 0, positions = {}) {
-        if (!node) return { width: 0, height: 0 };
-        
-        if (!positions[level]) positions[level] = [];
-        positions[level].push(position);
-        
-        let width = 1;
-        if (node.children && node.children.length > 0) {
-            const childSpacing = 1;
-            let childIndex = 0;
-            for (let child of node.children) {
-                const childWidth = calculateTreeDimensions(child, level + 1, position + childIndex * childSpacing, positions);
-                width = Math.max(width, childWidth);
-                childIndex++;
-            }
-        }
-        
-        const maxLevel = Math.max(...Object.keys(positions).map(Number));
-        const maxWidth = Math.max(...Object.values(positions).flat());
-        const height = (maxLevel + 1) * 70;
-        
-        return { width: maxWidth * 50 + 50, height: height };
-    }
+        showLoader(true, "Menyiapkan PDF...");
 
-    /************************************************************
-     * GAMBAR TREE KE PDF
-     ************************************************************/
-    function drawTreeToPDF(pdf, node, x, y, levelWidth, verticalSpacing, level = 0) {
-        if (!node) return;
-        
-        // Warna background berdasarkan status almarhum
-        if (node.almarhum === 'ya') {
-            pdf.setFillColor(150, 150, 150);
-            pdf.setTextColor(100, 100, 100);
-        } else {
-            pdf.setFillColor(26, 54, 93);
-            pdf.setTextColor(255, 255, 255);
-        }
-        
-        // Gambar node utama (lingkaran)
-        pdf.circle(x, y, 10, 'F');
-        pdf.setDrawColor(0, 0, 0);
-        pdf.circle(x, y, 10, 'S');
-        
-        // Nama (maks 15 karakter)
-        pdf.setFontSize(9);
-        let namaSingkat = node.nama ? node.nama.substring(0, 15) : '-';
-        if (node.nama && node.nama.length > 15) namaSingkat += '...';
-        pdf.text(namaSingkat, x, y + 3, { align: 'center' });
-        
-        // Tahun lahir - wafat
-        pdf.setFontSize(7);
-        pdf.setTextColor(100, 100, 100);
-        let tahunRange = getYearRange(node);
-        if (tahunRange) {
-            pdf.text(tahunRange, x, y + 13, { align: 'center' });
-        }
-        
-        // Gambar pasangan
-        let spouseX = x;
-        if (node.spouse && node.spouse.nama) {
-            spouseX = x + 35;
-            pdf.setFillColor(220, 120, 120);
-            pdf.circle(spouseX, y, 10, 'F');
-            pdf.setDrawColor(0, 0, 0);
-            pdf.circle(spouseX, y, 10, 'S');
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFontSize(9);
-            let spouseNama = node.spouse.nama.substring(0, 15);
-            if (node.spouse.nama.length > 15) spouseNama += '...';
-            pdf.text(spouseNama, spouseX, y + 3, { align: 'center' });
-            
-            // Tahun pasangan
-            pdf.setFontSize(7);
-            pdf.setTextColor(100, 100, 100);
-            let spouseYear = getYearRange(node.spouse);
-            if (spouseYear) {
-                pdf.text(spouseYear, spouseX, y + 13, { align: 'center' });
-            }
-            
-            // Garis penghubung suami-istri
-            pdf.setDrawColor(0, 0, 0);
-            pdf.setLineWidth(0.5);
-            pdf.line(x + 10, y, spouseX - 10, y);
-            
-            // Simbol status
-            if (node.statusKawin === 'cerai') {
-                pdf.setDrawColor(255, 0, 0);
-                pdf.setLineWidth(1);
-                pdf.line(x + 15, y - 4, spouseX - 15, y + 4);
-                pdf.line(x + 15, y + 4, spouseX - 15, y - 4);
-            } else if (node.statusKawin === 'kawin') {
-                pdf.setDrawColor(0, 100, 255);
-                pdf.setFillColor(0, 100, 255);
-                pdf.circle((x + spouseX) / 2, y, 3, 'FD');
-            }
-        }
-        
-        // Gambar anak-anak
-        if (node.children && node.children.length > 0) {
-            const childCount = node.children.length;
-            const startX = x - ((childCount - 1) * levelWidth) / 2;
-            
-            // Garis horizontal penghubung anak-anak
-            if (childCount > 1) {
-                const firstX = startX;
-                const lastX = startX + (childCount - 1) * levelWidth;
-                pdf.setDrawColor(0, 0, 0);
-                pdf.setLineWidth(0.5);
-                pdf.line(firstX, y + 15, lastX, y + 15);
-            }
-            
-            for (let i = 0; i < childCount; i++) {
-                const childX = startX + (i * levelWidth);
-                const childY = y + verticalSpacing;
-                
-                // Garis vertikal dari orang tua ke anak
-                pdf.setDrawColor(0, 0, 0);
-                pdf.setLineWidth(0.5);
-                const parentCenterX = node.spouse ? (x + spouseX) / 2 : x;
-                pdf.line(parentCenterX, y + 10, childX, childY - 10);
-                
-                // Gambar anak secara rekursif
-                drawTreeToPDF(pdf, node.children[i], childX, childY, levelWidth * 0.7, verticalSpacing, level + 1);
-            }
-        }
-    }
+        const pdfContainer = container.cloneNode(true);
+        pdfContainer.style.position = 'fixed';
+        pdfContainer.style.left = '-100000px';
+        pdfContainer.style.top = '0';
+        pdfContainer.style.width = 'max-content';
+        pdfContainer.style.maxWidth = 'none';
+        pdfContainer.style.maxHeight = 'none';
+        pdfContainer.style.overflow = 'visible';
+        pdfContainer.style.padding = '20px';
+        pdfContainer.style.background = '#ffffff';
+        pdfContainer.style.borderRadius = '0';
+        pdfContainer.style.zIndex = '-1';
+        document.body.appendChild(pdfContainer);
 
-    /************************************************************
-     * MENDAPATKAN TAHUN LAHIR - WAFAT
-     ************************************************************/
-    function getYearRange(item) {
-        let birthYear = '';
-        let deathYear = '';
-        
-        if (item.tglLahir) {
-            try {
-                const date = new Date(item.tglLahir);
-                birthYear = date.getFullYear();
-            } catch(e) { birthYear = ''; }
+        const styleFix = document.createElement('style');
+        styleFix.textContent = `
+            .tree-diagram { overflow: visible !important; white-space: nowrap !important; display: inline-block !important; min-width: auto !important; width: max-content !important; }
+            .tree-root { display: inline-flex !important; flex-wrap: nowrap !important; min-width: max-content !important; width: max-content !important; }
+            .family-node, .children-wrapper { min-width: max-content !important; }
+        `;
+        pdfContainer.appendChild(styleFix);
+
+        try {
+            const contentWidth = pdfContainer.scrollWidth || pdfContainer.offsetWidth;
+            const contentHeight = pdfContainer.scrollHeight || pdfContainer.offsetHeight;
+            const maxCanvasSide = 16384;
+            const maxCanvasArea = 268000000;
+            const scaleBySide = Math.min(maxCanvasSide / contentWidth, maxCanvasSide / contentHeight);
+            const scaleByArea = Math.sqrt(maxCanvasArea / (contentWidth * contentHeight));
+            const captureScale = Math.max(0.75, Math.min(2, scaleBySide, scaleByArea));
+
+            if (typeof html2pdf === 'undefined') {
+                throw new Error('Library html2pdf tidak tersedia');
+            }
+
+            const canvas = await html2pdf().set({
+                html2canvas: {
+                    scale: Number.isFinite(captureScale) ? captureScale : 1,
+                    logging: false,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    windowWidth: contentWidth,
+                    windowHeight: contentHeight
+                }
+            }).from(pdfContainer).toCanvas().get('canvas');
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const margin = 10;
+            const usableWidth = pageWidth - (margin * 2);
+            const usableHeight = pageHeight - (margin * 2);
+            const pageCanvasHeight = Math.floor((usableHeight * canvas.width) / usableWidth);
+
+            let renderedHeight = 0;
+            let pageIndex = 0;
+
+            while (renderedHeight < canvas.height) {
+                const sliceHeight = Math.min(pageCanvasHeight, canvas.height - renderedHeight);
+                const pageCanvas = document.createElement('canvas');
+                pageCanvas.width = canvas.width;
+                pageCanvas.height = sliceHeight;
+
+                const pageCtx = pageCanvas.getContext('2d');
+                pageCtx.fillStyle = '#ffffff';
+                pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+                pageCtx.drawImage(
+                    canvas,
+                    0, renderedHeight, canvas.width, sliceHeight,
+                    0, 0, pageCanvas.width, pageCanvas.height
+                );
+
+                const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.98);
+                const imageHeight = (sliceHeight * usableWidth) / canvas.width;
+
+                if (pageIndex > 0) {
+                    pdf.addPage();
+                }
+
+                pdf.addImage(pageImgData, 'JPEG', margin, margin, usableWidth, imageHeight);
+                renderedHeight += sliceHeight;
+                pageIndex++;
+            }
+
+            pdf.save(safeFileName);
+            showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
+        } catch (err) {
+            console.error("PDF Error:", err);
+            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
+        } finally {
+            if (pdfContainer.parentNode) {
+                pdfContainer.parentNode.removeChild(pdfContainer);
+            }
+            showLoader(false);
         }
-        
-        if (item.almarhum === 'ya' && item.tglWafat) {
-            try {
-                const date = new Date(item.tglWafat);
-                deathYear = date.getFullYear();
-            } catch(e) { deathYear = ''; }
-        }
-        
-        if (deathYear) return `${birthYear}-${deathYear}`;
-        if (birthYear) return `${birthYear}`;
-        return '';
     }
 
     /**************************
