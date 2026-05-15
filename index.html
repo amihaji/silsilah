@@ -1905,9 +1905,89 @@
     }
 
     /************************************************************
-     * DOWNLOAD PDF DARI DIAGRAM HTML YANG TAMPIL (TIDAK KOSONG)
+     * DOWNLOAD PDF DARI DIAGRAM HTML (TIDAK TERPOTONG & MULTI HALAMAN)
      ************************************************************/
     async function downloadDiagramAsPDF() {
+        const container = document.getElementById('diagramContainer');
+        const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
+        const selectEl = document.getElementById('pilihNamaDiagram');
+        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
+        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
+
+        if (!container || !treeDiagram) {
+            showMessage("Silakan buat diagram silsilah terlebih dahulu", "warning", "formMessageDynamic");
+            return;
+        }
+
+        showLoader(true, "Mengkonversi diagram ke PDF...");
+
+        try {
+            // Simpan posisi scroll asli
+            const originalScrollLeft = container.scrollLeft;
+            const originalScrollTop = container.scrollTop;
+            
+            // Scroll ke awal agar capture sempurna
+            container.scrollLeft = 0;
+            container.scrollTop = 0;
+
+            // Ambil ukuran sebenarnya konten diagram
+            const contentWidth = container.scrollWidth;
+            const contentHeight = container.scrollHeight;
+            
+            console.log("Ukuran konten:", contentWidth, "x", contentHeight);
+
+            // Gunakan html2canvas dengan opsi yang tepat
+            const canvas = await html2canvas(container, {
+                scale: 2.5,                     // Resolusi tinggi
+                useCORS: true,                  // Izinkan gambar cross-origin
+                logging: false,
+                backgroundColor: '#ffffff',
+                width: contentWidth,            // Set lebar sesuai konten
+                height: contentHeight,          // Set tinggi sesuai konten
+                windowWidth: contentWidth,
+                windowHeight: contentHeight
+            });
+
+            // Kembalikan posisi scroll
+            container.scrollLeft = originalScrollLeft;
+            container.scrollTop = originalScrollTop;
+
+            const { jsPDF } = window.jspdf;
+            
+            // ORIENTASI: landscape jika lebar > tinggi, portrait jika sebaliknya
+            const isLandscape = contentWidth > contentHeight;
+            
+            // Buat PDF dengan ukuran yang sesuai (A4 atau lebih besar)
+            // Gunakan format 'a4' dengan orientasi yang benar
+            const pdf = new jsPDF({
+                orientation: isLandscape ? 'landscape' : 'portrait',
+                unit: 'px',  // Gunakan pixel agar lebih mudah
+                format: [contentWidth, contentHeight]  // Format sesuai konten
+            });
+            
+            // Hapus halaman kosong default jika perlu
+            if (pdf.internal.getNumberOfPages() > 0 && contentWidth > 0 && contentHeight > 0) {
+                pdf.deletePage(1);
+            }
+            
+            // Tambahkan gambar ke halaman pertama
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            pdf.addImage(imgData, 'JPEG', 0, 0, contentWidth, contentHeight);
+            
+            // Simpan PDF
+            pdf.save(safeFileName);
+            
+            showMessage(`PDF ${selectedName} berhasil diunduh (${Math.ceil(contentHeight / 1000)} halaman virtual)`, "success", "formMessageDynamic");
+            
+        } catch (err) {
+            console.error("PDF Error:", err);
+            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
+        } finally {
+            showLoader(false);
+        }
+    }
+
+    async function BACKUP_downloadDiagramAsPDF() {
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
         const selectEl = document.getElementById('pilihNamaDiagram');
@@ -1989,129 +2069,7 @@
             showLoader(false);
         }
     }
-    function BACKUP_openDiagram() {
-        try {
-            // Hapus modal dinamis jika sudah ada sebelumnya
-            const existingModal = document.getElementById('dynamicDiagramModal');
-            if (existingModal) {
-                existingModal.remove();
-            }
-            
-            // Ambil daftar unik Nama Ayah dari field "ayah" di database
-            const ayahSet = new Set();
-            if (globalData && globalData.length > 0) {
-                globalData.forEach(item => {
-                    if (item.ayah && item.ayah.trim() !== '') {
-                        ayahSet.add(item.ayah.trim());
-                    }
-                });
-            }
-            
-            // Konversi ke array dan urutkan
-            const ayahList = Array.from(ayahSet).sort();
-            
-            // Isi dropdown options dari daftar Ayah
-            let dropdownOptions = '<option value="">Silahkan pilih nama ayah . . .</option>';
-            ayahList.forEach(ayah => {
-                // Gunakan nilai asli, hindari karakter kutip bermasalah
-                const safeAyah = ayah.replace(/"/g, '&quot;');
-                dropdownOptions += `<option value="${safeAyah}">${ayah}</option>`;
-            });
-            
-            // Jika tidak ada data ayah, beri pesan
-            if (ayahList.length === 0) {
-                dropdownOptions = '<option value="">-- Tidak ada data ayah --</option>';
-            }
-            
-            // Buat modal diagram dinamis
-            const modalHtml = `
-                <div class="modal fade" id="dynamicDiagramModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
-                    <div class="modal-dialog modal-xl modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header bg-primary text-white">
-                                <h5 class="modal-title">
-                                    <i class="fas fa-sitemap me-2"></i> Diagram Pohon Silsilah
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                                  
-                            <div class="modal-body">
-                                <div class="row mb-3">
-                                    <div class="col-md-12 d-flex gap-2 align-items-center flex-wrap">
-                                        <select id="pilihNamaDiagram" class="form-select" style="flex:2; min-width:250px;">
-                                            ${dropdownOptions}
-                                        </select>
-                                        <button class="btn btn-primary btn-sm" id="btnBuatDiagram" title="Buat Diagram">
-                                            <i class="fas fa-sitemap"></i> Silsilah
-                                        </button>
-                                        <button class="btn btn-outline-primary btn-sm" id="btnDownloadPdf" title="Download PDF">
-                                            <i class="fas fa-file-pdf"></i> PDF
-                                        </button>
-                                        <button class="btn btn-outline-secondary btn-sm" id="btnDownloadExcel" title="Download Excel">
-                                            <i class="fas fa-file-excel"></i> Excel
-                                        </button>
-                                    </div>
-                                </div>
-                                <div id="diagramContainer" style="min-height: 450px; overflow: auto; padding: 15px; background: #ffffff; border-radius: 8px;">
-                                    <div class="text-center text-muted p-5">Silakan pilih Nama Ayah dan klik Silsilah</div>
-                                </div>
-                            </div>    
-                            
-                            <div class="modal-footer d-flex align-items-center">
-                                 <!-- Tampilkan pesan disamping tombol -->
-                                 <div id="formMessageDynamic" class="form-msg m-0 me-3 flex-grow-1 text-start"></div>
-                                 <button type="button" class="btn btn-secondary ms-auto" data-bs-dismiss="modal">Tutup</button>
-                             </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            // Tambahkan ke body
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-            
-            // Tampilkan modal
-            const modalElement = document.getElementById('dynamicDiagramModal');
-            const modal = new bootstrap.Modal(modalElement, {
-                backdrop: true,
-                keyboard: true
-            });
-            modal.show();
-            
-            // Hapus modal setelah ditutup
-            modalElement.addEventListener('hidden.bs.modal', function() {
-                modalElement.remove();
-            });
-            
-            // Event listener untuk tombol Diagram
-            const btnBuat = document.getElementById('btnBuatDiagram');
-            if (btnBuat) {
-                btnBuat.onclick = function() {
-                    generateDiagram();
-                };
-            }
-            
-            // Event listener untuk tombol PDF
-            const btnPdf = document.getElementById('btnDownloadPdf');
-            if (btnPdf) {
-                btnPdf.onclick = function() {
-                    downloadDiagramPDF();
-                };
-            }
-            
-            // Event listener untuk tombol Excel
-            const btnExcel = document.getElementById('btnDownloadExcel');
-            if (btnExcel) {
-                btnExcel.onclick = function() {
-                    downloadDiagramExcel();
-                };
-            }
-            
-        } catch (e) {
-            console.error("Error openDiagram:", e);
-            showMessage("Gagal membuka diagram: " + e.message, "error", "tableMessage");
-        }
-    }
-
+    
     /************************************************
     * Membangun struktur tree berdasarkan Nama Ayah
     * (Rekursif hingga keturunan level tak terbatas)
@@ -2191,195 +2149,6 @@
         // Cari semua anak dari ayah ini (level 1)
         const anakList = findDescendants(ayahData.nama);
         return { ...ayahData, spouse: spouse, children: anakList };
-    }
-
-    /**************************************************************************
-    * Generate Diagram (memanggil buildFamilyTreeByAyah dan renderTreeDiagram)
-    ***************************************************************************/
-    function BACKUP_generateDiagram() {
-        const selectEl = document.getElementById('pilihNamaDiagram');
-        if (!selectEl) {
-            showMessage("Error: Dropdown tidak ditemukan", "error", "formMessageDynamic");
-            return;
-        }
-        const selectedValue = selectEl.value;
-        if (!selectedValue) {
-            showMessage("Silakan pilih Nama Ayah terlebih dahulu!", "warning", "formMessageDynamic");
-            return;
-        }
-        showLoader(true, "Membuat diagram pohon...");
-        try {
-            const rootNode = buildFamilyTreeByAyah(selectedValue);
-            const container = document.getElementById('diagramContainer');
-            
-            function toTitleCase(str) {
-                return str.replace(/\b\w/g, function(char) {
-                    return char.toUpperCase();
-                });
-            }
-            
-            if (container) {
-                if (rootNode) {
-                    const keluargaName = selectedValue;
-                    const keluargaNameCapitalized = toTitleCase(keluargaName);
-                    
-                    // Reset container style
-                    container.style.overflowX = "auto";
-                    container.style.overflowY = "auto";
-                    container.style.whiteSpace = "nowrap";
-
-                    const fullHtml = `
-                        <div class="diagram-wrapper" style="display: inline-block; min-width: 100%;">
-                            <div class="diagram-header-title" style="text-align: center; margin-bottom: 25px; width: 100%;">
-                                 <h4 style="color: #1A365D; font-weight: bold; font-size: 1.3rem; 
-                                    display: inline-block; border-bottom: 3px solid #1A365D; padding-bottom: 5px; 
-                                    margin: 0; white-space: nowrap; position: relative; top: 20px;">
-                                    <i class="fas fa-tree"></i> Silsilah Keluarga ${keluargaNameCapitalized}
-                                 </h4>
-                             </div>
-                            <div class="tree-diagram" style="display: inline-block; min-width: 100%; padding: 20px; text-align: center;">
-                                <ul class="tree-root" style="display: inline-flex; flex-direction: row; justify-content: center; gap: 40px; list-style: none; margin: 0; padding: 0; flex-wrap: nowrap;">
-                                    ${renderTreeDiagram(rootNode)}
-                                </ul>
-                            </div>
-                        </div>
-                    `;
-                    container.innerHTML = fullHtml;
-                    showMessage(`Diagram silsilah keluarga ${selectedValue} berhasil dibuat`, "success", "formMessageDynamic");
-                } else {
-                    container.innerHTML = `<div class="text-center text-danger p-5">
-                        <i class="fas fa-exclamation-triangle"></i> Tidak dapat membangun diagram pohon untuk keluarga yang dipilih.<br>
-                        Pastikan data dengan nama "${selectedValue}" tersedia sebagai seorang Ayah di database.
-                    </div>`;
-                    console.warn("Gagal build tree untuk:", selectedValue);
-                }
-            }
-        } catch (err) {
-            console.error("Error generateDiagram:", err);
-            showMessage("Gagal membuat diagram: " + err.message, "error", "formMessageDynamic");
-        } finally {
-            showLoader(false);
-        }
-    }
-
-    /***********************
-    * Download sebagai PDF
-    ************************/
-    async function BACKUP_downloadDiagramPDF() {
-        const container = document.getElementById('diagramContainer');
-        const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
-        const selectEl = document.getElementById('pilihNamaDiagram');
-        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
-        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
-
-        if (!container || !treeDiagram) {
-            showMessage("Silakan buat diagram silsilah terlebih dahulu sebelum mengunduh PDF", "warning", "formMessageDynamic");
-            return;
-        }
-
-        showLoader(true, "Menyiapkan PDF...");
-
-        const pdfContainer = container.cloneNode(true);
-        pdfContainer.style.position = 'fixed';
-        pdfContainer.style.left = '-100000px';
-        pdfContainer.style.top = '0';
-        pdfContainer.style.width = 'max-content';
-        pdfContainer.style.maxWidth = 'none';
-        pdfContainer.style.maxHeight = 'none';
-        pdfContainer.style.overflow = 'visible';
-        pdfContainer.style.padding = '20px';
-        pdfContainer.style.background = '#ffffff';
-        pdfContainer.style.borderRadius = '0';
-        pdfContainer.style.zIndex = '-1';
-        document.body.appendChild(pdfContainer);
-
-        const styleFix = document.createElement('style');
-        styleFix.textContent = `
-            .tree-diagram { overflow: visible !important; white-space: nowrap !important; display: inline-block !important; min-width: auto !important; width: max-content !important; }
-            .tree-root { display: inline-flex !important; flex-wrap: nowrap !important; min-width: max-content !important; width: max-content !important; }
-            .family-node, .children-wrapper { min-width: max-content !important; }
-        `;
-        pdfContainer.appendChild(styleFix);
-
-        try {
-            const contentWidth = pdfContainer.scrollWidth || pdfContainer.offsetWidth;
-            const contentHeight = pdfContainer.scrollHeight || pdfContainer.offsetHeight;
-            const maxCanvasSide = 16384;
-            const maxCanvasArea = 268000000;
-            const scaleBySide = Math.min(maxCanvasSide / contentWidth, maxCanvasSide / contentHeight);
-            const scaleByArea = Math.sqrt(maxCanvasArea / (contentWidth * contentHeight));
-            const captureScale = Math.max(0.75, Math.min(2, scaleBySide, scaleByArea));
-
-            if (typeof html2pdf === 'undefined') {
-                throw new Error('Library html2pdf tidak tersedia');
-            }
-
-            const canvas = await html2pdf().set({
-                html2canvas: {
-                    scale: Number.isFinite(captureScale) ? captureScale : 1,
-                    logging: false,
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    windowWidth: contentWidth,
-                    windowHeight: contentHeight
-                }
-            }).from(pdfContainer).toCanvas().get('canvas');
-
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({
-                orientation: 'landscape',
-                unit: 'mm',
-                format: 'a4'
-            });
-
-            const pageWidth = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
-            const margin = 10;
-            const usableWidth = pageWidth - (margin * 2);
-            const usableHeight = pageHeight - (margin * 2);
-            const pageCanvasHeight = Math.floor((usableHeight * canvas.width) / usableWidth);
-
-            let renderedHeight = 0;
-            let pageIndex = 0;
-
-            while (renderedHeight < canvas.height) {
-                const sliceHeight = Math.min(pageCanvasHeight, canvas.height - renderedHeight);
-                const pageCanvas = document.createElement('canvas');
-                pageCanvas.width = canvas.width;
-                pageCanvas.height = sliceHeight;
-
-                const pageCtx = pageCanvas.getContext('2d');
-                pageCtx.fillStyle = '#ffffff';
-                pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-                pageCtx.drawImage(
-                    canvas,
-                    0, renderedHeight, canvas.width, sliceHeight,
-                    0, 0, pageCanvas.width, pageCanvas.height
-                );
-
-                const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.98);
-                const imageHeight = (sliceHeight * usableWidth) / canvas.width;
-
-                if (pageIndex > 0) {
-                    pdf.addPage();
-                }
-
-                pdf.addImage(pageImgData, 'JPEG', margin, margin, usableWidth, imageHeight);
-                renderedHeight += sliceHeight;
-                pageIndex++;
-            }
-
-            pdf.save(safeFileName);
-            showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
-        } catch (err) {
-            console.error("PDF Error:", err);
-            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
-        } finally {
-            if (pdfContainer.parentNode) {
-                pdfContainer.parentNode.removeChild(pdfContainer);
-            }
-            showLoader(false);
-        }
     }
 
     /**************************
