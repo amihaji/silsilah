@@ -1791,13 +1791,13 @@
                                             ${dropdownOptions}
                                         </select>
                                         <button class="btn btn-primary btn-sm" id="btnBuatDiagram" title="Buat Diagram">
-                                            <i class="fas fa-sitemap"></i> Silsilah
+                                            <i class="fas fa-sitemap"></i> Buat Silsilah
                                         </button>
-                                        <button class="btn btn-outline-primary btn-sm" id="btnDownloadPdf" title="Download PDF">
-                                            <i class="fas fa-file-pdf"></i> Download PDF
+                                        <button class="btn btn-outline-primary btn-sm" id="btnDownloadPdf" title="Unduh PDF">
+                                            <i class="fas fa-file-pdf"></i> Unduh PDF
                                         </button>
-                                        <button class="btn btn-outline-secondary btn-sm" id="btnDownloadExcel" title="Download Excel">
-                                            <i class="fas fa-file-excel"></i> Download Excel
+                                        <button class="btn btn-outline-secondary btn-sm" id="btnDownloadExcel" title="Unduh Excel">
+                                            <i class="fas fa-file-excel"></i> Unduh Excel
                                         </button>
                                     </div>
                                 </div>
@@ -2012,10 +2012,150 @@
     }
 
     /************************************************************
-     * Download sebagai PDF menggunakan html2pdf (tanpa library tambahan)
-     * Memastikan diagram besar tidak terpotong
+     * Download PDF dengan html2canvas + jsPDF (manual, elemen asli)
+     * Memastikan diagram besar tidak terpotong dan tidak kosong
      ************************************************************/
     async function downloadDiagramPDF() {
+        const container = document.getElementById('diagramContainer');
+        const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
+        const selectEl = document.getElementById('pilihNamaDiagram');
+        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
+        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
+
+        if (!container || !treeDiagram) {
+            showMessage("Silakan buat diagram silsilah terlebih dahulu sebelum mengunduh PDF", "warning", "formMessageDynamic");
+            return;
+        }
+
+        showLoader(true, "Menyiapkan PDF (mungkin butuh waktu lama untuk diagram besar)...");
+
+        // Simpan style asli container
+        const originalOverflow = container.style.overflow;
+        const originalPosition = container.style.position;
+        const originalLeft = container.style.left;
+        const originalTop = container.style.top;
+        const originalWidth = container.style.width;
+        const originalMaxWidth = container.style.maxWidth;
+
+        // Ubah style agar konten tidak terpotong dan bisa di-capture seluruhnya
+        container.style.overflow = 'visible';
+        container.style.position = 'fixed';
+        container.style.left = '-100000px';
+        container.style.top = '0';
+        container.style.width = 'max-content';
+        container.style.maxWidth = 'none';
+
+        // Pastikan elemen dalam juga tidak membatasi
+        const treeElem = container.querySelector('.tree-diagram');
+        const originalTreeOverflow = treeElem ? treeElem.style.overflow : '';
+        const originalTreeMaxHeight = treeElem ? treeElem.style.maxHeight : '';
+        if (treeElem) {
+            treeElem.style.overflow = 'visible';
+            treeElem.style.maxHeight = 'none';
+        }
+
+        const rootElem = container.querySelector('.tree-root');
+        const originalRootDisplay = rootElem ? rootElem.style.display : '';
+        const originalRootFlexWrap = rootElem ? rootElem.style.flexWrap : '';
+        if (rootElem) {
+            rootElem.style.display = 'inline-flex';
+            rootElem.style.flexWrap = 'nowrap';
+        }
+
+        try {
+            // Cek ketersediaan library
+            if (typeof html2canvas === 'undefined') {
+                throw new Error('Library html2canvas tidak tersedia. Silakan refresh halaman.');
+            }
+            if (typeof jspdf === 'undefined') {
+                throw new Error('Library jsPDF tidak tersedia. Silakan refresh halaman.');
+            }
+
+            // Render ke kanvas dengan resolusi tinggi
+            const canvas = await html2canvas(container, {
+                scale: 2.5,
+                logging: false,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                windowWidth: container.scrollWidth,
+                windowHeight: container.scrollHeight
+            });
+
+            // Kembalikan style asli container dan elemen dalam
+            container.style.overflow = originalOverflow;
+            container.style.position = originalPosition;
+            container.style.left = originalLeft;
+            container.style.top = originalTop;
+            container.style.width = originalWidth;
+            container.style.maxWidth = originalMaxWidth;
+            if (treeElem) {
+                treeElem.style.overflow = originalTreeOverflow;
+                treeElem.style.maxHeight = originalTreeMaxHeight;
+            }
+            if (rootElem) {
+                rootElem.style.display = originalRootDisplay;
+                rootElem.style.flexWrap = originalRootFlexWrap;
+            }
+
+            // Inisialisasi jsPDF
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const margin = 10;
+            const imgWidth = pageWidth - (margin * 2);
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            const pageImgHeight = pageHeight - (margin * 2);
+            const totalPages = Math.ceil(imgHeight / pageImgHeight);
+
+            for (let currentPage = 0; currentPage < totalPages; currentPage++) {
+                const yOffset = currentPage * pageImgHeight;
+                const yEnd = Math.min(yOffset + pageImgHeight, imgHeight);
+                const sliceHeightPx = (yEnd - yOffset) * (canvas.width / imgWidth);
+                const yOffsetPx = yOffset * (canvas.width / imgWidth);
+
+                // Buat kanvas untuk potongan halaman
+                const pageCanvas = document.createElement('canvas');
+                pageCanvas.width = canvas.width;
+                pageCanvas.height = sliceHeightPx;
+                const ctx = pageCanvas.getContext('2d');
+                ctx.drawImage(canvas, 0, yOffsetPx, canvas.width, sliceHeightPx, 0, 0, pageCanvas.width, pageCanvas.height);
+
+                const imgData = pageCanvas.toDataURL('image/jpeg', 1.0);
+                if (currentPage !== 0) pdf.addPage();
+                pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, yEnd - yOffset);
+            }
+
+            pdf.save(safeFileName);
+            showMessage(`PDF ${selectedName} berhasil diunduh (${totalPages} halaman)`, "success", "formMessageDynamic");
+        } catch (err) {
+            console.error("PDF Error:", err);
+            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
+            // Kembalikan style asli jika terjadi error
+            container.style.overflow = originalOverflow;
+            container.style.position = originalPosition;
+            container.style.left = originalLeft;
+            container.style.top = originalTop;
+            container.style.width = originalWidth;
+            container.style.maxWidth = originalMaxWidth;
+            if (treeElem) {
+                treeElem.style.overflow = originalTreeOverflow;
+                treeElem.style.maxHeight = originalTreeMaxHeight;
+            }
+            if (rootElem) {
+                rootElem.style.display = originalRootDisplay;
+                rootElem.style.flexWrap = originalRootFlexWrap;
+            }
+        } finally {
+            showLoader(false);
+        }
+    }
+    async function BACKUP_downloadDiagramPDF() {
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
         const selectEl = document.getElementById('pilihNamaDiagram');
@@ -2090,137 +2230,7 @@
             showLoader(false);
         }
     }
-    async function BACKUP_downloadDiagramPDF() {
-        const container = document.getElementById('diagramContainer');
-        const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
-        const selectEl = document.getElementById('pilihNamaDiagram');
-        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
-        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
-
-        if (!container || !treeDiagram) {
-            showMessage("Silakan buat diagram silsilah terlebih dahulu sebelum mengunduh PDF", "warning", "formMessageDynamic");
-            return;
-        }
-        showLoader(true, "Menyiapkan PDF (mungkin butuh waktu lama untuk diagram besar)...");
-
-        // Clone node diagram untuk dimanipulasi tanpa mengganggu tampilan asli
-        const pdfContainer = container.cloneNode(true);
-        pdfContainer.style.position = 'fixed';
-        pdfContainer.style.left = '-100000px';
-        pdfContainer.style.top = '0';
-        pdfContainer.style.width = 'max-content';
-        pdfContainer.style.minWidth = '100%';
-        pdfContainer.style.maxWidth = 'none';
-        pdfContainer.style.maxHeight = 'none';
-        pdfContainer.style.overflow = 'visible';
-        pdfContainer.style.padding = '20px';
-        pdfContainer.style.background = '#ffffff';
-        pdfContainer.style.borderRadius = '0';
-        pdfContainer.style.zIndex = '-1';
-        
-        // Perbaiki style internal agar tidak terpotong
-        const treeElem = pdfContainer.querySelector('.tree-diagram');
-        if (treeElem) {
-            treeElem.style.overflow = 'visible';
-            treeElem.style.maxHeight = 'none';
-            treeElem.style.display = 'inline-block';
-            treeElem.style.minWidth = 'max-content';
-        }
-        const rootElem = pdfContainer.querySelector('.tree-root');
-        if (rootElem) {
-            rootElem.style.display = 'inline-flex';
-            rootElem.style.flexWrap = 'nowrap';
-            rootElem.style.minWidth = 'max-content';
-        }
-
-        document.body.appendChild(pdfContainer);
-
-        try {
-            // Pastikan library tersedia
-            if (typeof html2canvas === 'undefined') throw new Error('Library html2canvas tidak tersedia. Coba refresh halaman.');
-            if (typeof jspdf === 'undefined') throw new Error('Library jsPDF tidak tersedia. Coba refresh halaman.');
-
-            // Render seluruh konten diagram menjadi satu kanvas besar
-            const canvas = await html2canvas(pdfContainer, {
-                scale: 2.5,                     // Tingkatkan untuk hasil cetak lebih tajam
-                logging: false,
-                useCORS: true,
-                backgroundColor: '#ffffff',
-                windowWidth: pdfContainer.scrollWidth,
-                windowHeight: pdfContainer.scrollHeight
-            });
-
-            // Hapus container clone dari DOM
-            if (pdfContainer.parentNode) pdfContainer.parentNode.removeChild(pdfContainer);
-
-            // Inisialisasi jsPDF dengan orientasi Landscape
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({
-                orientation: 'landscape',
-                unit: 'mm',
-                format: 'a4'
-            });
-
-            const pageWidth = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
-            const margin = 10; // margin dalam mm
-            
-            // Hitung dimensi gambar yang akan muat di halaman (dalam mm)
-            const imgWidth = pageWidth - (margin * 2);
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            
-            // Tinggi gambar yang muat dalam satu halaman PDF (mm)
-            const pageImgHeight = pageHeight - (margin * 2);
-            
-            // Hitung berapa banyak halaman yang dibutuhkan
-            const totalPages = Math.ceil(imgHeight / pageImgHeight);
-            
-            // Iterasi untuk memotong kanvas per halaman
-            for (let currentPage = 0; currentPage < totalPages; currentPage++) {
-                // Tentukan area kanvas yang akan dipotong untuk halaman ini
-                const yOffset = currentPage * pageImgHeight;
-                const yEnd = Math.min(yOffset + pageImgHeight, imgHeight);
-                const sliceHeightPx = (yEnd - yOffset) * (canvas.width / imgWidth);
-                const yOffsetPx = yOffset * (canvas.width / imgWidth);
-                
-                // Buat kanvas sementara untuk potongan halaman
-                const pageCanvas = document.createElement('canvas');
-                pageCanvas.width = canvas.width;
-                pageCanvas.height = sliceHeightPx;
-                const ctx = pageCanvas.getContext('2d');
-                
-                // Gambar potongan dari kanvas utama
-                ctx.drawImage(
-                    canvas,
-                    0, yOffsetPx, canvas.width, sliceHeightPx,
-                    0, 0, pageCanvas.width, pageCanvas.height
-                );
-                
-                // Konversi potongan kanvas ke data URL
-                const imgData = pageCanvas.toDataURL('image/jpeg', 1.0);
-                
-                // Tambahkan halaman baru jika bukan halaman pertama
-                if (currentPage !== 0) {
-                    pdf.addPage();
-                }
-                
-                // Tambahkan gambar potongan ke halaman PDF
-                pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, yEnd - yOffset);
-            }
-            
-            pdf.save(safeFileName);
-            showMessage(`PDF ${selectedName} berhasil diunduh (${totalPages} halaman)`, "success", "formMessageDynamic");
-            
-        } catch (err) {
-            console.error("PDF Error:", err);
-            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
-            // Bersihkan container clone jika terjadi error
-            if (pdfContainer.parentNode) pdfContainer.parentNode.removeChild(pdfContainer);
-        } finally {
-            showLoader(false);
-        }
-    }
-
+    
     /**************************
     * Download sebagai Excel
     ***************************/
