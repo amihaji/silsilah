@@ -1904,11 +1904,135 @@
         }
     }
 
-    /************************************************************
-     * DOWNLOAD PDF - CAPTURE SELURUH DIAGRAM SEKALIGUS (TANPA SCROLL)
-     * Memastikan sisi kiri dan kanan tidak terpotong
-     ************************************************************/
+    /*****************************************************************
+     * DOWNLOAD PDF - OTOMATIS MENYESUAIKAN UKURAN DIAGRAM
+     * - Diagram besar/lebar -> capture utuh (nonaktifkan scroll)
+     * - Diagram kecil/sempit -> capture standar (pertahankan style)
+     ****************************************************************/
     async function downloadDiagramAsPDF() {
+        const container = document.getElementById('diagramContainer');
+        const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
+        const selectEl = document.getElementById('pilihNamaDiagram');
+        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
+        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
+
+        if (!container || !treeDiagram) {
+            showMessage("Silakan buat diagram silsilah terlebih dahulu", "warning", "formMessageDynamic");
+            return;
+        }
+
+        showLoader(true, "Membuat PDF...");
+
+        try {
+            // Cek apakah diagram melebihi lebar container (perlu scroll)
+            const isWideDiagram = container.scrollWidth > container.clientWidth;
+            console.log("Apakah diagram lebar?", isWideDiagram, "Lebar:", container.scrollWidth, "Client:", container.clientWidth);
+
+            let canvas;
+            
+            // ========== KASUS 1: DIAGRAM LEBAR (PERLU SCROLL) ==========
+            if (isWideDiagram) {
+                console.log("Menggunakan mode diagram lebar (nonaktifkan scroll sementara)");
+                
+                // Simpan gaya asli
+                const originalOverflow = container.style.overflow;
+                const originalWidth = container.style.width;
+                const originalMaxWidth = container.style.maxWidth;
+                const originalScrollLeft = container.scrollLeft;
+                
+                // Ubah style agar container tidak discroll
+                container.style.overflow = 'visible';
+                container.style.width = 'max-content';
+                container.style.maxWidth = 'none';
+                container.scrollLeft = 0;
+                
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Capture dengan onclone untuk memastikan style konsisten
+                canvas = await html2canvas(container, {
+                    scale: 2.5,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff',
+                    width: container.scrollWidth,
+                    height: container.scrollHeight,
+                    windowWidth: container.scrollWidth,
+                    windowHeight: container.scrollHeight,
+                    onclone: (clonedDoc, element) => {
+                        const clonedContainer = clonedDoc.getElementById('diagramContainer');
+                        if (clonedContainer) {
+                            clonedContainer.style.overflow = 'visible';
+                            clonedContainer.style.width = 'max-content';
+                            clonedContainer.style.maxWidth = 'none';
+                        }
+                    }
+                });
+                
+                // Kembalikan gaya asli
+                container.style.overflow = originalOverflow;
+                container.style.width = originalWidth;
+                container.style.maxWidth = originalMaxWidth;
+                container.scrollLeft = originalScrollLeft;
+                
+            } 
+            // ========== KASUS 2: DIAGRAM SEMPIT (TIDAK PERLU SCROLL) ==========
+            else {
+                console.log("Menggunakan mode diagram standar (tanpa manipulasi style)");
+                
+                // Capture standar tanpa mengubah style container
+                canvas = await html2canvas(container, {
+                    scale: 2.5,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                });
+            }
+            
+            // ========== KONVERSI KE PDF ==========
+            const { jsPDF } = window.jspdf;
+            const imgData = canvas.toDataURL('image/jpeg', 0.98);
+            
+            // Konversi pixel ke mm (1 inch = 25.4 mm, 96 pixel per inch)
+            const pxToMm = 25.4 / 96;
+            let pdfWidth = canvas.width * pxToMm;
+            let pdfHeight = canvas.height * pxToMm;
+            
+            // Batasi ukuran maksimal (jsPDF batas ~3810mm)
+            const maxMm = 3800;
+            if (pdfWidth > maxMm) {
+                const ratio = maxMm / pdfWidth;
+                pdfWidth = maxMm;
+                pdfHeight = pdfHeight * ratio;
+            }
+            if (pdfHeight > maxMm) {
+                const ratio = maxMm / pdfHeight;
+                pdfHeight = maxMm;
+                pdfWidth = pdfWidth * ratio;
+            }
+            
+            // Tentukan orientasi
+            const isLandscape = pdfWidth > pdfHeight;
+            
+            const pdf = new jsPDF({
+                orientation: isLandscape ? 'landscape' : 'portrait',
+                unit: 'mm',
+                format: [pdfWidth, pdfHeight]
+            });
+            
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(safeFileName);
+            
+            showMessage(`PDF ${selectedName} berhasil diunduh (${isLandscape ? 'Landscape' : 'Portrait'})`, "success", "formMessageDynamic");
+            
+        } catch (err) {
+            console.error("PDF Error:", err);
+            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
+        } finally {
+            showLoader(false);
+        }
+    }
+  
+    async function BACKUP_downloadDiagramAsPDF() {
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
         const selectEl = document.getElementById('pilihNamaDiagram');
@@ -2028,130 +2152,7 @@
             showLoader(false);
         }
     }
-    
-    async function BACKUP_downloadDiagramAsPDF() {
-        const container = document.getElementById('diagramContainer');
-        const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
-        const selectEl = document.getElementById('pilihNamaDiagram');
-        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
-        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
-
-        if (!container || !treeDiagram) {
-            showMessage("Silakan buat diagram silsilah terlebih dahulu", "warning", "formMessageDynamic");
-            return;
-        }
-
-        showLoader(true, "Membuat PDF (menggabungkan seluruh diagram)...");
-
-        try {
-            // Simpan posisi scroll asli
-            const originalScrollLeft = container.scrollLeft;
-            const originalScrollTop = container.scrollTop;
             
-            // Dapatkan lebar total konten yang discroll
-            const totalWidth = container.scrollWidth;
-            const totalHeight = container.scrollHeight;
-            const viewportWidth = container.clientWidth;
-            
-            console.log("Total lebar konten:", totalWidth);
-            console.log("Lebar viewport:", viewportWidth);
-            
-            // Hitung berapa banyak capture horizontal yang diperlukan
-            const chunks = Math.ceil(totalWidth / viewportWidth);
-            
-            // Scroll ke awal
-            container.scrollLeft = 0;
-            container.scrollTop = 0;
-            
-            // Tunggu sebentar agar scroll stabil
-            await new Promise(resolve => setTimeout(resolve, 200));
-            
-            // Array untuk menyimpan canvas per bagian
-            const canvasChunks = [];
-            
-            // Capture per bagian horizontal
-            for (let i = 0; i < chunks; i++) {
-                // Scroll ke posisi yang tepat
-                container.scrollLeft = i * viewportWidth;
-                
-                // Tunggu scroll selesai dan rendering
-                await new Promise(resolve => setTimeout(resolve, 300));
-                
-                // Capture bagian ini
-                const canvas = await html2canvas(container, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: '#ffffff',
-                    windowWidth: container.scrollWidth,
-                    windowHeight: container.scrollHeight
-                });
-                
-                canvasChunks.push(canvas);
-                console.log(`Capture bagian ${i+1}/${chunks} selesai`);
-            }
-            
-            // Kembalikan posisi scroll asli
-            container.scrollLeft = originalScrollLeft;
-            container.scrollTop = originalScrollTop;
-            
-            // Gabungkan semua canvas menjadi satu gambar utuh
-            const finalCanvas = document.createElement('canvas');
-            finalCanvas.width = totalWidth * 2; // scale 2
-            finalCanvas.height = totalHeight * 2;
-            const ctx = finalCanvas.getContext('2d');
-            
-            // Gambar setiap bagian pada posisi yang benar
-            for (let i = 0; i < canvasChunks.length; i++) {
-                const chunk = canvasChunks[i];
-                const xOffset = i * viewportWidth * 2; // dikali scale 2
-                ctx.drawImage(chunk, xOffset, 0);
-            }
-            
-            // Konversi ke PDF
-            const { jsPDF } = window.jspdf;
-            const imgData = finalCanvas.toDataURL('image/jpeg', 0.95);
-            
-            // Tentukan orientasi berdasarkan lebar vs tinggi
-            const isLandscape = finalCanvas.width > finalCanvas.height;
-            
-            // Konversi pixel ke mm (1 inch = 25.4 mm, 96 pixel per inch)
-            const pxToMm = 25.4 / 96;
-            let pdfWidth = finalCanvas.width * pxToMm;
-            let pdfHeight = finalCanvas.height * pxToMm;
-            
-            // Batasi ukuran maksimal (jsPDF batas sekitar 14400px = 3810mm)
-            const maxMm = 3800;
-            if (pdfWidth > maxMm) {
-                const ratio = maxMm / pdfWidth;
-                pdfWidth = maxMm;
-                pdfHeight = pdfHeight * ratio;
-            }
-            if (pdfHeight > maxMm) {
-                const ratio = maxMm / pdfHeight;
-                pdfHeight = maxMm;
-                pdfWidth = pdfWidth * ratio;
-            }
-            
-            const pdf = new jsPDF({
-                orientation: isLandscape ? 'landscape' : 'portrait',
-                unit: 'mm',
-                format: [pdfWidth, pdfHeight]
-            });
-            
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save(safeFileName);
-            
-            showMessage(`PDF ${selectedName} berhasil diunduh (${chunks} bagian digabung)`, "success", "formMessageDynamic");
-            
-        } catch (err) {
-            console.error("PDF Error:", err);
-            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
-        } finally {
-            showLoader(false);
-        }
-    }
-     
     /************************************************
     * Membangun struktur tree berdasarkan Nama Ayah
     * (Rekursif hingga keturunan level tak terbatas)
