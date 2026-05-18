@@ -1970,7 +1970,8 @@
                 await new Promise(resolve => setTimeout(resolve, 200));
                 
                 // Skala lebih rendah untuk mobile (hemat memory)
-                const scaleValue = isMobile ? 1.5 : 2.5;
+                //const scaleValue = isMobile ? 1.5 : 2.5;
+                const scaleValue = isMobile ? 1.2 : 2.5;
                 
                 // Capture dengan onclone untuk memastikan style konsisten
                 canvas = await html2canvas(container, {
