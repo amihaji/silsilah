@@ -1925,8 +1925,9 @@
      * - Diagram besar/lebar -> capture utuh (nonaktifkan scroll)
      * - Diagram kecil/sempit -> capture standar (pertahankan style)
      * - Khusus mobile: skala lebih rendah agar tidak overload
-     ****************************************************************/
-     async function downloadDiagramAsPDF() {
+     * - Solusi untuk sisi kiri terpotong & garis bergeser/putus
+     ************************************************************/
+    async function downloadDiagramAsPDF() {
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
         const selectEl = document.getElementById('pilihNamaDiagram');
@@ -1938,106 +1939,199 @@
             return;
         }
 
-        showLoader(true, "Membuat PDF...");
+        showLoader(true, "Memproses diagram...");
 
         try {
-            // Deteksi device mobile
+            // Deteksi mobile
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const scaleValue = isMobile ? 1.5 : 2.5;
             
-            // Cek apakah diagram melebihi lebar container (perlu scroll)
-            const isWideDiagram = container.scrollWidth > container.clientWidth;
-            console.log("Device mobile?", isMobile, "Diagram lebar?", isWideDiagram);
+            // Simpan gaya asli
+            const originalOverflow = container.style.overflow;
+            const originalWidth = container.style.width;
+            const originalMaxWidth = container.style.maxWidth;
+            const originalPosition = container.style.position;
+            const originalScrollLeft = container.scrollLeft;
+            const originalScrollTop = container.scrollTop;
             
-            let canvas;
+            // Ubah style agar container tidak discroll
+            container.style.overflow = 'visible';
+            container.style.width = 'max-content';
+            container.style.maxWidth = 'none';
+            container.style.position = 'relative';
+            container.scrollLeft = 0;
+            container.scrollTop = 0;
             
-            // ========== KASUS 1: DIAGRAM LEBAR (PERLU SCROLL) ==========
-            if (isWideDiagram) {
-                console.log("Menggunakan mode diagram lebar (nonaktifkan scroll sementara)");
+            await new Promise(resolve => setTimeout(resolve, 200));
+            
+            // Ambil semua posisi node yang memiliki garis
+            const nodeElements = container.querySelectorAll('.family-node');
+            const nodePositions = [];
+            
+            nodeElements.forEach(node => {
+                const rect = node.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                nodePositions.push({
+                    element: node,
+                    left: rect.left - containerRect.left + container.scrollLeft,
+                    top: rect.top - containerRect.top + container.scrollTop,
+                    width: rect.width,
+                    height: rect.height
+                });
+            });
+            
+            // Capture diagram utama (tanpa garis CSS)
+            // Kita akan sembunyikan garis CSS sementara
+            const styleLines = document.createElement('style');
+            styleLines.id = 'temp-line-style';
+            styleLines.textContent = `
+                .children-connector::before, .family-node::before, .family-node::after {
+                    display: none !important;
+                }
+            `;
+            document.head.appendChild(styleLines);
+            
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Capture diagram tanpa garis CSS
+            const mainCanvas = await html2canvas(container, {
+                scale: scaleValue,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff',
+                width: container.scrollWidth,
+                height: container.scrollHeight,
+                windowWidth: container.scrollWidth,
+                windowHeight: container.scrollHeight
+            });
+            
+            // Hapus style sementara
+            const tempStyle = document.getElementById('temp-line-style');
+            if (tempStyle) tempStyle.remove();
+            
+            // Kembalikan gaya asli container
+            container.style.overflow = originalOverflow;
+            container.style.width = originalWidth;
+            container.style.maxWidth = originalMaxWidth;
+            container.style.position = originalPosition;
+            container.scrollLeft = originalScrollLeft;
+            container.scrollTop = originalScrollTop;
+            
+            // Buat kanvas baru untuk menggambar ulang garis
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = mainCanvas.width;
+            finalCanvas.height = mainCanvas.height;
+            const ctx = finalCanvas.getContext('2d');
+            
+            // Gambar diagram utama terlebih dahulu
+            ctx.drawImage(mainCanvas, 0, 0);
+            
+            // Sekarang gambar ulang garis secara manual dengan posisi yang akurat
+            const scale = scaleValue;
+            
+            // Hitung ulang posisi node dari data asli (bukan dari DOM setelah diubah)
+            // Kita dapatkan dari container asli yang sudah dirender
+            const freshContainer = document.getElementById('diagramContainer');
+            const freshNodeElements = freshContainer.querySelectorAll('.family-node');
+            
+            freshNodeElements.forEach(node => {
+                const rect = node.getBoundingClientRect();
+                const containerRect = freshContainer.getBoundingClientRect();
+                const left = (rect.left - containerRect.left + freshContainer.scrollLeft) * scale;
+                const top = (rect.top - containerRect.top + freshContainer.scrollTop) * scale;
+                const width = rect.width * scale;
+                const height = rect.height * scale;
                 
-                // Simpan gaya asli
-                const originalOverflow = container.style.overflow;
-                const originalWidth = container.style.width;
-                const originalMaxWidth = container.style.maxWidth;
-                const originalScrollLeft = container.scrollLeft;
+                // Cari node untuk mendapatkan status pasangan
+                const nodeId = node.getAttribute('data-id') || '';
                 
-                // Ubah style agar container tidak discroll
-                container.style.overflow = 'visible';
-                container.style.width = 'max-content';
-                container.style.maxWidth = 'none';
-                container.scrollLeft = 0;
+                // Gambar garis vertikal dari node ke anak-anak
+                const childrenWrapper = node.querySelector('.children-wrapper');
+                if (childrenWrapper) {
+                    const childNodes = childrenWrapper.querySelectorAll('.family-node');
+                    const parentCenterX = left + width / 2;
+                    const parentBottomY = top + height;
+                    
+                    childNodes.forEach(child => {
+                        const childRect = child.getBoundingClientRect();
+                        const childLeft = (childRect.left - containerRect.left + freshContainer.scrollLeft) * scale;
+                        const childTop = (childRect.top - containerRect.top + freshContainer.scrollTop) * scale;
+                        const childWidth = childRect.width * scale;
+                        const childCenterX = childLeft + childWidth / 2;
+                        
+                        // Gambar garis vertikal
+                        ctx.beginPath();
+                        ctx.moveTo(parentCenterX, parentBottomY);
+                        ctx.lineTo(parentCenterX, childTop);
+                        ctx.strokeStyle = '#555';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                        
+                        // Gambar garis horizontal jika ada banyak anak
+                        if (childNodes.length > 1) {
+                            const firstChildX = (childNodes[0].getBoundingClientRect().left - containerRect.left + freshContainer.scrollLeft) * scale + (childNodes[0].getBoundingClientRect().width * scale / 2);
+                            const lastChildX = (childNodes[childNodes.length-1].getBoundingClientRect().left - containerRect.left + freshContainer.scrollLeft) * scale + (childNodes[childNodes.length-1].getBoundingClientRect().width * scale / 2);
+                            
+                            ctx.beginPath();
+                            ctx.moveTo(firstChildX, childTop - 10);
+                            ctx.lineTo(lastChildX, childTop - 10);
+                            ctx.stroke();
+                        }
+                    });
+                }
                 
-                // Tunggu sebentar agar style diterapkan
-                await new Promise(resolve => setTimeout(resolve, 200));
-                
-                // Skala lebih rendah untuk mobile (hemat memory)
-                //const scaleValue = isMobile ? 1.5 : 2.5;
-                const scaleValue = isMobile ? 1.2 : 2.5;
-                
-                // Capture dengan onclone untuk memastikan style konsisten
-                canvas = await html2canvas(container, {
-                    scale: scaleValue,
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: '#ffffff',
-                    width: container.scrollWidth,
-                    height: container.scrollHeight,
-                    windowWidth: container.scrollWidth,
-                    windowHeight: container.scrollHeight,
-                    onclone: (clonedDoc, element) => {
-                        const clonedContainer = clonedDoc.getElementById('diagramContainer');
-                        if (clonedContainer) {
-                            clonedContainer.style.overflow = 'visible';
-                            clonedContainer.style.width = 'max-content';
-                            clonedContainer.style.maxWidth = 'none';
+                // Gambar garis antara suami dan istri
+                const coupleGroup = node.querySelector('.couple-group');
+                if (coupleGroup) {
+                    const nodes = coupleGroup.querySelectorAll('.diagram-node');
+                    if (nodes.length === 2) {
+                        const firstRect = nodes[0].getBoundingClientRect();
+                        const secondRect = nodes[1].getBoundingClientRect();
+                        const firstX = (firstRect.left - containerRect.left + freshContainer.scrollLeft + firstRect.width) * scale;
+                        const secondX = (secondRect.left - containerRect.left + freshContainer.scrollLeft) * scale;
+                        const centerY = (firstRect.top + firstRect.height/2 - containerRect.top + freshContainer.scrollTop) * scale;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(firstX, centerY);
+                        ctx.lineTo(secondX, centerY);
+                        ctx.strokeStyle = '#888';
+                        ctx.stroke();
+                        
+                        // Cek status kawin/cerai
+                        const coupleConnector = coupleGroup.querySelector('.couple-connector');
+                        if (coupleConnector && coupleConnector.classList.contains('connector-cerai')) {
+                            // Gambar X untuk cerai
+                            ctx.beginPath();
+                            ctx.moveTo(firstX + 5, centerY - 5);
+                            ctx.lineTo(secondX - 5, centerY + 5);
+                            ctx.moveTo(secondX - 5, centerY - 5);
+                            ctx.lineTo(firstX + 5, centerY + 5);
+                            ctx.strokeStyle = '#e20e0e';
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+                        } else if (coupleConnector && coupleConnector.classList.contains('connector-kawin')) {
+                            // Gambar lingkaran kecil untuk kawin
+                            ctx.beginPath();
+                            ctx.arc((firstX + secondX) / 2, centerY, 4, 0, 2 * Math.PI);
+                            ctx.fillStyle = '#0d6efd';
+                            ctx.fill();
                         }
                     }
-                });
-                
-                // Kembalikan gaya asli
-                container.style.overflow = originalOverflow;
-                container.style.width = originalWidth;
-                container.style.maxWidth = originalMaxWidth;
-                container.scrollLeft = originalScrollLeft;
-                
-            } 
-            // ========== KASUS 2: DIAGRAM SEMPIT (TIDAK PERLU SCROLL) ==========
-            else {
-                console.log("Menggunakan mode diagram standar (tanpa manipulasi style)");
-                
-                // Capture standar tanpa mengubah style container
-                canvas = await html2canvas(container, {
-                    scale: 2.5,
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: '#ffffff'
-                });
-            }
+                }
+            });
             
-            // ========== KONVERSI KE PDF ==========
+            // Konversi ke PDF
             const { jsPDF } = window.jspdf;
-            const imgData = canvas.toDataURL('image/jpeg', 0.95);
-            
-            // Konversi pixel ke mm
+            const imgData = finalCanvas.toDataURL('image/jpeg', 0.95);
             const pxToMm = 25.4 / 96;
-            let pdfWidth = canvas.width * pxToMm;
-            let pdfHeight = canvas.height * pxToMm;
+            let pdfWidth = finalCanvas.width * pxToMm;
+            let pdfHeight = finalCanvas.height * pxToMm;
             
-            // Batasi ukuran maksimal (jsPDF batas ~3810mm)
             const maxMm = 3800;
-            if (pdfWidth > maxMm) {
-                const ratio = maxMm / pdfWidth;
-                pdfWidth = maxMm;
-                pdfHeight = pdfHeight * ratio;
-            }
-            if (pdfHeight > maxMm) {
-                const ratio = maxMm / pdfHeight;
-                pdfHeight = maxMm;
-                pdfWidth = pdfWidth * ratio;
-            }
+            if (pdfWidth > maxMm) { const ratio = maxMm / pdfWidth; pdfWidth = maxMm; pdfHeight = pdfHeight * ratio; }
+            if (pdfHeight > maxMm) { const ratio = maxMm / pdfHeight; pdfHeight = maxMm; pdfWidth = pdfWidth * ratio; }
             
-            // Tentukan orientasi
             const isLandscape = pdfWidth > pdfHeight;
-            
             const pdf = new jsPDF({
                 orientation: isLandscape ? 'landscape' : 'portrait',
                 unit: 'mm',
@@ -2047,7 +2141,7 @@
             pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
             pdf.save(safeFileName);
             
-            showMessage(`PDF ${selectedName} berhasil diunduh (${isLandscape ? 'Landscape' : 'Portrait'})`, "success", "formMessageDynamic");
+            showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
             
         } catch (err) {
             console.error("PDF Error:", err);
@@ -2056,8 +2150,8 @@
             showLoader(false);
         }
     }
-
-    async function BACKUP_downloadDiagramAsPDF() {
+     
+     async function BACKUP_downloadDiagramAsPDF() {
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
         const selectEl = document.getElementById('pilihNamaDiagram');
