@@ -1926,7 +1926,11 @@
      * - Diagram kecil/sempit -> capture standar (pertahankan style)
      * Solusi: cloning + foreignObjectRendering + batas ukuran kanvas
      *****************************************************************/
-     async function downloadDiagramAsPDF() {
+     /************************************************************
+     * DOWNLOAD PDF - VERSI STABIL (KEMBALI KE YANG BERHASIL)
+     * Hanya tambahan perbaikan untuk sisi kiri terpotong
+     ************************************************************/
+    async function downloadDiagramAsPDF() {
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
         const selectEl = document.getElementById('pilihNamaDiagram');
@@ -1943,14 +1947,13 @@
         try {
             // Deteksi mobile
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const scaleValue = isMobile ? 1.8 : 2.5;   // skala lebih rendah untuk mobile
-            const waitTime = isMobile ? 800 : 200;     // waktu tunggu lebih lama agar stabil
-
+            const scaleValue = isMobile ? 1.8 : 2.5;
+            
             // Simpan posisi scroll asli
             const originalScrollLeft = container.scrollLeft;
             const originalScrollTop = container.scrollTop;
-
-            // ---- CLONE KONTAINER (untuk menghindari scroll & potongan kiri) ----
+            
+            // PERBAIKAN UNTUK SISI KIRI: Buat clone container
             const cloneContainer = container.cloneNode(true);
             cloneContainer.style.position = 'fixed';
             cloneContainer.style.left = '-99999px';
@@ -1962,7 +1965,7 @@
             cloneContainer.style.backgroundColor = '#ffffff';
             cloneContainer.style.padding = '20px';
             document.body.appendChild(cloneContainer);
-
+            
             // Pastikan semua child memiliki style yang benar
             const cloneTree = cloneContainer.querySelector('.tree-diagram');
             if (cloneTree) {
@@ -1977,11 +1980,11 @@
                 cloneRoot.style.flexWrap = 'nowrap';
                 cloneRoot.style.minWidth = 'max-content';
             }
-
-            // Tunggu hingga layout stabil
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-
-            // ---- CAPTURE DENGAN html2canvas (tanpa foreignObject) ----
+            
+            // Tunggu layout stabil
+            await new Promise(resolve => setTimeout(resolve, isMobile ? 500 : 200));
+            
+            // Capture dengan html2canvas
             const canvas = await html2canvas(cloneContainer, {
                 scale: scaleValue,
                 useCORS: true,
@@ -1992,15 +1995,15 @@
                 windowWidth: cloneContainer.scrollWidth,
                 windowHeight: cloneContainer.scrollHeight
             });
-
+            
             // Hapus clone
             document.body.removeChild(cloneContainer);
-
-            // Kembalikan posisi scroll asli (opsional)
+            
+            // Kembalikan posisi scroll asli
             container.scrollLeft = originalScrollLeft;
             container.scrollTop = originalScrollTop;
-
-            // ---- KONVERSI KE PDF ----
+            
+            // Konversi ke PDF
             const { jsPDF } = window.jspdf;
             const imgData = canvas.toDataURL('image/jpeg', 0.95);
             
@@ -2035,14 +2038,13 @@
         } catch (err) {
             console.error("PDF Error:", err);
             showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
-            // Bersihkan clone jika masih ada (error handling)
+            // Bersihkan clone jika masih ada
             const leftover = document.body.querySelector('#diagramContainer[style*="left: -99999px"]');
             if (leftover) leftover.remove();
         } finally {
             showLoader(false);
         }
     }
-    
     async function BACKUP_downloadDiagramAsPDF() {
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
