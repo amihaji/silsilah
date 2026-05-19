@@ -1937,49 +1937,55 @@
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
         const selectEl = document.getElementById('pilihNamaDiagram');
-        const selectedName = selectEl && selectEl.value
-            ? selectEl.value.trim()
-            : 'pohon_silsilah';
-
-        const safeFileName =
-            `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
+        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
+        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
 
         if (!container || !treeDiagram) {
-            showMessage( "Silakan buat diagram silsilah terlebih dahulu", "warning", "formMessageDynamic" );
+            showMessage("Silakan buat diagram silsilah terlebih dahulu", "warning", "formMessageDynamic");
             return;
         }
         showLoader(true, "Membuat PDF...");
+
         try {
             // Deteksi mobile
-            const isMobile =
-                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
-                .test(navigator.userAgent);
-            const scaleValue = isMobile ? 1.8 : 2.5;
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+                            .test(navigator.userAgent);
+            const scaleValue = isMobile ? 1.8 : 2.5;  // Resolusi lebih rendah untuk mobile
             const waitTime   = isMobile ? 800 : 250;
+
             // Simpan posisi scroll asli
             const originalScrollLeft = container.scrollLeft;
             const originalScrollTop  = container.scrollTop;
 
-            /* CLONE CONTAINER */
+            /************************************************
+             * CLONE KONTAINER untuk menangkap diagram penuh
+             ************************************************/
             const cloneContainer = container.cloneNode(true);
+            // **Kunci:** posisikan di (0,0) agar seluruh konten terlihat【15†L233-L240】
             cloneContainer.style.position = 'absolute';
             cloneContainer.style.left = '0';
-            cloneContainer.style.top = '0';
+            cloneContainer.style.top  = '0';
+            cloneContainer.style.zIndex = '-1';
+            // Set lebar sesuai konten
             cloneContainer.style.width = 'fit-content';
             cloneContainer.style.minWidth = 'fit-content';
             cloneContainer.style.maxWidth = 'none';
             cloneContainer.style.overflow = 'visible';
             cloneContainer.style.backgroundColor = '#ffffff';
             cloneContainer.style.padding = '40px';
-            cloneContainer.style.zIndex = '-1';
-            cloneContainer.style.transform = 'translateX(0)';
             document.body.appendChild(cloneContainer);
 
-            /* FIX TREE DIAGRAM KHUSUS UNTUK PDF */
+            // Pastikan viewport di kiri atas (untuk menghindari offset)【15†L233-L240】
+            window.scrollTo(0, 0);
+
+            /************************************************
+             * SESUAIKAN STYLE DIAGRAM PADA CLONE
+             ************************************************/
             const cloneTree = cloneContainer.querySelector('.tree-diagram');
             if (cloneTree) {
                 cloneTree.style.overflow = 'visible';
                 cloneTree.style.maxHeight = 'none';
+                // Gunakan block (bukan inline-block) agar lebar fit-content dihitung penuh
                 cloneTree.style.display = 'block';
                 cloneTree.style.width = 'fit-content';
                 cloneTree.style.minWidth = 'fit-content';
@@ -1987,23 +1993,25 @@
                 cloneTree.style.paddingLeft = '40px';
                 cloneTree.style.paddingRight = '40px';
             }
-
-            /* FIX TREE ROOT KHUSUS UNTUK PDF */
             const cloneRoot = cloneContainer.querySelector('.tree-root');
             if (cloneRoot) {
+                // Gunakan flex (bukan inline-flex) agar justifyContent bekerja
                 cloneRoot.style.display = 'flex';
                 cloneRoot.style.flexWrap = 'nowrap';
                 cloneRoot.style.width = 'fit-content';
                 cloneRoot.style.minWidth = 'fit-content';
                 cloneRoot.style.justifyContent = 'flex-start';
+                cloneRoot.style.gap = '40px';
                 cloneRoot.style.paddingLeft = '20px';
                 cloneRoot.style.paddingRight = '20px';
             }
 
-            /* TUNGGU LAYOUT STABIL */
+            // Tunggu layout stabil
             await new Promise(resolve => setTimeout(resolve, waitTime));
 
-            /* HTML2CANVAS */
+            /************************************************
+             * RENDER DENGAN html2canvas
+             ************************************************/
             const canvas = await html2canvas(cloneContainer, {
                 scale: scaleValue,
                 useCORS: true,
@@ -2012,56 +2020,56 @@
                 width: cloneContainer.scrollWidth,
                 height: cloneContainer.scrollHeight,
                 windowWidth: cloneContainer.scrollWidth,
-                windowHeight: cloneContainer.scrollHeight
+                windowHeight: cloneContainer.scrollHeight,
+                scrollX: 0,
+                scrollY: 0
             });
 
-            /* HAPUS CLONE */
+            /************************************************
+             * HAPUS CLONE dan kembalikan scroll
+             ************************************************/
             document.body.removeChild(cloneContainer);
-
-            // Kembalikan posisi scroll
             container.scrollLeft = originalScrollLeft;
             container.scrollTop  = originalScrollTop;
 
-            /* KONVERSI KE PDF */
+            /************************************************
+             * KONVERSI ke PDF
+             ************************************************/
             const { jsPDF } = window.jspdf;
             const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            // Konversi piksel ke mm
             const pxToMm = 25.4 / 96;
             let pdfWidth  = canvas.width  * pxToMm;
             let pdfHeight = canvas.height * pxToMm;
             const maxMm = 3800;
+            // Skala turun jika terlalu besar
             if (pdfWidth > maxMm) {
                 const ratio = maxMm / pdfWidth;
-                pdfWidth = maxMm;
-                pdfHeight = pdfHeight * ratio;
+                pdfWidth  = maxMm;
+                pdfHeight *= ratio;
             }
-
             if (pdfHeight > maxMm) {
                 const ratio = maxMm / pdfHeight;
                 pdfHeight = maxMm;
-                pdfWidth = pdfWidth * ratio;
+                pdfWidth  *= ratio;
             }
-
             const isLandscape = pdfWidth > pdfHeight;
             const pdf = new jsPDF({
                 orientation: isLandscape ? 'landscape' : 'portrait',
                 unit: 'mm',
-                format: [pdfWidth, pdfHeight]
+                format: [pdfWidth, pdfHeight]  // format custom sesuaikan lebar x tinggi【21†L268-L270】
             });
-
-            pdf.addImage( imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight );
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
             pdf.save(safeFileName);
-            showMessage( `PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic" );
+
+            showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
 
         } catch (err) {
             console.error("PDF Error:", err);
-            showMessage( "Gagal membuat PDF: " + err.message, "error", "formMessageDynamic" );
-            // Bersihkan clone jika masih ada
-            const leftovers = document.querySelectorAll('#diagramContainer');
-            leftovers.forEach(el => {
-                if (el !== container && el.parentNode) {
-                    el.parentNode.removeChild(el);
-                }
-            });
+            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
+            // Bersihkan clone jika tersisa
+            const leftover = document.body.querySelector('#diagramContainer');
+            if (leftover && leftover !== container) leftover.remove();
         } finally {
             showLoader(false);
         }
