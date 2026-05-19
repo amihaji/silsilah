@@ -581,71 +581,7 @@
             max-width: 100%;
             font-size: 13px;
         }
-
-        /* =========================================
-        FIX KHUSUS DIAGRAM MOBILE
-        TANPA MENGGANGGU DESKTOP
-        FIX KHUSUS TREE MOBILE
-        ========================================= */
-
-        /* Container scroll mobile */
-        #diagramContainer {
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
-            -webkit-overflow-scrolling: touch;
-            text-align: left !important;
-            padding-left: 0 !important;
-        }
-
-        /* Root diagram */
-        .tree-diagram {
-            display: block !important;
-            width: max-content !important;
-            min-width: max-content !important;
-            text-align: left !important;
-            padding: 20px 20px 20px 10px !important;
-            margin: 0 !important;
-        }
-
-        /* Root tree */
-        .tree-root {
-            display: flex !important;
-            width: max-content !important;
-            min-width: max-content !important;
-            justify-content: flex-start !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            gap: 20px !important;
-        }
-
-        /* Fix connector pasangan */
-        .couple-connector {
-            margin: -62px -2px 0px -2px !important;
-        }
-
-        /* Fix wrapper anak */
-        .children-wrapper {
-            gap: 20px !important;
-        }
-
-        /* Fix garis horizontal */
-        .family-node::after {
-            left: -10px !important;
-            right: -10px !important;
-        }
-
-        /* Anak pertama */
-        .family-node:first-child::after {
-            left: 50% !important;
-            right: -10px !important;
-        }
-
-        /* Anak terakhir */
-        .family-node:last-child::after {
-            left: -10px !important;
-            right: 50% !important;
-        }
-   }
+ }
   </style>
 </head>
 <body>
@@ -1990,62 +1926,84 @@
      * - Diagram kecil/sempit -> capture standar (pertahankan style)
      * Solusi: cloning + foreignObjectRendering + batas ukuran kanvas
      *****************************************************************/
-     async function downloadDiagramAsPDF() {
+     /*****************************************************************
+     * DOWNLOAD PDF - FIX MOBILE & DESKTOP STABLE
+     * - Tidak memotong sisi kiri diagram
+     * - Connector tetap normal
+     * - Garis horizontal anak tetap tersambung
+     * - Aman untuk desktop
+     *****************************************************************/
+    async function downloadDiagramAsPDF() {
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
         const selectEl = document.getElementById('pilihNamaDiagram');
-        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
-        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
+        const selectedName = selectEl && selectEl.value
+            ? selectEl.value.trim()
+            : 'pohon_silsilah';
+
+        const safeFileName =
+            `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
 
         if (!container || !treeDiagram) {
-            showMessage("Silakan buat diagram silsilah terlebih dahulu", "warning", "formMessageDynamic");
+            showMessage( "Silakan buat diagram silsilah terlebih dahulu", "warning", "formMessageDynamic" );
             return;
         }
-
         showLoader(true, "Membuat PDF...");
-
         try {
             // Deteksi mobile
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const scaleValue = isMobile ? 1.8 : 2.5;   // skala lebih rendah untuk mobile
-            const waitTime = isMobile ? 800 : 200;     // waktu tunggu lebih lama agar stabil
-
+            const isMobile =
+                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+                .test(navigator.userAgent);
+            const scaleValue = isMobile ? 1.8 : 2.5;
+            const waitTime   = isMobile ? 800 : 250;
             // Simpan posisi scroll asli
             const originalScrollLeft = container.scrollLeft;
-            const originalScrollTop = container.scrollTop;
+            const originalScrollTop  = container.scrollTop;
 
-            // ---- CLONE KONTAINER (untuk menghindari scroll & potongan kiri) ----
+            /* CLONE CONTAINER */
             const cloneContainer = container.cloneNode(true);
-            cloneContainer.style.position = 'fixed';
-            cloneContainer.style.left = '-99999px';
+            cloneContainer.style.position = 'absolute';
+            cloneContainer.style.left = '0';
             cloneContainer.style.top = '0';
-            cloneContainer.style.width = 'max-content';
-            cloneContainer.style.minWidth = '100%';
+            cloneContainer.style.width = 'fit-content';
+            cloneContainer.style.minWidth = 'fit-content';
             cloneContainer.style.maxWidth = 'none';
             cloneContainer.style.overflow = 'visible';
             cloneContainer.style.backgroundColor = '#ffffff';
-            cloneContainer.style.padding = '20px';
+            cloneContainer.style.padding = '40px';
+            cloneContainer.style.zIndex = '-1';
+            cloneContainer.style.transform = 'translateX(0)';
             document.body.appendChild(cloneContainer);
 
-            // Pastikan semua child memiliki style yang benar
+            /* FIX TREE DIAGRAM KHUSUS UNTUK PDF */
             const cloneTree = cloneContainer.querySelector('.tree-diagram');
             if (cloneTree) {
                 cloneTree.style.overflow = 'visible';
                 cloneTree.style.maxHeight = 'none';
-                cloneTree.style.display = 'inline-block';
-                cloneTree.style.minWidth = 'max-content';
+                cloneTree.style.display = 'block';
+                cloneTree.style.width = 'fit-content';
+                cloneTree.style.minWidth = 'fit-content';
+                cloneTree.style.textAlign = 'left';
+                cloneTree.style.paddingLeft = '40px';
+                cloneTree.style.paddingRight = '40px';
             }
+
+            /* FIX TREE ROOT KHUSUS UNTUK PDF */
             const cloneRoot = cloneContainer.querySelector('.tree-root');
             if (cloneRoot) {
-                cloneRoot.style.display = 'inline-flex';
+                cloneRoot.style.display = 'flex';
                 cloneRoot.style.flexWrap = 'nowrap';
-                cloneRoot.style.minWidth = 'max-content';
+                cloneRoot.style.width = 'fit-content';
+                cloneRoot.style.minWidth = 'fit-content';
+                cloneRoot.style.justifyContent = 'flex-start';
+                cloneRoot.style.paddingLeft = '20px';
+                cloneRoot.style.paddingRight = '20px';
             }
 
-            // Tunggu hingga layout stabil
+            /* TUNGGU LAYOUT STABIL */
             await new Promise(resolve => setTimeout(resolve, waitTime));
 
-            // ---- CAPTURE DENGAN html2canvas (tanpa foreignObject) ----
+            /* HTML2CANVAS */
             const canvas = await html2canvas(cloneContainer, {
                 scale: scaleValue,
                 useCORS: true,
@@ -2057,56 +2015,59 @@
                 windowHeight: cloneContainer.scrollHeight
             });
 
-            // Hapus clone
+            /* HAPUS CLONE */
             document.body.removeChild(cloneContainer);
 
-            // Kembalikan posisi scroll asli (opsional)
+            // Kembalikan posisi scroll
             container.scrollLeft = originalScrollLeft;
-            container.scrollTop = originalScrollTop;
+            container.scrollTop  = originalScrollTop;
 
-            // ---- KONVERSI KE PDF ----
+            /* KONVERSI KE PDF */
             const { jsPDF } = window.jspdf;
             const imgData = canvas.toDataURL('image/jpeg', 0.95);
-            
             const pxToMm = 25.4 / 96;
-            let pdfWidth = canvas.width * pxToMm;
+            let pdfWidth  = canvas.width  * pxToMm;
             let pdfHeight = canvas.height * pxToMm;
-            
             const maxMm = 3800;
             if (pdfWidth > maxMm) {
                 const ratio = maxMm / pdfWidth;
                 pdfWidth = maxMm;
                 pdfHeight = pdfHeight * ratio;
             }
+
             if (pdfHeight > maxMm) {
                 const ratio = maxMm / pdfHeight;
                 pdfHeight = maxMm;
                 pdfWidth = pdfWidth * ratio;
             }
-            
+
             const isLandscape = pdfWidth > pdfHeight;
             const pdf = new jsPDF({
                 orientation: isLandscape ? 'landscape' : 'portrait',
                 unit: 'mm',
                 format: [pdfWidth, pdfHeight]
             });
-            
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+
+            pdf.addImage( imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight );
             pdf.save(safeFileName);
-            
-            showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
-            
+            showMessage( `PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic" );
+
         } catch (err) {
             console.error("PDF Error:", err);
-            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
-            // Bersihkan clone jika masih ada (error handling)
-            const leftover = document.body.querySelector('#diagramContainer[style*="left: -99999px"]');
-            if (leftover) leftover.remove();
+            showMessage( "Gagal membuat PDF: " + err.message, "error", "formMessageDynamic" );
+            // Bersihkan clone jika masih ada
+            const leftovers = document.querySelectorAll('#diagramContainer');
+            leftovers.forEach(el => {
+                if (el !== container && el.parentNode) {
+                    el.parentNode.removeChild(el);
+                }
+            });
         } finally {
             showLoader(false);
         }
     }
-    
+
+
     async function BACKUP_downloadDiagramAsPDF() {
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
