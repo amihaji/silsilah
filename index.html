@@ -583,53 +583,44 @@
         }
 
         /* =========================================
-        FIX DIAGRAM MOBILE UNTUK TREE BESAR
+        FIX KHUSUS DIAGRAM MOBILE
+        TANPA MENGGANGGU DESKTOP
         ========================================= */
         /* Fix sisi kiri diagram terpotong */
         .tree-diagram {
             text-align: left !important;
-            min-width: max-content !important;
-            padding-left: 25px !important;
-            padding-right: 25px !important;
+            padding-left: 30px !important;
+            padding-right: 30px !important;
         }
-        /* Fix scroll horizontal mobile */
-        #diagramContainer {
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
-            -webkit-overflow-scrolling: touch;
-        }
-        /* Fix root tree agar tidak offset kiri */
+        /* Fix root diagram agar scroll mobile stabil */
         .tree-root {
             min-width: max-content !important;
             width: max-content !important;
             justify-content: flex-start !important;
-            padding-left: 20px !important;
-            padding-right: 20px !important;
         }
-        /* Fix connector pasangan */
+        /* Fix connector pasangan menikah */
         .couple-connector {
-            position: relative;
-            top: -24px !important;
-            margin: 0 -2px !important;
-            line-height: 1 !important;
+            margin: -60px -2px 0px -2px !important;
         }
         /* Fix garis horizontal anak */
-        .children-wrapper {
-            --tree-gap: 20px;
-            gap: var(--tree-gap) !important;
-        }
-        /* Garis horizontal penghubung anak */
         .family-node::after {
-            left: calc(-1 * var(--tree-gap) / 2) !important;
-            right: calc(-1 * var(--tree-gap) / 2) !important;
+            left: -10px !important;
+            right: -10px !important;
         }
-        /* Anak pertama */
+        /* Fix anak pertama */
         .family-node:first-child::after {
             left: 50% !important;
+            right: -10px !important;
         }
-        /* Anak terakhir */
+        /* Fix anak terakhir */
         .family-node:last-child::after {
+            left: -10px !important;
             right: 50% !important;
+        }
+        /* Smooth scroll horizontal mobile */
+        #diagramContainer {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
         }
    }
   </style>
