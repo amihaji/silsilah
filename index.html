@@ -582,8 +582,7 @@
             font-size: 13px;
         }
         
-        /* ========== CSS TAMBAHAN (TOMBOL VERTIKAL) ========== */
-        /* Container utama tabel - buat vertikal */
+        /***** Container utama tabel - buat vertikal *****/
         .d-flex.justify-content-between {
             flex-direction: column !important;
             gap: 15px !important;
@@ -627,7 +626,6 @@
             justify-content: center !important;
             gap: 8px !important;
         }
- 
         /* Tombol Tambah dan Diagram - outline biru */
         .d-flex.gap-2 .btn-outline-primary {
             background-color: #ffffff !important;
@@ -635,7 +633,7 @@
             border: 1px solid #0d6efd !important;
         }
          
-        /* ========== MODAL DIAGRAM - TOMBOL VERTIKAL DENGAN JARAK RAPAT ========== */
+        /***** Modal Diagram Tombol Vertikal *****/
         /* Container tombol di modal diagram */
         #dynamicDiagramModal .col-md-12.d-flex {
             flex-direction: column !important;
@@ -662,6 +660,11 @@
             gap: 8px !important;
             margin-bottom: 0 !important;  /* TAMBAHAN: hilangkan margin bottom */
         }
+        /* Hapus margin pada wrapper tombol */
+        #dynamicDiagramModal .modal-body .row.mb-3 {
+            margin-bottom: 0 !important;
+            padding: 20px !important;
+        }
         /* Tombol Tampilkan Silsilah Solid */
         #btnBuatDiagram {
             background-color: #0d6efd !important;
@@ -676,34 +679,23 @@
             border: 1px solid #0d6efd !important;
             margin-top: 0 !important;  /* TAMBAHAN: hilangkan margin top */
         }
-        /* Hapus margin pada wrapper tombol */
-        #dynamicDiagramModal .modal-body .row.mb-3 {
-            margin-bottom: 0 !important;
-        }
-
-        /* ========== PASTIKAN TOMBOL PDF SEMBUNYI DI MOBILE ========== */
-        /* Berbagai kemungkinan ID/class tombol PDF */
+        /* Tombol Download PDF sembunyi di device mobile */
         #btnDownloadPDF,
         .btn-download-pdf,
         .btn-pdf,
         button[onclick*="downloadDiagramAsPDF"],
-        /*button[id*="downloadPdf"],*/
         button[id*="DownloadPDF"] {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
             pointer-events: none !important;
         }
-        /* Tombol Download Excel */
-        #btnDownloadExcel {
-            background-color: #198754 !important;
-            color: white !important;
-            border: none !important;
-        }
         /* Modal body - padding yang nyaman */
+        /*
         #dynamicDiagramModal .modal-body {
             padding: 20px !important;
         }
+        */
     }
     
   </style>
