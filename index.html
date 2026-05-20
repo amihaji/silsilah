@@ -1945,16 +1945,12 @@
             showMessage("Silakan buat diagram silsilah terlebih dahulu", "warning", "formMessageDynamic");
             return;
         }
-
         showLoader(true, "Membuat PDF...");
-
         try {
             // Deteksi mobile
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            
             // Cek apakah diagram besar (membutuhkan scroll)
             const isWideDiagram = container.scrollWidth > container.clientWidth;
-            
             // Jika PC atau diagram kecil, gunakan metode lama yang sudah berhasil
             if (!isMobile || !isWideDiagram) {
                 await downloadPDFWithHtml2canvas(container, selectedName, safeFileName);
@@ -1964,10 +1960,8 @@
             
             // ========== KHUSUS MOBILE + DIAGRAM BESAR ==========
             console.log("Menggunakan dompdf.js untuk diagram besar di mobile");
-            
             // Clone container untuk menghindari gangguan tampilan
             const cloneContainer = container.cloneNode(true);
-            
             // Buat wrapper minimal dengan style yang diperlukan
             const pdfWrapper = document.createElement('div');
             pdfWrapper.style.width = 'max-content';
@@ -1985,7 +1979,6 @@
             if (typeof dompdf === 'undefined') {
                 throw new Error('Library dompdf.js tidak tersedia. Silakan coba lagi.');
             }
-            
             const pdfBlob = await dompdf(pdfWrapper, {
                 useCORS: true,
                 fontConfig: {
@@ -1995,7 +1988,6 @@
             
             // Hapus wrapper
             document.body.removeChild(pdfWrapper);
-            
             // Download file
             const url = URL.createObjectURL(pdfBlob);
             const a = document.createElement('a');
@@ -2007,11 +1999,9 @@
             URL.revokeObjectURL(url);
             
             showMessage(`PDF ${selectedName} berhasil diunduh (dompdf.js)`, "success", "formMessageDynamic");
-            
         } catch (err) {
             console.error("PDF Error:", err);
             showMessage("Gagal membuat PDF: " + err.message + ". Fallback ke metode standar.", "warning", "formMessageDynamic");
-            
             // Fallback: coba dengan metode html2canvas yang sudah ada
             try {
                 await downloadPDFWithHtml2canvas(container, selectedName, safeFileName);
@@ -2107,6 +2097,8 @@
         
         showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
     }    
+
+
      async function BACKUP_downloadDiagramAsPDF() {
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
