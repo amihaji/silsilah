@@ -627,16 +627,7 @@
             justify-content: center !important;
             gap: 8px !important;
         }
-        
-        /* Tombol Tambah - solid biru */
-        /*
-        .d-flex.gap-2 .btn-outline-primary {
-            background-color: #0d6efd !important;
-            color: white !important;
-            border: none !important;
-        }
-        */
-
+ 
         /* Tombol Tambah dan Diagram - outline biru */
         .d-flex.gap-2 .btn-outline-primary {
             background-color: #ffffff !important;
@@ -671,18 +662,18 @@
             gap: 8px !important;
             margin-bottom: 0 !important;  /* TAMBAHAN: hilangkan margin bottom */
         }
-        /* Tombol Tampilkan Silsilah */
+        /* Tombol Tampilkan Silsilah Solid */
         #btnBuatDiagram {
             background-color: #0d6efd !important;
             color: white !important;
             border: none !important;
             margin-bottom: 0 !important;
         }
-        /* Tombol Download Excel */
+        /* Tombol Download Excel outline */
         #btnDownloadExcel {
-            background-color: #198754 !important;
-            color: white !important;
-            border: none !important;
+            background-color: #ffffff !important;
+            color: #0d6efd !important;
+            border: 1px solid #0d6efd !important;
             margin-top: 0 !important;  /* TAMBAHAN: hilangkan margin top */
         }
         /* Hapus margin pada wrapper tombol */
@@ -810,17 +801,17 @@
             
             <div class="card p-3 card-table" style="border-radius: 0; box-shadow: none; margin: 0; border: none;">
                 <div class="d-flex justify-content-between mb-3 align-items-center flex-wrap">
-                    <div class="d-flex align-items-center mb-2 mb-sm-0">
-                        <h5 class="m-0 fw-bold">📋 Data Anggota Keluarga</h5>
+                    <div class="d-flex align-items-center mb-3 mb-sm-0">
+                        <h5 class="m-0 fw-bold"><i class='fas fa-database'> Data Anggota Keluarga</i>/h5>
                     </div>
                     <div class="d-flex align-items-center gap-3 flex-wrap" style="width: 100%;">
-                        <div class="input-group input-group-sm" style="width: 100%;">
-                            <input type="text" id="cariNama" class="form-control" placeholder="🔍 Cari nama anggota keluarga...">
+                        <div class="input-group input-group-sm" style="width: 60%;">
+                            <input type="text" id="cariNama" class="form-control" placeholder="> Cari nama anggota keluarga...">
                             <button class="btn btn-primary" onclick="cariData()" style="border-radius: 0 10px 10px 0;">
                                 <i class='fas fa-search'></i>
                             </button>
                         </div>
-                        <div class="d-flex gap-2" style="width: 100%;">
+                        <div class="d-flex gap-2" style="width: 40%;">
                             <button class="btn btn-outline-primary btn-sm" onclick="openForm('add')">
                                 <i class='fas fa-plus'></i> Tambah Data
                             </button>
