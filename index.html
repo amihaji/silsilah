@@ -684,9 +684,18 @@
             border: none !important;
         }
         
-        /* Tombol Download PDF - SEMBUNYIKAN (tidak berfungsi optimal di mobile) */
-        #btnDownloadPDF {
+        /* ========== PASTIKAN TOMBOL PDF SEMBUNYI DI MOBILE ========== */
+        /* Berbagai kemungkinan ID/class tombol PDF */
+        #btnDownloadPDF,
+        .btn-download-pdf,
+        .btn-pdf,
+        button[onclick*="downloadDiagramAsPDF"],
+        button[id*="downloadPdf"],
+        button[id*="DownloadPDF"] {
             display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
         }
         
         /* Tombol Download Excel */
