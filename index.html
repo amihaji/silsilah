@@ -629,15 +629,18 @@
         }
         
         /* Tombol Tambah - solid biru */
+        /*
         .d-flex.gap-2 .btn-outline-primary {
             background-color: #0d6efd !important;
             color: white !important;
             border: none !important;
         }
-        /* Tombol Diagram - outline biru */
-        .d-flex.gap-2 .btn-outline-secondary {
+        */
+
+        /* Tombol Tambah dan Diagram - outline biru */
+        .d-flex.gap-2 .btn-outline-primary {
             background-color: transparent !important;
-            color: #0d6efd !important;
+            color: #ffffff !important;
             border: 1px solid #0d6efd !important;
         }
          
@@ -821,7 +824,7 @@
                             <button class="btn btn-outline-primary btn-sm" onclick="openForm('add')">
                                 <i class='fas fa-plus'></i> Tambah Data
                             </button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="openDiagram()">
+                            <button class="btn btn-outline-primary btn-sm" onclick="openDiagram()">
                                 <i class='fas fa-sitemap'></i> Diagram Silsilah
                             </button>
                         </div>
@@ -1908,7 +1911,7 @@
                                         <button class="btn btn-primary btn-sm" id="btnBuatDiagram">
                                             <i class="fas fa-sitemap"></i> Lihat Silsilah
                                         </button>
-                                        <button class="btn btn-outline-secondary btn-sm" id="btnDownloadExcel" style="display:none;">
+                                        <button class="btn btn-outline-primary btn-sm" id="btnDownloadExcel" style="display:none;">
                                             <i class="fas fa-file-excel"></i> Unduh Excel
                                         </button>
                                         <button class="btn btn-outline-primary btn-sm" id="btnDownloadPDF" style="display:none;">
