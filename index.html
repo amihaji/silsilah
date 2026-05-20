@@ -90,7 +90,7 @@
     .table thead th {
         position: sticky;
         top: 0;
-        background-color: #0068cf !important;
+        background-color: #00265f !important;
         color: white !important;
         z-index: 10;
         box-shadow: inset 0 1px 0 #dee2e6, inset 0 -1px 0 #dee2e6;
@@ -690,12 +690,6 @@
             opacity: 0 !important;
             pointer-events: none !important;
         }
-        /* Modal body - padding yang nyaman */
-        /*
-        #dynamicDiagramModal .modal-body {
-            padding: 20px !important;
-        }
-        */
     }
     
   </style>
@@ -2226,124 +2220,6 @@
         showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
     }    
 
-
-     async function BACKUP_downloadDiagramAsPDF() {
-        const container = document.getElementById('diagramContainer');
-        const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
-        const selectEl = document.getElementById('pilihNamaDiagram');
-        const selectedName = selectEl && selectEl.value ? selectEl.value.trim() : 'pohon_silsilah';
-        const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
-
-        if (!container || !treeDiagram) {
-            showMessage("Silakan buat diagram silsilah terlebih dahulu", "warning", "formMessageDynamic");
-            return;
-        }
-
-        showLoader(true, "Membuat PDF...");
-
-        try {
-            // Deteksi mobile
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const scaleValue = isMobile ? 1.8 : 2.5;   // skala lebih rendah untuk mobile
-            const waitTime = isMobile ? 800 : 200;     // waktu tunggu lebih lama agar stabil
-
-            // Simpan posisi scroll asli
-            const originalScrollLeft = container.scrollLeft;
-            const originalScrollTop = container.scrollTop;
-
-            // ---- CLONE KONTAINER (untuk menghindari scroll & potongan kiri) ----
-            const cloneContainer = container.cloneNode(true);
-            cloneContainer.style.position = 'fixed';
-            cloneContainer.style.left = '-99999px';
-            cloneContainer.style.top = '0';
-            cloneContainer.style.width = 'max-content';
-            cloneContainer.style.minWidth = '100%';
-            cloneContainer.style.maxWidth = 'none';
-            cloneContainer.style.overflow = 'visible';
-            cloneContainer.style.backgroundColor = '#ffffff';
-            cloneContainer.style.padding = '20px';
-            document.body.appendChild(cloneContainer);
-
-            // Pastikan semua child memiliki style yang benar
-            const cloneTree = cloneContainer.querySelector('.tree-diagram');
-            if (cloneTree) {
-                cloneTree.style.overflow = 'visible';
-                cloneTree.style.maxHeight = 'none';
-                cloneTree.style.display = 'inline-block';
-                cloneTree.style.minWidth = 'max-content';
-            }
-            const cloneRoot = cloneContainer.querySelector('.tree-root');
-            if (cloneRoot) {
-                cloneRoot.style.display = 'inline-flex';
-                cloneRoot.style.flexWrap = 'nowrap';
-                cloneRoot.style.minWidth = 'max-content';
-            }
-
-            // Tunggu hingga layout stabil
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-
-            // ---- CAPTURE DENGAN html2canvas (tanpa foreignObject) ----
-            const canvas = await html2canvas(cloneContainer, {
-                scale: scaleValue,
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff',
-                width: cloneContainer.scrollWidth,
-                height: cloneContainer.scrollHeight,
-                windowWidth: cloneContainer.scrollWidth,
-                windowHeight: cloneContainer.scrollHeight
-            });
-
-            // Hapus clone
-            document.body.removeChild(cloneContainer);
-
-            // Kembalikan posisi scroll asli (opsional)
-            container.scrollLeft = originalScrollLeft;
-            container.scrollTop = originalScrollTop;
-
-            // ---- KONVERSI KE PDF ----
-            const { jsPDF } = window.jspdf;
-            const imgData = canvas.toDataURL('image/jpeg', 0.95);
-            
-            const pxToMm = 25.4 / 96;
-            let pdfWidth = canvas.width * pxToMm;
-            let pdfHeight = canvas.height * pxToMm;
-            
-            const maxMm = 3800;
-            if (pdfWidth > maxMm) {
-                const ratio = maxMm / pdfWidth;
-                pdfWidth = maxMm;
-                pdfHeight = pdfHeight * ratio;
-            }
-            if (pdfHeight > maxMm) {
-                const ratio = maxMm / pdfHeight;
-                pdfHeight = maxMm;
-                pdfWidth = pdfWidth * ratio;
-            }
-            
-            const isLandscape = pdfWidth > pdfHeight;
-            const pdf = new jsPDF({
-                orientation: isLandscape ? 'landscape' : 'portrait',
-                unit: 'mm',
-                format: [pdfWidth, pdfHeight]
-            });
-            
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save(safeFileName);
-            
-            showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
-            
-        } catch (err) {
-            console.error("PDF Error:", err);
-            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
-            // Bersihkan clone jika masih ada (error handling)
-            const leftover = document.body.querySelector('#diagramContainer[style*="left: -99999px"]');
-            if (leftover) leftover.remove();
-        } finally {
-            showLoader(false);
-        }
-    }
-         
     /************************************************
     * Membangun struktur tree berdasarkan Nama Ayah
     * (Rekursif hingga keturunan level tak terbatas)
