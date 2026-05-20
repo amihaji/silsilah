@@ -588,39 +588,33 @@
             flex-direction: column !important;
             gap: 15px !important;
         }
-        
         /* Container pencarian + tombol */
         .d-flex.align-items-center.gap-3 {
             flex-direction: column !important;
             width: 100% !important;
             gap: 12px !important;
         }
-        
         /* Input group pencarian - full width */
         .input-group.input-group-sm {
             width: 100% !important;
         }
-        
         /* Input pencarian - tinggi nyaman */
         #cariNama {
             height: 44px !important;
             font-size: 14px !important;
             border-radius: 10px 0 0 10px !important;
         }
-        
         /* Tombol search */
         .input-group .btn-primary {
             height: 44px !important;
             border-radius: 0 10px 10px 0 !important;
         }
-        
         /* Wrapper tombol Tambah + Diagram */
         .d-flex.gap-2 {
             flex-direction: column !important;
             width: 100% !important;
             gap: 10px !important;
         }
-        
         /* Tombol Tambah dan Diagram */
         .d-flex.gap-2 .btn {
             width: 100% !important;
@@ -640,31 +634,28 @@
             color: white !important;
             border: none !important;
         }
-        
         /* Tombol Diagram - outline biru */
         .d-flex.gap-2 .btn-outline-secondary {
             background-color: transparent !important;
             color: #0d6efd !important;
             border: 1px solid #0d6efd !important;
         }
-        
-        /* ========== MODAL DIAGRAM - TOMBOL VERTIKAL ========== */
+         
+        /* ========== MODAL DIAGRAM - TOMBOL VERTIKAL DENGAN JARAK RAPAT ========== */
         /* Container tombol di modal diagram */
         #dynamicDiagramModal .col-md-12.d-flex {
             flex-direction: column !important;
-            gap: 10px !important;
+            gap: 8px !important;  /* DARI 10px JADI 8px */
         }
-        
         /* Dropdown - full width */
         #pilihNamaDiagram {
             width: 100% !important;
             height: 44px !important;
             font-size: 14px !important;
             border-radius: 10px !important;
-            margin-bottom: 5px !important;
+            margin-bottom: 4px !important;  /* DARI 5px JADI 4px */
         }
-        
-        /* Semua tombol di modal */
+       /* Semua tombol di modal */
         #dynamicDiagramModal .col-md-12.d-flex .btn {
             width: 100% !important;
             height: 44px !important;
@@ -675,36 +666,46 @@
             align-items: center !important;
             justify-content: center !important;
             gap: 8px !important;
+            margin-bottom: 0 !important;  /* TAMBAHAN: hilangkan margin bottom */
         }
-        
         /* Tombol Tampilkan Silsilah */
         #btnBuatDiagram {
             background-color: #0d6efd !important;
             color: white !important;
             border: none !important;
+            margin-bottom: 0 !important;
         }
-        
+        /* Tombol Download Excel */
+        #btnDownloadExcel {
+            background-color: #198754 !important;
+            color: white !important;
+            border: none !important;
+            margin-top: 0 !important;  /* TAMBAHAN: hilangkan margin top */
+        }
+        /* Hapus margin pada wrapper tombol */
+        #dynamicDiagramModal .modal-body .row.mb-3 {
+            margin-bottom: 0 !important;
+        }
+
         /* ========== PASTIKAN TOMBOL PDF SEMBUNYI DI MOBILE ========== */
         /* Berbagai kemungkinan ID/class tombol PDF */
         #btnDownloadPDF,
         .btn-download-pdf,
         .btn-pdf,
         button[onclick*="downloadDiagramAsPDF"],
-        button[id*="downloadPdf"],
+        /*button[id*="downloadPdf"],*/
         button[id*="DownloadPDF"] {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
             pointer-events: none !important;
         }
-        
         /* Tombol Download Excel */
         #btnDownloadExcel {
             background-color: #198754 !important;
             color: white !important;
             border: none !important;
         }
-        
         /* Modal body - padding yang nyaman */
         #dynamicDiagramModal .modal-body {
             padding: 20px !important;
