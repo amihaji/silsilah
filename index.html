@@ -542,17 +542,17 @@
             overflow-x: auto;
         }
         .table {
-            min-width: 600px; /* biarkan lebar sesuai data, bisa discroll horizontal */
+            min-width: 600px;
         }
         .table td, .table th { 
             padding: 8px 6px !important; 
             font-size: 12px !important;
-            white-space: nowrap; /* mencegah teks wrap */
+            white-space: nowrap;
         }
         .btn-round { width: 30px !important; height: 30px !important; }
         .btn-round i { font-size: 12px !important; }
         
-        /* Diagram mobile */
+        /* Diagram mobile - SEMBUNYIKAN PSEUDO-ELEMENTS BAWAAN */
         .diagram-title { font-size: 1.1rem !important; }
         .diagram-title-wrapper { margin-bottom: 20px !important; }
         .tree-diagram { background-color: #ffffff !important; }
@@ -568,6 +568,13 @@
         #diagramContainer { max-height: none; overflow-y: hidden; }
         #dynamicDiagramModal .modal-body { max-height: 60vh; overflow-y: auto; }
         
+        /* TAMBAHAN: Sembunyikan pseudo-elements bawaan (::before, ::after) */
+        .children-connector::before,
+        .family-node::before,
+        .family-node::after {
+            display: none !important;
+        }
+        
         .detail-profile-modal {
             max-width: calc(100vw - 24px) !important;
             margin: 0 auto;
@@ -581,7 +588,7 @@
             max-width: 100%;
             font-size: 13px;
         }
-   }
+    }
   </style>
 </head>
 <body>
@@ -872,10 +879,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompdf.js@latest/dist/dompdf.min.js"></script>
-  <!-- atau jika menggunakan CDN lain 
-  <script src="https://unpkg.com/dompdf.js@latest/dist/dompdf.min.js"></script>
-  -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -897,7 +900,7 @@
         // Daftarkan modal konfirmasi
         const elConfirm = document.getElementById('confirmModal');
         if (elConfirm) confirmModalInstance = new bootstrap.Modal(elConfirm);
-              
+            
         // Registrasi Event Submit Form
         const fLogin = document.getElementById('formLogin');
         if (fLogin) fLogin.onsubmit = prosesLogin;
@@ -905,13 +908,16 @@
         const fKeluarga = document.getElementById('formKeluarga');
         if (fKeluarga) fKeluarga.onsubmit = simpanData;
 
-        // Event untuk diagram
-        const btnBuatDiagram   = document.getElementById('btnBuatDiagram');
-        const btnDownloadPdf   = document.getElementById('btnDownloadPdf');
-        const btnDownloadExcel = document.getElementById('btnDownloadExcel');
-        if (btnBuatDiagram) btnBuatDiagram.onclick = generateDiagram;
-        if (btnDownloadPdf) btnDownloadPdf.onclick = downloadDiagramPDF;
-        if (btnDownloadExcel) btnDownloadExcel.onclick = downloadDiagramExcel;
+        // ========== EVENT UNTUK DIAGRAM (TIDAK DIPAKAI LAGI) ==========
+        // Tombol diagram sekarang di-handle di dalam fungsi openDiagram()
+        // Event listener untuk tombol buat diagram, download PDF, download Excel
+        // sudah tidak diperlukan lagi karena tombol-tombol tersebut dibuat dinamis.
+        // const btnBuatDiagram   = document.getElementById('btnBuatDiagram');
+        // const btnDownloadPdf   = document.getElementById('btnDownloadPdf');
+        // const btnDownloadExcel = document.getElementById('btnDownloadExcel');
+        // if (btnBuatDiagram) btnBuatDiagram.onclick = generateDiagram;
+        // if (btnDownloadPdf) btnDownloadPdf.onclick = downloadDiagramPDF;
+        // if (btnDownloadExcel) btnDownloadExcel.onclick = downloadDiagramExcel;
 
         // Pastikan event listener terpasang setelah halaman selesai dimuat
         const aboutBtn = document.getElementById('aboutBtn');
@@ -924,8 +930,6 @@
 
         initializeTooltips();
     });
-
-
     function initializeTooltips() {
       const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
       tooltipTriggerList.forEach(el => {
@@ -1934,6 +1938,9 @@
     * DOWNLOAD PDF - KHUSUS UNTUK MOBILE (DIAGRAM BESAR)
     * Menggunakan dompdf.js untuk hasil yang akurat
     ************************************************************/
+    /************************************************************
+     * DOWNLOAD PDF - VERSI FINAL (MOBILE + PC)
+     ************************************************************/
     async function downloadDiagramAsPDF() {
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
@@ -1945,74 +1952,299 @@
             showMessage("Silakan buat diagram silsilah terlebih dahulu", "warning", "formMessageDynamic");
             return;
         }
+
         showLoader(true, "Membuat PDF...");
+
         try {
-            // Deteksi mobile
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            // Cek apakah diagram besar (membutuhkan scroll)
             const isWideDiagram = container.scrollWidth > container.clientWidth;
-            // Jika PC atau diagram kecil, gunakan metode lama yang sudah berhasil
-            if (!isMobile || !isWideDiagram) {
-                await downloadPDFWithHtml2canvas(container, selectedName, safeFileName);
-                showLoader(false);
-                return;
-            }
             
-            // ========== KHUSUS MOBILE + DIAGRAM BESAR ==========
-            console.log("Menggunakan dompdf.js untuk diagram besar di mobile");
-            // Clone container untuk menghindari gangguan tampilan
-            const cloneContainer = container.cloneNode(true);
-            // Buat wrapper minimal dengan style yang diperlukan
-            const pdfWrapper = document.createElement('div');
-            pdfWrapper.style.width = 'max-content';
-            pdfWrapper.style.backgroundColor = '#ffffff';
-            pdfWrapper.style.padding = '20px';
-            pdfWrapper.appendChild(cloneContainer);
+            let canvas;
             
-            // Sembunyikan sementara
-            pdfWrapper.style.position = 'fixed';
-            pdfWrapper.style.left = '-99999px';
-            pdfWrapper.style.top = '0';
-            document.body.appendChild(pdfWrapper);
-            
-            // Gunakan dompdf.js (akan menghasilkan PDF yang lebih akurat) [citation:3]
-            if (typeof dompdf === 'undefined') {
-                throw new Error('Library dompdf.js tidak tersedia. Silakan coba lagi.');
-            }
-            const pdfBlob = await dompdf(pdfWrapper, {
-                useCORS: true,
-                fontConfig: {
-                    fontFamily: 'Arial, Helvetica, sans-serif'
+            if (isMobile && isWideDiagram) {
+                // ========== KHUSUS MOBILE + DIAGRAM BESAR ==========
+                console.log("Mode: Mobile + Diagram Besar");
+                
+                // Simpan konten asli
+                const originalContent = container.innerHTML;
+                const originalScrollLeft = container.scrollLeft;
+                
+                // Dapatkan root node
+                const rootNode = buildFamilyTreeByAyah(selectedName);
+                
+                if (rootNode) {
+                    // Render ulang diagram dengan garis manual
+                    container.innerHTML = '';
+                    renderMobileDiagram(container, rootNode);
+                    
+                    // Tunggu rendering selesai
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Capture diagram baru
+                    canvas = await html2canvas(container, {
+                        scale: 2.0,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#ffffff'
+                    });
+                    
+                    // Kembalikan konten asli
+                    container.innerHTML = originalContent;
+                    container.scrollLeft = originalScrollLeft;
+                } else {
+                    throw new Error("Gagal membangun tree");
                 }
+            } else {
+                // ========== PC ATAU DIAGRAM KECIL ==========
+                console.log("Mode: Standar (PC atau diagram kecil)");
+                
+                const scaleValue = 2.5;
+                const cloneContainer = container.cloneNode(true);
+                cloneContainer.style.position = 'fixed';
+                cloneContainer.style.left = '-99999px';
+                cloneContainer.style.top = '0';
+                cloneContainer.style.width = 'max-content';
+                cloneContainer.style.overflow = 'visible';
+                cloneContainer.style.backgroundColor = '#ffffff';
+                cloneContainer.style.padding = '20px';
+                document.body.appendChild(cloneContainer);
+                
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
+                canvas = await html2canvas(cloneContainer, {
+                    scale: scaleValue,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff',
+                    width: cloneContainer.scrollWidth,
+                    height: cloneContainer.scrollHeight
+                });
+                
+                document.body.removeChild(cloneContainer);
+            }
+            
+            // Konversi ke PDF
+            const { jsPDF } = window.jspdf;
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            
+            const pxToMm = 25.4 / 96;
+            let pdfWidth = canvas.width * pxToMm;
+            let pdfHeight = canvas.height * pxToMm;
+            
+            const maxMm = 3800;
+            if (pdfWidth > maxMm) {
+                const ratio = maxMm / pdfWidth;
+                pdfWidth = maxMm;
+                pdfHeight = pdfHeight * ratio;
+            }
+            if (pdfHeight > maxMm) {
+                const ratio = maxMm / pdfHeight;
+                pdfHeight = maxMm;
+                pdfWidth = pdfWidth * ratio;
+            }
+            
+            const isLandscape = pdfWidth > pdfHeight;
+            const pdf = new jsPDF({
+                orientation: isLandscape ? 'landscape' : 'portrait',
+                unit: 'mm',
+                format: [pdfWidth, pdfHeight]
             });
             
-            // Hapus wrapper
-            document.body.removeChild(pdfWrapper);
-            // Download file
-            const url = URL.createObjectURL(pdfBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = safeFileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(safeFileName);
             
-            showMessage(`PDF ${selectedName} berhasil diunduh (dompdf.js)`, "success", "formMessageDynamic");
+            showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
+            
         } catch (err) {
             console.error("PDF Error:", err);
-            showMessage("Gagal membuat PDF: " + err.message + ". Fallback ke metode standar.", "warning", "formMessageDynamic");
-            // Fallback: coba dengan metode html2canvas yang sudah ada
-            try {
-                await downloadPDFWithHtml2canvas(container, selectedName, safeFileName);
-            } catch (fallbackErr) {
-                showMessage("Gagal total: " + fallbackErr.message, "error", "formMessageDynamic");
-            }
+            showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
         } finally {
             showLoader(false);
         }
     }
 
+    function getInitials(nama) {
+        if (!nama || nama === '-' || nama === '') return '?';
+        const parts = nama.trim().split(' ');
+        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    }
+
+    /************************************************************
+     * RENDER DIAGRAM KHUSUS MOBILE (GARIS MANUAL, BUKAN PSEUDO)
+     ************************************************************/
+    function renderMobileDiagram(container, rootNode) {
+        container.innerHTML = '';
+        container.style.overflow = 'visible';
+        container.style.padding = '20px';
+        
+        // Header
+        const header = document.createElement('div');
+        header.style.textAlign = 'center';
+        header.style.marginBottom = '25px';
+        header.innerHTML = `<h4 style="color:#1A365D;font-weight:bold;border-bottom:3px solid #1A365D;display:inline-block;padding-bottom:5px;">Silsilah Keluarga ${rootNode.nama || ''}</h4>`;
+        container.appendChild(header);
+        
+        // Tree wrapper
+        const treeWrapper = document.createElement('div');
+        treeWrapper.style.display = 'inline-block';
+        treeWrapper.style.minWidth = '100%';
+        treeWrapper.style.textAlign = 'center';
+        
+        const treeRoot = document.createElement('div');
+        treeRoot.style.display = 'inline-flex';
+        treeRoot.style.flexDirection = 'row';
+        treeRoot.style.gap = '40px';
+        treeRoot.style.padding = '20px';
+        
+        // Bangun node secara rekursif
+        function buildNode(person, level = 0) {
+            const familyNode = document.createElement('div');
+            familyNode.style.display = 'inline-block';
+            familyNode.style.textAlign = 'center';
+            familyNode.style.verticalAlign = 'top';
+            familyNode.style.position = 'relative';
+            
+            // Couple group
+            const coupleGroup = document.createElement('div');
+            coupleGroup.style.display = 'flex';
+            coupleGroup.style.flexDirection = 'row';
+            coupleGroup.style.justifyContent = 'center';
+            coupleGroup.style.alignItems = 'center';
+            coupleGroup.style.marginBottom = '5px';
+            
+            // Suami
+            coupleGroup.appendChild(createPersonDiv(person));
+            
+            // Istri
+            if (person.spouse && person.spouse.nama) {
+                const connector = document.createElement('div');
+                connector.style.margin = '0 5px';
+                connector.style.fontSize = '20px';
+                if (person.statusKawin === 'cerai') {
+                    connector.innerHTML = ' ✗ ';
+                    connector.style.color = '#e20e0e';
+                } else {
+                    connector.innerHTML = ' + ';
+                    connector.style.color = '#0d6efd';
+                }
+                coupleGroup.appendChild(connector);
+                coupleGroup.appendChild(createPersonDiv(person.spouse));
+            }
+            
+            familyNode.appendChild(coupleGroup);
+            
+            // Anak-anak
+            if (person.children && person.children.length > 0) {
+                const childrenWrapper = document.createElement('div');
+                childrenWrapper.style.position = 'relative';
+                childrenWrapper.style.display = 'flex';
+                childrenWrapper.style.flexDirection = 'row';
+                childrenWrapper.style.justifyContent = 'center';
+                childrenWrapper.style.gap = '40px';
+                childrenWrapper.style.paddingTop = '30px';
+                childrenWrapper.style.marginTop = '10px';
+                
+                // Garis horizontal manual
+                const horizLine = document.createElement('div');
+                horizLine.style.position = 'absolute';
+                horizLine.style.top = '15px';
+                horizLine.style.left = '0';
+                horizLine.style.right = '0';
+                horizLine.style.height = '2px';
+                horizLine.style.backgroundColor = '#555';
+                childrenWrapper.appendChild(horizLine);
+                
+                person.children.forEach(child => {
+                    const childNode = buildNode(child, level + 1);
+                    childrenWrapper.appendChild(childNode);
+                    
+                    // Garis vertikal manual ke setiap anak
+                    const vertLine = document.createElement('div');
+                    vertLine.style.position = 'absolute';
+                    vertLine.style.bottom = '100%';
+                    vertLine.style.left = '50%';
+                    vertLine.style.width = '2px';
+                    vertLine.style.height = '25px';
+                    vertLine.style.backgroundColor = '#555';
+                    vertLine.style.transform = 'translateX(-50%)';
+                    childNode.style.position = 'relative';
+                    childNode.appendChild(vertLine);
+                });
+                
+                familyNode.appendChild(childrenWrapper);
+            }
+            
+            return familyNode;
+        }
+        
+        function createPersonDiv(person) {
+            const div = document.createElement('div');
+            div.style.textAlign = 'center';
+            div.style.margin = '5px';
+            
+            const initials = getInitials(person.nama);
+            
+            // Avatar/Foto
+            if (person.foto && person.foto.includes('http')) {
+                const img = document.createElement('img');
+                img.src = person.foto;
+                img.style.width = '50px';
+                img.style.height = '50px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '50%';
+                img.style.border = '2px solid #1A365D';
+                img.onerror = () => { img.outerHTML = `<div style="width:50px;height:50px;background-color:#1A365D;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;margin:0 auto;">${initials}</div>`; };
+                div.appendChild(img);
+            } else {
+                const avatar = document.createElement('div');
+                avatar.style.width = '50px';
+                avatar.style.height = '50px';
+                avatar.style.backgroundColor = '#1A365D';
+                avatar.style.borderRadius = '50%';
+                avatar.style.display = 'flex';
+                avatar.style.alignItems = 'center';
+                avatar.style.justifyContent = 'center';
+                avatar.style.color = 'white';
+                avatar.style.fontWeight = 'bold';
+                avatar.style.fontSize = '18px';
+                avatar.style.margin = '0 auto';
+                avatar.textContent = initials;
+                div.appendChild(avatar);
+            }
+            
+            // Nama
+            const nameDiv = document.createElement('div');
+            nameDiv.style.fontSize = '11px';
+            nameDiv.style.fontWeight = '600';
+            nameDiv.style.marginTop = '5px';
+            nameDiv.textContent = person.nama || '-';
+            div.appendChild(nameDiv);
+            
+            // Tahun
+            let birthYear = '', deathYear = '';
+            if (person.tglLahir) {
+                try { birthYear = new Date(person.tglLahir).getFullYear(); } catch(e) {}
+            }
+            if (person.almarhum === 'ya' && person.tglWafat) {
+                try { deathYear = new Date(person.tglWafat).getFullYear(); } catch(e) {}
+            }
+            if (birthYear || deathYear) {
+                const yearDiv = document.createElement('div');
+                yearDiv.style.fontSize = '9px';
+                yearDiv.style.color = '#666';
+                yearDiv.textContent = deathYear ? `${birthYear} - ${deathYear}` : `${birthYear}`;
+                div.appendChild(yearDiv);
+            }
+            
+            return div;
+        }
+        
+        const rootElement = buildNode(rootNode);
+        treeRoot.appendChild(rootElement);
+        treeWrapper.appendChild(treeRoot);
+        container.appendChild(treeWrapper);
+}
     /************************************************************
     * METODE HTML2CANVAS (YANG SUDAH BERHASIL UNTUK PC)
     ************************************************************/
