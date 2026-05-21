@@ -223,19 +223,19 @@
     .form-msg {
         display: none;
         padding: 10px 15px;
-        border-radius: 6px;
+        border-radius: 5px;
         margin-top: 15px;
         margin-bottom: 15px;
         margin-left: 10px;    /* Jarak sisi kiri dari form */
         margin-right: 10px;   /* Jarak sisi kanan dari form */
-        font-size: 14px;
+        font-size: 12px;
         display: flex;
         align-items: center;
         gap: 10px;
         animation: fadeIn 0.3s;
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .msg-success { background-color: #0f5132; color: #ffffff; border: 1px solid #00351c; }
+    .msg-success { background-color: #0f1b51; color: #ffffff; border: 1px solid #0a07aa; }
     .msg-error { background-color: #a5000e; color: #ffffff; border: 1px solid #520000; }
     .msg-warning { background-color: #ffd556; color: #000000; border: 1px solid #e4ba00; }
     .msg-info { background-color: #0057a8; color: #ffffff; border: 1px solid #2f90ff; }
@@ -793,11 +793,9 @@
 
                     <div class="d-flex align-items-center gap-3 flex-wrap" style="width: 100%;">
                         <div class="input-group input-group-sm mt-2" style="width: 40%;">
-                            <span class="input-group-text"><i class="fas fa-users" style="font-size:14px; border-radius: 5px 0 0 5px;"></i></span>
-                            <input type="text" id="cariNama" class="form-control" placeholder="> Cari nama anggota keluarga...">
-                            <button class="btn btn-primary" onclick="cariData()" style="border-radius: 0 5px 5px 0;">
-                                <i class='fas fa-search'></i>
-                            </button>
+                            <span class="input-group-text"><i class="fas fa-users" style="border-radius: 5px 0 0 5px; font-size:14px;"></i></span>
+                            <input type="text" id="cariNama" class="form-control" style="border-radius: 0 0 0 0;" placeholder="> Cari nama anggota keluarga...">
+                            <button class="btn btn-primary" style="border-radius: 0 5px 5px 0;" onclick="cariData()"><i class='fas fa-search'></i></button>
                         </div>
                         <div class="d-flex gap-2 mt-2" style="width: 40%;">
                             <button class="btn btn-outline-primary btn-sm" onclick="openForm('add')">
@@ -1069,7 +1067,7 @@
              showMessage(res.message, "error", "loginMessage");
         }
       } catch (err) {
-          showMessage("Gagal terhubung ke serrver : " + err.message, "error", "loginMessage");
+          showMessage("Gagal terhubung: " + err.message, "error", "loginMessage");
       } finally {
           btn.disabled = false;
           btn.innerHTML = textAsli;
@@ -1131,7 +1129,7 @@
     });
     }
     
-        /****************************
+    /****************************
      * Buat Tabel Data Keluarga
      * **************************/
     function renderTable() {
@@ -1392,7 +1390,7 @@
         renderTableFiltered(filteredData);
         
         if (filteredData.length === 0) {
-            showMessage("Nama tidak ditemukan", "warning", "tableMessage");
+            showMessage("Data tidak ditemukan", "warning", "tableMessage");
         }
     }
 
@@ -1555,7 +1553,7 @@
             });
         } catch (e) {
             console.error("View Error:", e);
-            showMessage("Gagal menampilkan detail: " + e.message, "error", "tableMessage");
+            showMessage("Gagal menampilkan: " + e.message, "error", "tableMessage");
         }
     }
     
@@ -1621,7 +1619,7 @@
                     });
                     const res = await resp.json();
                     if (res.success) {
-                        showMessage(`Data "${nama}" berhasil dihapus`, "success", "tableMessage");
+                        showMessage(`Data "${nama}" dihapus`, "success", "tableMessage");
                         setTimeout(() => modalElement.remove(), 300);
                         loadData(); // Refresh tabel
                     } else {
@@ -1643,7 +1641,7 @@
             });
         } catch (e) {
             console.error("Error:", e);
-            showMessage("Gagal menampilkan konfirmasi", "error", "tableMessage");
+            showMessage("Gagal konfirmasi", "error", "tableMessage");
         }
     }
 
@@ -1659,7 +1657,7 @@
         const res = await resp.json();
         
         if (res.success) {
-            showMessage("Data berhasil disimpan!", "success", "formKeluargaMessage");
+            showMessage("Data tersimpan!", "success", "formKeluargaMessage");
             setTimeout(() => {
                 modalInstance.hide();
                 loadData();
@@ -1962,7 +1960,7 @@
         if (!selectEl) return;
         const selectedValue = selectEl.value;
         if (!selectedValue) {
-            showMessage("Silakan pilih Nama Ayah terlebih dahulu!", "warning", "formMessageDynamic");
+            showMessage("Pilih Nama Ayah lebih dulu!", "warning", "formMessageDynamic");
             return;
         }
         
@@ -2010,7 +2008,7 @@
                 const btnExcel = document.getElementById('btnDownloadExcel');
                 if (btnExcel) btnExcel.style.display = 'inline-block';
 
-                showMessage(`Diagram silsilah keluarga ${selectedValue} berhasil dibuat`, "success", "formMessageDynamic");
+                showMessage(`Silsilah keluarga ${selectedValue} berhasil`, "success", "formMessageDynamic");
             } else {
                 container.innerHTML = `<div class="text-center text-danger p-5">Tidak dapat membangun diagram pohon untuk keluarga yang dipilih.</div>`;
             }
@@ -2033,7 +2031,7 @@
         const safeFileName = `${selectedName.replace(/[<>:"/\\|?*]+/g, '_') || 'pohon_silsilah'}.pdf`;
 
         if (!container || !treeDiagram) {
-            showMessage("Silakan buat diagram silsilah terlebih dahulu", "warning", "formMessageDynamic");
+            showMessage("Buat diagram silsilah lebih dulu", "warning", "formMessageDynamic");
             return;
         }
 
@@ -2315,7 +2313,7 @@
         
         const selectedAyah = selectEl.value;
         if (!selectedAyah) {
-            showMessage("Silakan pilih Nama Ayah terlebih dahulu!", "warning", "formMessageDynamic");
+            showMessage("Pilih Nama Ayah lebih dulu!", "warning", "formMessageDynamic");
             return;
         }
         
@@ -2331,7 +2329,7 @@
             const rootNode = buildFamilyTreeByAyah(selectedAyah);
             
             if (!rootNode) {
-                showMessage("Tidak dapat membangun struktur keluarga untuk " + selectedAyah, "error", "formMessageDynamic");
+                showMessage("Gagal membangun struktur keluarga  " + selectedAyah, "error", "formMessageDynamic");
                 return;
             }
             
@@ -2367,7 +2365,7 @@
             collectMembers(rootNode);
             
             if (familyMembers.length === 0) {
-                showMessage("Tidak ada anggota keluarga ditemukan untuk " + selectedAyah, "warning", "formMessageDynamic");
+                showMessage("Tidak ditemukan data untuk " + selectedAyah, "warning", "formMessageDynamic");
                 return;
             }
             
@@ -2553,18 +2551,16 @@
         // Mapping Ikon
         const icons = {
            success: '<i class="fas fa-check-circle"></i>',
-           error: '<i class="fas fa-exclamation-circle"></i>',
+           error:   '<i class="fas fa-exclamation-circle"></i>',
            warning: '<i class="fas fa-exclamation-triangle"></i>',
-           info: '<i class="fas fa-info-circle"></i>'
+           info:    '<i class="fas fa-info-circle"></i>'
         };
         el.classList.remove('msg-success', 'msg-error', 'msg-warning', 'msg-info');
         el.classList.add('form-msg', `msg-${type}`);
         el.innerHTML = `<span>${icons[type] || ''}</span> <span>${msg}</span>`;
         el.style.display = 'flex';
         // Sembunyikan otomatis dalam 3 detik
-        setTimeout(() => {
-            el.style.display = 'none';
-        }, 3000);
+        setTimeout(() => { el.style.display = 'none'; }, 3000);
     }
    </script>
 </body>
