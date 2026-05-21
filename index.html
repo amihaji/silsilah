@@ -2343,7 +2343,7 @@
             // Download file
             XLSX.writeFile(wb, `Silsilah_${selectedAyah}.xlsx`);
             
-            showMessage(`Data silsilah keluarga ${selectedAyah} (${familyMembers.length} anggota) berhasil diunduh`, "success", "formMessageDynamic");
+            showMessage(`Data keluarga ${selectedAyah} (${familyMembers.length} anggota) diunduh`, "success", "formMessageDynamic");
             
         } catch (error) {
             console.error("Excel Error:", error);
