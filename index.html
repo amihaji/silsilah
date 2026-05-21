@@ -8,6 +8,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
+  
   <style>
     :root { --dark-blue: #1A365D; --light-blue: #63B3ED; --light-gray: #EDF2F7; } 
     /* Reset margin/padding untuk body dan container */
@@ -55,10 +56,7 @@
         text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         margin-bottom: 10px;
     }
-    .hero-header p {
-        font-size: 1rem;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    }
+    .hero-header p { font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
 
     /* Container untuk tabel - hapus padding/margin */
     .container-fluid.mt-3 {
@@ -135,10 +133,7 @@
     .btn-round i { font-size: 16px !important; margin: 0 !important; padding: 0 !important; }
     .btn-round:focus,
     .btn-round:focus-visible,
-    .btn-round:active {
-        box-shadow: none !important;
-        outline: none !important;
-    }
+    .btn-round:active { box-shadow: none !important; outline: none !important; }
   
     /* Warna khusus untuk masing-masing tombol */
     .btn-round.btn-info:hover    { background-color: #0dcaf0 !important; color: white !important; }
@@ -169,12 +164,8 @@
       border: 3px solid var(--light-blue);
       margin-bottom: 10px;
     }
-    .detail-profile-modal {
-        max-width: 460px !important;
-    }
-    .detail-profile-modal .modal-body {
-        padding: 16px 18px !important;
-    }
+    .detail-profile-modal { max-width: 460px !important; }
+    .detail-profile-modal .modal-body { padding: 16px 18px !important; }
     .detail-profile-grid {
         display: grid;
         grid-template-columns: minmax(104px, 118px) 10px minmax(0, 1fr);
@@ -187,20 +178,10 @@
     }
     .detail-profile-grid .label-cell,
     .detail-profile-grid .separator,
-    .detail-profile-grid .value-cell {
-        padding: 0;
-        margin: 0;
-        min-width: 0;
-    }
-    .detail-profile-grid .label-cell {
-        white-space: nowrap;
-    }
-    .detail-profile-grid .separator {
-        text-align: center;
-    }
-    .detail-profile-grid .value-cell {
-        overflow-wrap: anywhere;
-    }
+    .detail-profile-grid .value-cell { padding: 0; margin: 0; min-width: 0; }
+    .detail-profile-grid .label-cell { white-space: nowrap; }
+    .detail-profile-grid .separator { text-align: center; }
+    .detail-profile-grid .value-cell { overflow-wrap: anywhere; }
     
     /* Header biru terang untuk semua panel modal */
     .card-header, .modal-header { background-color: #007bff !important; color: white !important; }
@@ -273,10 +254,7 @@
         min-width: 100%;
     }
     /* Wrapper untuk judul dan diagram */
-    .diagram-wrapper {
-        display: inline-block;
-        min-width: 100%;
-    }
+    .diagram-wrapper { display: inline-block; min-width: 100%; }
     /* Judul diagram - sekarang menyatu dengan scroll diagram */
     .diagram-header-title {
         text-align: center;
@@ -293,10 +271,7 @@
         margin: 0;
         white-space: nowrap;
     }
-    .diagram-header-title i {
-        margin-right: 8px;
-        color: #2d6a4f;
-    }
+    .diagram-header-title i { margin-right: 8px; color: #2d6a4f; }
 
     /* SCROLL HORIZONTAL UNTUK FLEXBOX */
     .tree-root {
@@ -321,13 +296,9 @@
     }
 
     /* Hapus kemungkinan warna abu-abu dari class sebelumnya */
-    .bg-light, .table-light, .card {
-        background-color: #ffffff !important;
-    }
+    .bg-light, .table-light, .card { background-color: #ffffff !important; }
     /* Kunci untuk memaksa elemen flex agar bisa di-scroll */
-    .family-node, .children-wrapper {
-        min-width: 0;          /* Ini penting! */
-    }
+    .family-node, .children-wrapper { min-width: 0; }
     .family-node {
         position: relative;
         display: inline-block;
@@ -367,10 +338,7 @@
         background-color: transparent;
     }
     /* Konektor anak garis horisontal */
-    .children-connector { 
-        position: relative; 
-        display: inline-block;
-    }
+    .children-connector { position: relative; display: inline-block; }
     .children-connector::before {
         content: '';
         position: absolute;
@@ -406,17 +374,9 @@
         background-color: #555;
         z-index: 1;
     }
-    .family-node:first-child::after {
-        left: 50%;
-        right: -20px;
-    }
-    .family-node:last-child::after {
-        right: 50%;
-        left: -20px;
-    }
-    .family-node:only-child::after {
-        display: none;
-    }
+    .family-node:first-child::after { left: 50%; right: -20px; }
+    .family-node:last-child::after { right: 50%; left: -20px; }
+    .family-node:only-child::after { display: none; }
     /* Garis horizontal yang menyesuaikan dengan posisi anak pertama dan terakhir */
     .children-wrapper { 
         position: relative;
@@ -430,10 +390,7 @@
     }
 
     /* Tampilan node */
-    .diagram-node {
-        text-align: center;
-        margin: 5px;
-    }
+    .diagram-node { text-align: center; margin: 5px; }
     .diagram-foto {
         width: 60px;
         height: 60px;
@@ -455,15 +412,8 @@
         font-size: 20px;
         margin: 0 auto;
     }
-    .diagram-name {
-        font-size: 12px;
-        font-weight: 600;
-        margin-top: 5px;
-    }
-    .diagram-year {
-        font-size: 10px;
-        color: #666;
-    }
+    .diagram-name { font-size: 12px; font-weight: 600; margin-top: 5px; }
+    .diagram-year { font-size: 10px; color: #666; }
     /***** Akhir Diagram tree *****/
     
     /* Container diagram umum (opsional) */
@@ -494,10 +444,10 @@
         max-height: none !important;
     }
     
-    /**************************
-    /* Untuk mobile device   */
-    /*************************/
-    @media (max-width: 768px) {
+    /*****************************************
+    /* Untuk mobile device width 600px-768px */
+    /****************************************/
+    @media (max-width: 768px) and (min-width: 600px) {
         /* Navbar mobile */
         .navbar-collapse {
             position: absolute;
@@ -537,13 +487,8 @@
         .hero-header p { font-size: 0.8rem; }
         
         /* Tabel mobile */
-        .table-responsive { 
-            max-height: 55vh;
-            overflow-x: auto;
-        }
-        .table {
-            min-width: 600px;
-        }
+        .table-responsive { max-height: 55vh; overflow-x: auto; }
+        .table { min-width: 600px; }
         .table td, .table th { 
             padding: 8px 6px !important; 
             font-size: 12px !important;
@@ -568,13 +513,8 @@
         #diagramContainer { max-height: none; overflow-y: hidden; }
         #dynamicDiagramModal .modal-body { max-height: 60vh; overflow-y: auto; }
         
-        .detail-profile-modal {
-            max-width: calc(100vw - 24px) !important;
-            margin: 0 auto;
-        }
-        .detail-profile-modal .modal-body {
-            padding: 14px 14px !important;
-        }
+        .detail-profile-modal { max-width: calc(100vw - 24px) !important; margin: 0 auto; }
+        .detail-profile-modal .modal-body { padding: 14px 14px !important; }
         .detail-profile-grid {
             grid-template-columns: minmax(92px, 104px) 8px minmax(0, 1fr);
             gap: 2px 3px;
@@ -583,38 +523,18 @@
         }
         
         /***** Container utama tabel - buat vertikal *****/
-        .d-flex.justify-content-between {
-            flex-direction: column !important;
-            gap: 15px !important;
-        }
+        .d-flex.justify-content-between { flex-direction: column !important; gap: 15px !important; }
         /* Container pencarian + tombol */
-        .d-flex.align-items-center.gap-3 {
-            flex-direction: column !important;
-            width: 100% !important;
-            gap: 12px !important;
-        }
+        .d-flex.align-items-center.gap-3 { flex-direction: column !important; width: 100% !important; gap: 12px !important; }
         /* Input group pencarian - full width */
-        .input-group.input-group-sm {
-            width: 100% !important;
-        }
+        .input-group.input-group-sm { width: 100% !important; }
         /* Input pencarian - tinggi nyaman */
-        #cariNama {
-            height: 44px !important;
-            font-size: 14px !important;
-            /* border-radius: 10px 0 0 10px !important; */
-            border-radius: 0 0 0 0 !important;
-        }
+        #cariNama { height: 44px !important; font-size: 14px !important; border-radius: 0 0 0 0 !important; }
         /* Tombol search */
-        .input-group .btn-primary {
-            height: 44px !important;
-            border-radius: 0 10px 10px 0 !important;
-        }
+        .input-group .btn-primary { height: 44px !important; border-radius: 0 10px 10px 0 !important; }
+        
         /* Wrapper tombol Tambah + Diagram */
-        .d-flex.gap-2 {
-            flex-direction: column !important;
-            width: 100% !important;
-            gap: 10px !important;
-        }
+        .d-flex.gap-2 { flex-direction: column !important; width: 100% !important; gap: 10px !important; }
         /* Tombol Tambah dan Diagram */
         .d-flex.gap-2 .btn {
             width: 100% !important;
@@ -629,8 +549,8 @@
         }
         /* Tombol Tambah dan Diagram - outline biru */
         .d-flex.gap-2.btn-outline-primary { 
-            background-color: #ffffff !important; 
-            color: #0d6efd !important; 
+            background-color: #0047b3 !important; 
+            color: #ffffff !important; 
             border: 1px solid #0d6efd !important;
         }
         .d-flex.gap-2.btn-info:hover { 
@@ -638,7 +558,7 @@
             color: white !important; 
         }
 
-        /***** Modal Diagram Tombol Vertikal *****/
+        /***** Form Modal Tombol Vertikal "Diagram" "Unduh pdf" dan "Unduh Excel" *****/
         /* Container tombol di modal diagram */
         #dynamicDiagramModal .col-md-12.d-flex {
             flex-direction: column !important;
