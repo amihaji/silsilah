@@ -142,11 +142,11 @@
   
     /* Warna khusus untuk masing-masing tombol */
     .btn-round.btn-info:hover    { background-color: #0dcaf0 !important; color: white !important; }
-    .btn-round.btn-info          { background-color: #ffffff !important;   color: #0dcaf0 !important; }
+    .btn-round.btn-info          { background-color: #ffffff !important; color: #0dcaf0 !important; }
     .btn-round.btn-warning:hover { background-color: #ffc107 !important; color: white !important; }
-    .btn-round.btn-warning       { background-color: #ffffff !important;   color: #ffc107 !important; }
+    .btn-round.btn-warning       { background-color: #ffffff !important; color: #ffc107 !important; }
     .btn-round.btn-danger:hover  { background-color: #dc3545 !important; color: white !important; }
-    .btn-round.btn-danger        { background-color: #ffffff !important;   color: #dc3545 !important; }
+    .btn-round.btn-danger        { background-color: #ffffff !important; color: #dc3545 !important; }
     .table-hover > tbody > tr:hover .btn-round.btn-info:not(:hover) {
         background-color: #e9ecef !important;
         color: #0dcaf0 !important;
@@ -236,9 +236,9 @@
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .msg-success { background-color: #0f1b51; color: #ffffff; border: 1px solid #0a07aa; }
-    .msg-error { background-color: #a5000e; color: #ffffff; border: 1px solid #520000; }
+    .msg-error   { background-color: #a5000e; color: #ffffff; border: 1px solid #520000; }
     .msg-warning { background-color: #ffd556; color: #000000; border: 1px solid #e4ba00; }
-    .msg-info { background-color: #0057a8; color: #ffffff; border: 1px solid #2f90ff; }
+    .msg-info    { background-color: #0057a8; color: #ffffff; border: 1px solid #2f90ff; }
 
     /* Avatar bulat untuk inisial */
     .avatar-circle {
@@ -628,12 +628,16 @@
             gap: 8px !important;
         }
         /* Tombol Tambah dan Diagram - outline biru */
-        .d-flex.gap-2 .btn-outline-primary {
-            background-color: #ffffff !important;
-            color: #0d6efd !important;
+        .d-flex.gap-2 .btn-outline-primary { 
+            background-color: #ffffff !important; 
+            color: #0d6efd !important; 
             border: 1px solid #0d6efd !important;
         }
-         
+        .d-flex.gap-2 .btn-info:hover { 
+            background-color: #0d6efd !important; 
+            color: white !important; 
+        }
+
         /***** Modal Diagram Tombol Vertikal *****/
         /* Container tombol di modal diagram */
         #dynamicDiagramModal .col-md-12.d-flex {
