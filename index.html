@@ -1587,8 +1587,6 @@
                                     <button type="button" class="btn btn-light btn-sm px-4 fw-bold" id="confirmBatalBtn">BATAL</button>
                                     <button type="button" class="btn btn-danger btn-sm px-4 fw-bold" id="confirmHapusBtn">YA, HAPUS</button>
                                 </div>
-                                <!-- Tampilkan pesan diatas tombol -->
-                                <div id="dynamicConfirmModal" class="form-msg"></div>
                             </div>
                         </div>
                     </div>
@@ -1622,16 +1620,16 @@
                     });
                     const res = await resp.json();
                     if (res.success) {
-                        showMessage(`Data "${nama}" dihapus`, "success", "tableMessage");
+                        showMessage(`Data "${nama}" dihapus`, "success", "dynamicConfirmModal");
                         setTimeout(() => modalElement.remove(), 300);
                         loadData(); // Refresh tabel
                     } else {
-                        showMessage("Gagal menghapus: " + (res.message || "Unknown error"), "error", "tableMessage");
+                        showMessage("Gagal menghapus: " + (res.message || "Unknown error"), "error", "dynamicConfirmModal");
                         setTimeout(() => modalElement.remove(), 300);
                     }
                 } catch (e) {
                     console.error("Error:", e);
-                    showMessage("Kesalahan koneksi: " + e.message, "error", "tableMessage");
+                    showMessage("Kesalahan koneksi: " + e.message, "error", "dynamicConfirmModal");
                     setTimeout(() => modalElement.remove(), 300);
                 } finally {
                     showLoader(false);
@@ -1644,7 +1642,7 @@
             });
         } catch (e) {
             console.error("Error:", e);
-            showMessage("Gagal konfirmasi", "error", "tableMessage");
+            showMessage("Gagal konfirmasi", "error", "dynamicConfirmModal");
         }
     }
 
