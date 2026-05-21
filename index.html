@@ -548,10 +548,10 @@
             gap: 8px !important;
         }
         /* Tombol Tambah dan Diagram - primary biru */
-        .d-flex.gap-2.btn-primary { 
+        .d-flex.gap-2.btn- primary { 
             background-color: #0047b3 !important; 
             color: #ffffff !important; 
-            border: 1px solid #0d6efd !important;
+            /* border: 1px solid #0d6efd !important; */
         }
         .d-flex.gap-2.btn-info:hover { 
             background-color: #0d6efd !important; 
@@ -590,20 +590,26 @@
             margin-bottom: 0 !important;
             padding: 20px !important;
         }
-        /* Tombol Tampilkan Silsilah Solid */
-        #btnBuatDiagram {
-            background-color: #0d6efd !important;
-            color: white !important;
-            border: none !important;
+        /* Tombol Tampilkan : Buat Diagram, Unduh Excel */
+        #btnBuatDiagram #btnDownloadExcel {
+            background-color: #0047b3 !important; 
+            color: #ffffff !important; 
             margin-bottom: 0 !important;
         }
+        #btnBuatDiagram #btnDownloadExcel .btn-info:hover { 
+            background-color: #0d6efd !important; 
+            color: white !important; 
+        }
+
         /* Tombol Download Excel outline */
+        /*
         #btnDownloadExcel {
             background-color: #ffffff !important;
             color: #0d6efd !important;
-            border: 1px solid #0d6efd !important;
             margin-top: 0 !important;  /* TAMBAHAN: hilangkan margin top */
-        }
+        /* }
+        
+
         /* Tombol Download PDF sembunyi di device mobile */
         #btnDownloadPDF,
         .btn-download-pdf,
@@ -1813,10 +1819,10 @@
                                         <button class="btn btn-primary btn-sm" id="btnBuatDiagram">
                                             <i class="fas fa-sitemap"></i> Lihat Silsilah
                                         </button>
-                                        <button class="btn btn-outline-primary btn-sm" id="btnDownloadExcel" style="display:none;">
+                                        <button class="btn btn-primary btn-sm" id="btnDownloadExcel" style="display:none;">
                                             <i class="fas fa-file-excel"></i> Unduh Excel
                                         </button>
-                                        <button class="btn btn-outline-primary btn-sm" id="btnDownloadPDF" style="display:none;">
+                                        <button class="btn btn-primary btn-sm" id="btnDownloadPDF" style="display:none;">
                                             <i class="fas fa-download"></i> Unduh PDF
                                         </button>
                                     </div>
