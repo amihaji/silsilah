@@ -1620,16 +1620,16 @@
                     });
                     const res = await resp.json();
                     if (res.success) {
-                        showMessage(`Data "${nama}" dihapus`, "success", "dynamicConfirmModal");
+                        showMessage(`Data "${nama}" dihapus`, "success", "confirmModal");
                         setTimeout(() => modalElement.remove(), 300);
                         loadData(); // Refresh tabel
                     } else {
-                        showMessage("Gagal menghapus: " + (res.message || "Unknown error"), "error", "dynamicConfirmModal");
+                        showMessage("Gagal menghapus: " + (res.message || "Unknown error"), "error", "confirmModal");
                         setTimeout(() => modalElement.remove(), 300);
                     }
                 } catch (e) {
                     console.error("Error:", e);
-                    showMessage("Kesalahan koneksi: " + e.message, "error", "dynamicConfirmModal");
+                    showMessage("Kesalahan koneksi: " + e.message, "error", "confirmModal");
                     setTimeout(() => modalElement.remove(), 300);
                 } finally {
                     showLoader(false);
@@ -1642,7 +1642,7 @@
             });
         } catch (e) {
             console.error("Error:", e);
-            showMessage("Gagal konfirmasi", "error", "dynamicConfirmModal");
+            showMessage("Gagal konfirmasi", "error", "confirmModal");
         }
     }
 
