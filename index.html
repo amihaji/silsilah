@@ -528,6 +528,16 @@
         }
         .navbar-nav li { margin: 0 !important; padding: 0 !important; }
         
+        /* Sembunyikan tombol Setup di mobile jika level operator */
+        .setup-item-mobile.hide-on-mobile {
+            display: none !important;
+        }
+        
+        /* Atau gunakan pendekatan JS, tapi pastikan class ini diterapkan */
+        .btn-setup-hidden {
+            display: none !important;
+        }
+
         /* Header image mobile */
         .hero-header { height: 120px; }
         .hero-header h2 { font-size: 1.2rem; }
@@ -1086,7 +1096,7 @@
             
         const fLogin = document.getElementById('formLogin');
         if (fLogin) fLogin.onsubmit = prosesLogin;
-        
+
         const fKeluarga = document.getElementById('formKeluarga');
         if (fKeluarga) fKeluarga.onsubmit = simpanData;
 
@@ -1114,7 +1124,7 @@
                 updateSetupButtonVisibility();
             });
         }
-        
+        setupNavbarCollapseListener();
         initializeTooltips();
     });
 
@@ -1164,14 +1174,14 @@
                 document.getElementById('loginArea').classList.add('d-none');
                 document.getElementById('appArea').classList.remove('d-none');
                 
-                // Sembunyikan tombol Setup jika level operator
                 updateSetupButtonVisibility();
-                
                 loadData();
                 
-                if (!currentPasswordChanged && pass === "ak@dm1n") {
-                    const changePassModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
-                    changePassModal.show();
+                // CEK: Jika passwordChanged = false, berarti masih password default
+                // ATAU jika password yang dimasukkan adalah @dm1n123
+                if (!currentPasswordChanged || pass === "@dm1n123") {
+                    // Tampilkan modal ganti password (wajib)
+                    showChangePasswordModal();
                 }
             } else {
                 showMessage(res.message, "error", "loginMessage");
@@ -1184,26 +1194,100 @@
         }
     }
 
+    // Fungsi untuk menampilkan modal ganti password (wajib)
+    function showChangePasswordModal() {
+        // Hapus modal lama jika ada
+        const existingModal = document.getElementById('changePasswordModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        const modalHtml = `
+            <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-sm modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header" style="background-color: #dc3545; color: white;">
+                            <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Ganti Password Default</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" disabled></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="small text-muted mb-3">Anda masih menggunakan password default. Silakan ganti password untuk keamanan.</p>
+                            <div class="mb-2">
+                                <label class="form-label small">Password Baru (6-8 karakter)</label>
+                                <input type="password" id="newPassDefault" class="form-control form-control-sm" maxlength="8" placeholder="Minimal 6 karakter">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Konfirmasi Password Baru</label>
+                                <input type="password" id="confirmPassDefault" class="form-control form-control-sm" maxlength="8">
+                            </div>
+                            <div id="changePassMsg" class="form-msg small" style="font-size: 11px;"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary btn-sm w-100" onclick="submitChangePasswordDefault()">Ganti Password</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        const modalElement = document.getElementById('changePasswordModal');
+        const modal = new bootstrap.Modal(modalElement, {
+            backdrop: 'static',
+            keyboard: false
+        });
+        modal.show();
+        
+        // Hapus modal setelah ditutup
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            modalElement.remove();
+        });
+    }
     // Fungsi baru untuk update visibilitas tombol Setup (desktop & mobile)
     function updateSetupButtonVisibility() {
         const setupBtnDesktop = document.getElementById('setupBtn');
-        const navbarCollapse = document.getElementById('navbarNav');
         
         if (currentUserLevel !== 'admin') {
-            // Sembunyikan tombol Setup
+            // Sembunyikan tombol Setup di desktop
             if (setupBtnDesktop) setupBtnDesktop.style.display = 'none';
-            // Juga sembunyikan di mobile jika navbar collapse terbuka
+            
+            // Sembunyikan juga di mobile - cari semua elemen dengan class/tag yang sama di navbar collapse
+            const navbarCollapse = document.getElementById('navbarNav');
             if (navbarCollapse) {
+                // Cari tombol setup di dalam navbar collapse
                 const mobileSetupBtn = navbarCollapse.querySelector('#setupBtn');
-                if (mobileSetupBtn) mobileSetupBtn.style.display = 'none';
+                if (mobileSetupBtn) {
+                    mobileSetupBtn.style.display = 'none';
+                    mobileSetupBtn.classList.add('btn-setup-hidden');
+                }
             }
         } else {
             // Tampilkan tombol Setup
             if (setupBtnDesktop) setupBtnDesktop.style.display = 'inline-block';
+            
+            const navbarCollapse = document.getElementById('navbarNav');
             if (navbarCollapse) {
                 const mobileSetupBtn = navbarCollapse.querySelector('#setupBtn');
-                if (mobileSetupBtn) mobileSetupBtn.style.display = 'inline-block';
+                if (mobileSetupBtn) {
+                    mobileSetupBtn.style.display = 'inline-block';
+                    mobileSetupBtn.classList.remove('btn-setup-hidden');
+                }
             }
+        }
+    }
+
+    // Panggil fungsi ini saat navbar collapse terbuka
+    function setupNavbarCollapseListener() {
+        const navbarToggler = document.querySelector('.navbar-toggler');
+        const navbarCollapse = document.getElementById('navbarNav');
+        
+        if (navbarToggler && navbarCollapse) {
+            navbarCollapse.addEventListener('show.bs.collapse', function() {
+                updateSetupButtonVisibility();
+            });
+            navbarCollapse.addEventListener('shown.bs.collapse', function() {
+                updateSetupButtonVisibility();
+            });
         }
     }
 
@@ -1565,7 +1649,6 @@
     async function submitChangePasswordDefault() {
         const newPassword = document.getElementById('newPassDefault').value;
         const confirmPassword = document.getElementById('confirmPassDefault').value;
-        
         if (newPassword.length < 6 || newPassword.length > 8) {
             showMessage("Password baru harus 6-8 karakter!", "warning", "changePassMsg");
             return;
@@ -1574,15 +1657,20 @@
             showMessage("Konfirmasi password tidak cocok!", "warning", "changePassMsg");
             return;
         }
-        
+        if (newPassword === "@dm1n123") {
+            showMessage("Password baru tidak boleh sama dengan default!", "warning", "changePassMsg");
+            return;
+        }
         const btn = event.target;
         const originalText = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-        
         try {
             const resp = await fetch(SCRIPT_URL, {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({
                     action: "changePassword",
                     username: currentUsername,
@@ -1597,7 +1685,7 @@
                 currentPasswordChanged = true;
                 setTimeout(() => {
                     const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
-                    modal.hide();
+                    if (modal) modal.hide();
                     logout();
                 }, 2000);
             } else {
@@ -1641,29 +1729,42 @@
         
         if (!confirm(`Reset password user "${username}" ke default "@dm1n123"?`)) return;
         
+        // Tampilkan loading
+        showLoader(true, "Merreset password...");
+        
         try {
             const resp = await fetch(SCRIPT_URL, {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({
                     action: "updateUserPassword",
                     username: username,
                     newPassword: "@dm1n123"
                 })
             });
+            
+            if (!resp.ok) {
+                throw new Error(`HTTP error! status: ${resp.status}`);
+            }
+            
             const res = await resp.json();
             
             if (res.success) {
-                showMessage(`Password user "${username}" berhasil direset ke @dm1n123`, "success", "tableMessage");
+                showMessage(`Password "${username}" berhasil direset ke @dm1n123`, "success", "tableMessage");
                 // Refresh tabel user
                 await loadUserTable();
             } else {
-                showMessage(res.message, "error", "tableMessage");
+                showMessage(res.message || "Gagal reset password", "error", "tableMessage");
             }
         } catch (err) {
-            showMessage("Error: " + err.message, "error", "tableMessage");
+            console.error("Reset password error:", err);
+            showMessage("Error: " + err.message + ". Periksa koneksi internet.", "error", "tableMessage");
+        } finally {
+            showLoader(false);
         }
     }
-
 
     /*****************************************
      * Fungsi untuk menampilkan modal Tentang 
