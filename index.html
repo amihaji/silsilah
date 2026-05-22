@@ -766,7 +766,7 @@
              
               <div class="input-group mt-4">
                 <span class="input-group-text"><i class="fas fa-user-alt" style="font-size:17px"></i></span>
-                <input type="text" id="nama" class="form-control" placeholder="Input nama anda tanpa nama ayah" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z0-9 ]+" required >
+                <input type="text" id="nama" class="form-control" placeholder="Input nama anda tanpa nama ayah" oninput="this.value = this.value.toLowerCase().replace(/[^a-z0-9 ]/g, '').substring(0, 40)"  maxlength="40" pattern="[A-Za-z0-9 ]+" required >
               </div>
 
               <div class="input-group mt-2">
@@ -835,12 +835,12 @@
 
               <div class="input-group mt-2">
                 <span class="input-group-text"><i class="fas fa-male" style="font-size:26px"></i></span>
-                <input type="text" id="ayah" class="form-control" placeholder="Input nama ayah anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z0-9 ]+" >
+                <input type="text" id="ayah" class="form-control" placeholder="Input nama ayah anda" oninput="this.value = this.value.toLowerCase().replace(/[^a-z0-9 ]/g, '').substring(0, 40)"  maxlength="40" pattern="[A-Za-z0-9 ]+" >
               </div>
 
               <div class="input-group mt-2">
                 <span class="input-group-text"><i class="fas fa-female" style="font-size:26px"></i></span>
-                <input type="text" id="ibu" class="form-control" placeholder="Input nama ibu anda" oninput="this.value = this.value.toLowerCase().substring(0, 40)" maxlength="40" pattern="[A-Za-z0-9 ]+" >
+                <input type="text" id="ibu" class="form-control" placeholder="Input nama ibu anda" oninput="this.value = this.value.toLowerCase().replace(/[^a-z0-9 ]/g, '').substring(0, 40)" maxlength="40" pattern="[A-Za-z0-9 ]+" >
               </div>
 
               <div class="input-group mt-2">
@@ -2417,6 +2417,7 @@
             input.className = 'form-control';
             input.placeholder = jk === "pria" ? "Input nama istri anda" : "Input nama suami anda";
             input.maxLength = 40;
+            input.oninput = "this.value = this.value.toLowerCase().replace(/[^a-z0-9 ]/g, '').substring(0, 40)";
             input.pattern = "[A-Za-z0-9 ]+";
             
             inputGroup.appendChild(span);
