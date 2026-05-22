@@ -1065,7 +1065,7 @@
     // *************************      
     // DEKLARASI VARIABEL GLOBAL
     // **************************
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxlbQ8ESUxg9bB4zVXReFCL19g_UP71Oenb2U6eo_to8zVdbEACF6e0f7mlLRFQCvI/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwIWfl9BFvym6kX6qEKgWG-BOSzgNI5J-qCmA_6nQgGqdE7KUa-GH3mC1gCuvrVJvC/exec";
     let globalData = [];
     let modalInstance;
     let confirmModalInstance;
@@ -1117,6 +1117,20 @@
         
         initializeTooltips();
     });
+
+    /***************************
+     * Inisialisasi Tools Tips
+     **************************/
+    function initializeTooltips() {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltipTriggerList.forEach(el => {
+            bootstrap.Tooltip.getOrCreateInstance(el, {
+            container: 'body',
+            trigger: 'hover focus',
+            placement: 'top'
+            });
+        });
+        }
 
     /***********************
     * Tampilan showloader 
