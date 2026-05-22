@@ -1065,7 +1065,7 @@
     // *************************      
     // DEKLARASI VARIABEL GLOBAL
     // **************************
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwIWfl9BFvym6kX6qEKgWG-BOSzgNI5J-qCmA_6nQgGqdE7KUa-GH3mC1gCuvrVJvC/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9_Xe_JlUupLsajO3c-_N-uBahqOCgnSOk4xC9AJvy20x8Bthh83UTwdIMfJwgkQ2A/exec";
     let globalData = [];
     let modalInstance;
     let confirmModalInstance;
@@ -1385,7 +1385,7 @@
         modal.show();
         await loadUserTable();
     }
-    
+
     async function loadUserTable() {
         try {
             const resp = await fetch(`${SCRIPT_URL}?action=getUsers`);
