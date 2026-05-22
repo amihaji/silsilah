@@ -444,6 +444,20 @@
         max-height: none !important;
     }
     
+    /***** Setup Modal Styles *****/
+    .user-table-container { max-height: 300px; overflow-y: auto; margin-top: 15px; }
+    .user-table { width: 100%; font-size: 13px; }
+    .user-table th {
+        background-color: #1A365D;
+        color: white;
+        position: sticky;
+        top: 0;
+        padding: 8px;
+    }
+    .user-table td { padding: 6px 8px; border-bottom: 1px solid #ddd; }
+    .btn-sm-icon { width: 28px; height: 28px; padding: 0; border-radius: 50%; font-size: 12px; }
+    /***** Akhir Setup Modal Styles *****/
+
     /*****************************************
     /* Untuk mobile device width 600px-768px */
     /****************************************/
@@ -907,6 +921,126 @@
     </div>
   </div>
 
+    <!-- MODAL SETUP UNTUK MANAJEMEN USER -->
+    <div class="modal fade" id="setupModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #1A365D; color: white;">
+                    <h5 class="modal-title"><i class="fas fa-cog me-2"></i>Pengaturan User</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Form Create/Edit User -->
+                    <div class="card mb-3 border">
+                        <div class="card-header bg-light">
+                            <strong><i class="fas fa-user-plus me-1"></i> Create User</strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <label class="form-label small">Nama User (6-8 karakter)</label>
+                                <input type="text" id="setupUsername" class="form-control form-control-sm" 
+                                    placeholder="contoh: admin123" maxlength="8" 
+                                    oninput="this.value = this.value.toLowerCase().substring(0,8)">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Level</label>
+                                <select id="setupLevel" class="form-select form-select-sm">
+                                    <option value="operator">Operator</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Password (6-8 karakter)</label>
+                                <input type="password" id="setupPassword" class="form-control form-control-sm" 
+                                    placeholder="minimal 6 karakter" maxlength="8">
+                            </div>
+                            <div id="setupMessage" class="form-msg small" style="font-size: 12px;"></div>
+                            <button class="btn btn-primary btn-sm w-100 mt-2" onclick="createNewUser()">
+                                <i class="fas fa-save"></i> Simpan User
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Edit Password -->
+                    <div class="card mb-3 border">
+                        <div class="card-header bg-light">
+                            <strong><i class="fas fa-key me-1"></i> Edit Password User</strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <label class="form-label small">Pilih User</label>
+                                <select id="editUserSelect" class="form-select form-select-sm" onchange="onSelectUserForEdit()">
+                                    <option value="">-- Pilih User --</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Password Baru (6-8 karakter)</label>
+                                <input type="password" id="editNewPassword" class="form-control form-control-sm" maxlength="8">
+                            </div>
+                            <div id="editMessage" class="form-msg small" style="font-size: 12px;"></div>
+                            <button class="btn btn-warning btn-sm w-100 mt-2" onclick="updateUserPassword()">
+                                <i class="fas fa-pencil"></i> Update Password
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Daftar User -->
+                    <div class="card border">
+                        <div class="card-header bg-light">
+                            <strong><i class="fas fa-users me-1"></i> Daftar User</strong>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="user-table-container">
+                                <table class="user-table">
+                                    <thead>
+                                        <tr><th>Username</th><th>Level</th><th style="width:70px">Aksi</th></tr>
+                                    </thead>
+                                    <tbody id="userTableBody">
+                                        <tr><td colspan="3" class="text-center">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GANTI PASSWORD (untuk password default) -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #dc3545; color: white;">
+                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Ganti Password Default</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" disabled></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">Anda masih menggunakan password default. Silakan ganti password untuk keamanan.</p>
+                    <div class="mb-2">
+                        <label class="form-label small">Password Lama</label>
+                        <input type="password" id="oldPassDefault" class="form-control form-control-sm" value="@dm1n123" readonly disabled>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Password Baru (6-8 karakter)</label>
+                        <input type="password" id="newPassDefault" class="form-control form-control-sm" maxlength="8">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Konfirmasi Password Baru</label>
+                        <input type="password" id="confirmPassDefault" class="form-control form-control-sm" maxlength="8">
+                    </div>
+                    <div id="changePassMsg" class="form-msg small" style="font-size: 11px;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary btn-sm w-100" onclick="submitChangePasswordDefault()">Ganti Password</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -917,15 +1051,27 @@
     // *************************      
     // DEKLARASI VARIABEL GLOBAL
     // **************************
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzYCPl-xlxeCM1VneFgvjcvTEAgzVSVRX2s1xDUjYeOper_eIfdavUSN_YMyl5_m_G/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxlbQ8ESUxg9bB4zVXReFCL19g_UP71Oenb2U6eo_to8zVdbEACF6e0f7mlLRFQCvI/exec";
     let globalData = [];
     let modalInstance;
     let confirmModalInstance;
+    let currentUserLevel = '';
+    let currentUsername = '';
+    let currentPasswordChanged = false;
  
     /********************
     * Inisialisasi Awal 
     *********************/
     document.addEventListener('DOMContentLoaded', function() {
+        // Daftarkan modal setup
+        const setupBtn = document.getElementById('setupBtn');
+        if (setupBtn) {
+            setupBtn.addEventListener('click', function(e) { 
+                e.preventDefault(); 
+                openSetupModal(); 
+            });
+        }
+
         // Daftarkan modal utama
         const elForm = document.getElementById('formModal');
         if (elForm) modalInstance = new bootstrap.Modal(elForm);
@@ -974,6 +1120,55 @@
     * Fungsi untuk login aplikasi
     ******************************/
     async function prosesLogin(e) {
+        e.preventDefault();
+        const user = document.getElementById('loginUsername').value;
+        const pass = document.getElementById('loginPassword').value;
+        const btn = e.target.querySelector('button[type="submit"]');
+        
+        const textAsli = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';
+
+        try {
+            const resp = await fetch(`${SCRIPT_URL}?action=login&u=${user}&p=${pass}`);
+            const res = await resp.json();
+            if (res.success) {
+                currentUserLevel = res.level || 'operator';
+                currentUsername = res.username || user;
+                currentPasswordChanged = res.passwordChanged || false;
+                
+                document.getElementById('loginArea').classList.add('d-none');
+                document.getElementById('appArea').classList.remove('d-none');
+                
+                // Sembunyikan tombol Setup jika level operator
+                const setupBtn = document.getElementById('setupBtn');
+                if (setupBtn) {
+                    if (currentUserLevel !== 'admin') {
+                        setupBtn.style.display = 'none';
+                    } else {
+                        setupBtn.style.display = 'inline-block';
+                    }
+                }
+                
+                loadData();
+                
+                // Cek apakah perlu ganti password default
+                if (!currentPasswordChanged && pass === "@dm1n123") {
+                    const changePassModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+                    changePassModal.show();
+                }
+            } else {
+                showMessage(res.message, "error", "loginMessage");
+            }
+        } catch (err) {
+            showMessage("Gagal terhubung: " + err.message, "error", "loginMessage");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = textAsli;
+        }
+    }
+
+    async function BACKUP_prosesLogin(e) {
     e.preventDefault();
     const user = document.getElementById('loginUsername').value;
     const pass = document.getElementById('loginPassword').value;
@@ -1001,6 +1196,265 @@
           btn.innerHTML = textAsli;
       }
     }
+
+    /******************************
+     * FUNGSI SETUP USER
+     ******************************/
+
+    async function openSetupModal() {
+        if (currentUserLevel !== 'admin') {
+            showMessage("Anda tidak memiliki akses ke Setup", "error", "tableMessage");
+            return;
+        }
+        
+        // Hapus modal lama jika ada
+        const existingModal = document.getElementById('setupModal');
+        if (existingModal && existingModal.style.display !== 'none') {
+            const modal = bootstrap.Modal.getInstance(existingModal);
+            if (modal) modal.hide();
+        }
+        
+        // Reset form
+        document.getElementById('setupUsername').value = '';
+        document.getElementById('setupLevel').value = 'operator';
+        document.getElementById('setupPassword').value = '';
+        document.getElementById('editNewPassword').value = '';
+        document.getElementById('setupMessage').style.display = 'none';
+        document.getElementById('editMessage').style.display = 'none';
+        
+        // Load users
+        await loadUserTable();
+        
+        const modalElement = document.getElementById('setupModal');
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
+
+    async function loadUserTable() {
+        try {
+            const resp = await fetch(`${SCRIPT_URL}?action=getUsers`);
+            const res = await resp.json();
+            
+            const tbody = document.getElementById('userTableBody');
+            if (!tbody) return;
+            
+            if (res.success && res.data && res.data.length > 0) {
+                tbody.innerHTML = '';
+                // Populate dropdown edit
+                const editSelect = document.getElementById('editUserSelect');
+                editSelect.innerHTML = '<option value="">-- Pilih User --</option>';
+                
+                res.data.forEach(user => {
+                    // Skip current user? Boleh edit semua
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${escapeHtml(user.username)}</td>
+                            <td>${user.level === 'admin' ? '<span class="badge bg-primary">Admin</span>' : '<span class="badge bg-secondary">Operator</span>'}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm btn-sm-icon" onclick="deleteUserAccount('${escapeHtml(user.username)}')" title="Hapus User">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    editSelect.innerHTML += `<option value="${escapeHtml(user.username)}" data-level="${user.level}">${user.username} (${user.level})</option>`;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center">Belum ada user</td></tr>';
+            }
+        } catch (err) {
+            console.error("Load user error:", err);
+        }
+    }
+
+    function onSelectUserForEdit() {
+        const select = document.getElementById('editUserSelect');
+        const selectedUser = select.value;
+        if (selectedUser) {
+            document.getElementById('editNewPassword').focus();
+        }
+    }
+
+    async function createNewUser() {
+        const username = document.getElementById('setupUsername').value.trim();
+        const level = document.getElementById('setupLevel').value;
+        const password = document.getElementById('setupPassword').value;
+        
+        // Validasi
+        if (username.length < 6 || username.length > 8) {
+            showMessage("Username harus 6-8 karakter!", "warning", "setupMessage");
+            return;
+        }
+        if (password.length < 6 || password.length > 8) {
+            showMessage("Password harus 6-8 karakter!", "warning", "setupMessage");
+            return;
+        }
+        
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        
+        try {
+            const resp = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "createUser",
+                    username: username,
+                    password: password,
+                    level: level
+                })
+            });
+            const res = await resp.json();
+            
+            if (res.success) {
+                showMessage(res.message, "success", "setupMessage");
+                document.getElementById('setupUsername').value = '';
+                document.getElementById('setupPassword').value = '';
+                await loadUserTable();
+            } else {
+                showMessage(res.message, "error", "setupMessage");
+            }
+        } catch (err) {
+            showMessage("Error: " + err.message, "error", "setupMessage");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+
+    async function updateUserPassword() {
+        const username = document.getElementById('editUserSelect').value;
+        const newPassword = document.getElementById('editNewPassword').value;
+        
+        if (!username) {
+            showMessage("Pilih user terlebih dahulu!", "warning", "editMessage");
+            return;
+        }
+        if (newPassword.length < 6 || newPassword.length > 8) {
+            showMessage("Password baru harus 6-8 karakter!", "warning", "editMessage");
+            return;
+        }
+        
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        
+        try {
+            const resp = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "updateUserPassword",
+                    username: username,
+                    newPassword: newPassword
+                })
+            });
+            const res = await resp.json();
+            
+            if (res.success) {
+                showMessage(res.message, "success", "editMessage");
+                document.getElementById('editNewPassword').value = '';
+                await loadUserTable();
+            } else {
+                showMessage(res.message, "error", "editMessage");
+            }
+        } catch (err) {
+            showMessage("Error: " + err.message, "error", "editMessage");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+
+    async function deleteUserAccount(username) {
+        if (username === currentUsername) {
+            showMessage("Tidak dapat menghapus user yang sedang aktif!", "warning", "tableMessage");
+            return;
+        }
+        
+        if (confirm(`Hapus user "${username}"?`)) {
+            try {
+                const resp = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "deleteUser",
+                        username: username
+                    })
+                });
+                const res = await resp.json();
+                
+                if (res.success) {
+                    showMessage(res.message, "success", "tableMessage");
+                    await loadUserTable();
+                } else {
+                    showMessage(res.message, "error", "tableMessage");
+                }
+            } catch (err) {
+                showMessage("Error: " + err.message, "error", "tableMessage");
+            }
+        }
+    }
+
+    async function submitChangePasswordDefault() {
+        const newPassword = document.getElementById('newPassDefault').value;
+        const confirmPassword = document.getElementById('confirmPassDefault').value;
+        
+        if (newPassword.length < 6 || newPassword.length > 8) {
+            showMessage("Password baru harus 6-8 karakter!", "warning", "changePassMsg");
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            showMessage("Konfirmasi password tidak cocok!", "warning", "changePassMsg");
+            return;
+        }
+        
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        
+        try {
+            const resp = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "changePassword",
+                    username: currentUsername,
+                    oldPassword: "@dm1n123",
+                    newPassword: newPassword
+                })
+            });
+            const res = await resp.json();
+            
+            if (res.success) {
+                showMessage("Password berhasil diubah! Silakan login ulang.", "success", "changePassMsg");
+                currentPasswordChanged = true;
+                setTimeout(() => {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
+                    modal.hide();
+                    logout();
+                }, 2000);
+            } else {
+                showMessage(res.message, "error", "changePassMsg");
+            }
+        } catch (err) {
+            showMessage("Error: " + err.message, "error", "changePassMsg");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
 
     /*****************************************
      * Fungsi untuk menampilkan modal Tentang 
