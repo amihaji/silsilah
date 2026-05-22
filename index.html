@@ -1292,7 +1292,7 @@
             existingModal.remove();
         }
         
-        // Buat modal baru
+        // Buat modal BARU (tanpa form Edit Password)
         const modalHtml = `
             <div class="modal fade" id="setupModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-md">
@@ -1302,61 +1302,42 @@
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <!-- Form Create/Edit User -->
-                            <div class="card mb-3 border">
+                            <!-- Form Create User -->
+                            <div class="card border mb-3">
                                 <div class="card-header bg-light">
-                                    <strong><i class="fas fa-user-plus me-1"></i> Create User</strong>
+                                    <strong><i class="fas fa-user-plus me-1"></i> Buat User Baru</strong>
                                 </div>
                                 <div class="card-body">
-                                    <div class="mb-2">
-                                        <label class="form-label small">Nama User (6-8 karakter)</label>
-                                        <input type="text" id="setupUsername" class="form-control form-control-sm" 
-                                            placeholder="contoh: operator1" maxlength="8" 
-                                            oninput="this.value = this.value.toLowerCase().substring(0,8)">
+                                    <div class="row g-2">
+                                        <div class="col-md-5">
+                                            <input type="text" id="setupUsername" class="form-control form-control-sm" 
+                                                placeholder="Username (6-8 karakter)" maxlength="8" 
+                                                oninput="this.value = this.value.toLowerCase().substring(0,8)">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <select id="setupLevel" class="form-select form-select-sm">
+                                                <option value="operator">Operator</option>
+                                                <option value="admin">Admin</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="input-group input-group-sm">
+                                                <input type="password" id="setupPassword" class="form-control" 
+                                                    placeholder="Password (6-8 karakter)" maxlength="8">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="generateRandomPassword()">
+                                                    <i class="fas fa-dice"></i>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="mb-2">
-                                        <label class="form-label small">Level</label>
-                                        <select id="setupLevel" class="form-select form-select-sm">
-                                            <option value="operator">Operator</option>
-                                            <option value="admin">Admin</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-2">
-                                        <label class="form-label small">Password (6-8 karakter)</label>
-                                        <input type="password" id="setupPassword" class="form-control form-control-sm" 
-                                            placeholder="minimal 6 karakter" maxlength="8">
-                                    </div>
-                                    <div id="setupMessage" class="form-msg small" style="font-size: 12px;"></div>
+                                    <div id="setupMessage" class="form-msg small mt-2" style="font-size: 12px;"></div>
                                     <button class="btn btn-primary btn-sm w-100 mt-2" onclick="createNewUser()">
                                         <i class="fas fa-save"></i> Simpan User
                                     </button>
                                 </div>
                             </div>
                             
-                            <!-- Edit Password -->
-                            <div class="card mb-3 border">
-                                <div class="card-header bg-light">
-                                    <strong><i class="fas fa-key me-1"></i> Edit Password User</strong>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-2">
-                                        <label class="form-label small">Pilih User</label>
-                                        <select id="editUserSelect" class="form-select form-select-sm" onchange="onSelectUserForEdit()">
-                                            <option value="">-- Pilih User --</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-2">
-                                        <label class="form-label small">Password Baru (6-8 karakter)</label>
-                                        <input type="password" id="editNewPassword" class="form-control form-control-sm" maxlength="8">
-                                    </div>
-                                    <div id="editMessage" class="form-msg small" style="font-size: 12px;"></div>
-                                    <button class="btn btn-warning btn-sm w-100 mt-2" onclick="updateUserPassword()">
-                                        <i class="fas fa-pencil"></i> Update Password
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <!-- Daftar User -->
+                            <!-- Daftar User dengan Aksi Reset & Delete -->
                             <div class="card border">
                                 <div class="card-header bg-light">
                                     <strong><i class="fas fa-users me-1"></i> Daftar User</strong>
@@ -1365,10 +1346,10 @@
                                     <div class="user-table-container">
                                         <table class="user-table">
                                             <thead>
-                                                <tr><th>Username</th><th>Level</th><th style="width:70px">Aksi</th></tr>
+                                                <tr><th>Username</th><th>Level</th><th style="width:80px">Aksi</th></tr>
                                             </thead>
                                             <tbody id="userTableBody">
-                                                <tr><td colspan="3" class="text-center">Loading...</td></tr>
+                                                <tr><td colspan="3" class="text-center py-3">Loading...</td></tr>
                                             </tbody>
                                         </table>
                                     </div>
@@ -1393,13 +1374,11 @@
         
         // Bersihkan backdrop saat modal ditutup
         modalElement.addEventListener('hidden.bs.modal', function() {
-            // Hapus backdrop yang mungkin tersisa
             const backdrops = document.querySelectorAll('.modal-backdrop');
             backdrops.forEach(backdrop => backdrop.remove());
             document.body.classList.remove('modal-open');
             document.body.style.overflow = '';
             document.body.style.paddingRight = '';
-            // Hapus modal dari DOM
             modalElement.remove();
         });
         
