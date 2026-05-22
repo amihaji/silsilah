@@ -458,6 +458,10 @@
     .btn-sm-icon { width: 28px; height: 28px; padding: 0; border-radius: 50%; font-size: 12px; }
     /***** Akhir Setup Modal Styles *****/
 
+    /* Pastikan modal-backdrop hilang sempurna */
+    .modal-backdrop { display: none !important; }
+    .modal-backdrop.show { display: none !important; }
+
     /*****************************************
     /* Untuk mobile device width 600px-768px */
     /****************************************/
@@ -1168,68 +1172,206 @@
         }
     }
 
-    async function BACKUP_prosesLogin(e) {
-    e.preventDefault();
-    const user = document.getElementById('loginUsername').value;
-    const pass = document.getElementById('loginPassword').value;
-    const btn = e.target.querySelector('button[type="submit"]');
-    
-    // Spinner hanya pada tombol (Point 1)
-    const textAsli = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';
-
-    try {
-      const resp = await fetch(`${SCRIPT_URL}?action=login&u=${user}&p=${pass}`);
-      const res = await resp.json();
-        if (res.success) {
-            document.getElementById('loginArea').classList.add('d-none');
-            document.getElementById('appArea').classList.remove('d-none');
-            loadData();
-        } else {
-             showMessage(res.message, "error", "loginMessage");
+    async function createNewUser() {
+        const username = document.getElementById('setupUsername').value.trim();
+        const level = document.getElementById('setupLevel').value;
+        const password = document.getElementById('setupPassword').value;
+        
+        // Validasi
+        if (username.length < 6 || username.length > 8) {
+            showMessage("Username harus 6-8 karakter!", "warning", "setupMessage");
+            return;
         }
-      } catch (err) {
-          showMessage("Gagal terhubung: " + err.message, "error", "loginMessage");
-      } finally {
-          btn.disabled = false;
-          btn.innerHTML = textAsli;
-      }
+        if (password.length < 6 || password.length > 8) {
+            showMessage("Password harus 6-8 karakter!", "warning", "setupMessage");
+            return;
+        }
+        
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        
+        try {
+            const resp = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "createUser",
+                    username: username,
+                    password: password,
+                    level: level
+                })
+            });
+            const res = await resp.json();
+            
+            if (res.success) {
+                showMessage(res.message, "success", "setupMessage");
+                // Reset form
+                document.getElementById('setupUsername').value = '';
+                document.getElementById('setupPassword').value = '';
+                // Refresh tabel user
+                await loadUserTable();
+                
+                // Tambahan: hilangkan pesan setelah 2 detik
+                setTimeout(() => {
+                    const msgEl = document.getElementById('setupMessage');
+                    if (msgEl) msgEl.style.display = 'none';
+                }, 2000);
+            } else {
+                showMessage(res.message, "error", "setupMessage");
+            }
+        } catch (err) {
+            showMessage("Error: " + err.message, "error", "setupMessage");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
     }
 
     /******************************
-     * FUNGSI SETUP USER
-     ******************************/
-
+    * FUNGSI SETUP USER
+    ******************************/
     async function openSetupModal() {
         if (currentUserLevel !== 'admin') {
             showMessage("Anda tidak memiliki akses ke Setup", "error", "tableMessage");
             return;
         }
         
-        // Hapus modal lama jika ada
+        // Cek apakah modal sudah ada dan terbuka
         const existingModal = document.getElementById('setupModal');
-        if (existingModal && existingModal.style.display !== 'none') {
-            const modal = bootstrap.Modal.getInstance(existingModal);
-            if (modal) modal.hide();
+        if (existingModal) {
+            // Jika modal sudah ada, tutup dulu dengan benar
+            const existingBootstrapModal = bootstrap.Modal.getInstance(existingModal);
+            if (existingBootstrapModal) {
+                existingBootstrapModal.hide();
+            }
+            // Hapus backdrop yang mungkin tersisa
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            // Tunggu sebentar sebelum membuka ulang
+            await new Promise(resolve => setTimeout(resolve, 300));
+            // Hapus modal lama dari DOM
+            existingModal.remove();
         }
         
-        // Reset form
-        document.getElementById('setupUsername').value = '';
-        document.getElementById('setupLevel').value = 'operator';
-        document.getElementById('setupPassword').value = '';
-        document.getElementById('editNewPassword').value = '';
-        document.getElementById('setupMessage').style.display = 'none';
-        document.getElementById('editMessage').style.display = 'none';
+        // Buat modal baru
+        const modalHtml = `
+            <div class="modal fade" id="setupModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-md">
+                    <div class="modal-content">
+                        <div class="modal-header" style="background-color: #1A365D; color: white;">
+                            <h5 class="modal-title"><i class="fas fa-cog me-2"></i>Pengaturan User</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Form Create/Edit User -->
+                            <div class="card mb-3 border">
+                                <div class="card-header bg-light">
+                                    <strong><i class="fas fa-user-plus me-1"></i> Create User</strong>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <label class="form-label small">Nama User (6-8 karakter)</label>
+                                        <input type="text" id="setupUsername" class="form-control form-control-sm" 
+                                            placeholder="contoh: operator1" maxlength="8" 
+                                            oninput="this.value = this.value.toLowerCase().substring(0,8)">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small">Level</label>
+                                        <select id="setupLevel" class="form-select form-select-sm">
+                                            <option value="operator">Operator</option>
+                                            <option value="admin">Admin</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small">Password (6-8 karakter)</label>
+                                        <input type="password" id="setupPassword" class="form-control form-control-sm" 
+                                            placeholder="minimal 6 karakter" maxlength="8">
+                                    </div>
+                                    <div id="setupMessage" class="form-msg small" style="font-size: 12px;"></div>
+                                    <button class="btn btn-primary btn-sm w-100 mt-2" onclick="createNewUser()">
+                                        <i class="fas fa-save"></i> Simpan User
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Edit Password -->
+                            <div class="card mb-3 border">
+                                <div class="card-header bg-light">
+                                    <strong><i class="fas fa-key me-1"></i> Edit Password User</strong>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <label class="form-label small">Pilih User</label>
+                                        <select id="editUserSelect" class="form-select form-select-sm" onchange="onSelectUserForEdit()">
+                                            <option value="">-- Pilih User --</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small">Password Baru (6-8 karakter)</label>
+                                        <input type="password" id="editNewPassword" class="form-control form-control-sm" maxlength="8">
+                                    </div>
+                                    <div id="editMessage" class="form-msg small" style="font-size: 12px;"></div>
+                                    <button class="btn btn-warning btn-sm w-100 mt-2" onclick="updateUserPassword()">
+                                        <i class="fas fa-pencil"></i> Update Password
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Daftar User -->
+                            <div class="card border">
+                                <div class="card-header bg-light">
+                                    <strong><i class="fas fa-users me-1"></i> Daftar User</strong>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="user-table-container">
+                                        <table class="user-table">
+                                            <thead>
+                                                <tr><th>Username</th><th>Level</th><th style="width:70px">Aksi</th></tr>
+                                            </thead>
+                                            <tbody id="userTableBody">
+                                                <tr><td colspan="3" class="text-center">Loading...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
         
-        // Load users
-        await loadUserTable();
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
         
         const modalElement = document.getElementById('setupModal');
-        const modal = new bootstrap.Modal(modalElement);
+        const modal = new bootstrap.Modal(modalElement, {
+            backdrop: true,
+            keyboard: true
+        });
+        
+        // Bersihkan backdrop saat modal ditutup
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            // Hapus backdrop yang mungkin tersisa
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            // Hapus modal dari DOM
+            modalElement.remove();
+        });
+        
         modal.show();
+        await loadUserTable();
     }
-
+    
     async function loadUserTable() {
         try {
             const resp = await fetch(`${SCRIPT_URL}?action=getUsers`);
@@ -1240,30 +1382,44 @@
             
             if (res.success && res.data && res.data.length > 0) {
                 tbody.innerHTML = '';
-                // Populate dropdown edit
                 const editSelect = document.getElementById('editUserSelect');
-                editSelect.innerHTML = '<option value="">-- Pilih User --</option>';
+                if (editSelect) {
+                    editSelect.innerHTML = '<option value="">-- Pilih User --</option>';
+                }
                 
                 res.data.forEach(user => {
-                    // Skip current user? Boleh edit semua
+                    // Skip user admin agar tidak bisa dihapus? Boleh ditampilkan tapi tombol hapus disabled
+                    const isAdmin = (user.username === 'admin');
+                    const deleteButton = isAdmin 
+                        ? '<button class="btn btn-secondary btn-sm btn-sm-icon" disabled title="Admin tidak bisa dihapus"><i class="fas fa-trash"></i></button>'
+                        : `<button class="btn btn-danger btn-sm btn-sm-icon" onclick="deleteUserAccount('${escapeHtml(user.username)}')" title="Hapus User"><i class="fas fa-trash"></i></button>`;
+                    
                     tbody.innerHTML += `
                         <tr>
                             <td>${escapeHtml(user.username)}</td>
                             <td>${user.level === 'admin' ? '<span class="badge bg-primary">Admin</span>' : '<span class="badge bg-secondary">Operator</span>'}</td>
-                            <td>
-                                <button class="btn btn-danger btn-sm btn-sm-icon" onclick="deleteUserAccount('${escapeHtml(user.username)}')" title="Hapus User">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
+                            <td>${deleteButton}</td>
                         </tr>
                     `;
-                    editSelect.innerHTML += `<option value="${escapeHtml(user.username)}" data-level="${user.level}">${user.username} (${user.level})</option>`;
+                    if (editSelect && !isAdmin) {
+                        editSelect.innerHTML += `<option value="${escapeHtml(user.username)}">${user.username} (${user.level})</option>`;
+                    }
                 });
+                
+                // Tambahkan admin ke dropdown edit jika perlu (bisa edit password admin)
+                const adminUser = res.data.find(u => u.username === 'admin');
+                if (adminUser && editSelect) {
+                    editSelect.innerHTML += `<option value="admin">admin (admin)</option>`;
+                }
             } else {
                 tbody.innerHTML = '<tr><td colspan="3" class="text-center">Belum ada user</td></tr>';
             }
         } catch (err) {
             console.error("Load user error:", err);
+            const tbody = document.getElementById('userTableBody');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">Gagal memuat data user</td></tr>';
+            }
         }
     }
 
@@ -1356,6 +1512,12 @@
                 showMessage(res.message, "success", "editMessage");
                 document.getElementById('editNewPassword').value = '';
                 await loadUserTable();
+                
+                // Tambahan: hilangkan pesan setelah 2 detik
+                setTimeout(() => {
+                    const msgEl = document.getElementById('editMessage');
+                    if (msgEl) msgEl.style.display = 'none';
+                }, 2000);
             } else {
                 showMessage(res.message, "error", "editMessage");
             }
@@ -1366,33 +1528,34 @@
             btn.innerHTML = originalText;
         }
     }
-
+    
     async function deleteUserAccount(username) {
         if (username === currentUsername) {
             showMessage("Tidak dapat menghapus user yang sedang aktif!", "warning", "tableMessage");
             return;
         }
         
-        if (confirm(`Hapus user "${username}"?`)) {
-            try {
-                const resp = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: "deleteUser",
-                        username: username
-                    })
-                });
-                const res = await resp.json();
-                
-                if (res.success) {
-                    showMessage(res.message, "success", "tableMessage");
-                    await loadUserTable();
-                } else {
-                    showMessage(res.message, "error", "tableMessage");
-                }
-            } catch (err) {
-                showMessage("Error: " + err.message, "error", "tableMessage");
+        // Gunakan confirm bawaan browser saja, tidak usah modal custom
+        if (!confirm(`Hapus user "${username}"?`)) return;
+        
+        try {
+            const resp = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "deleteUser",
+                    username: username
+                })
+            });
+            const res = await resp.json();
+            
+            if (res.success) {
+                showMessage(res.message, "success", "tableMessage");
+                await loadUserTable();
+            } else {
+                showMessage(res.message, "error", "tableMessage");
             }
+        } catch (err) {
+            showMessage("Error: " + err.message, "error", "tableMessage");
         }
     }
 
