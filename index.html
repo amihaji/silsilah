@@ -729,6 +729,7 @@
                 </button>
                 
                 <!-- Menu yang akan collapse di mobile -->
+                <!--  
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
@@ -748,6 +749,28 @@
                         </li>
                     </ul>
                 </div>
+                -->
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto" id="navbarNavList">
+                        <li class="nav-item" id="navAboutItem">
+                            <button class="btn btn-primary btn-sm ms-2" id="aboutBtn" style="cursor: pointer;">
+                                <i class="fas fa-info-circle me-1"></i> About
+                            </button>
+                        </li>
+                        <li class="nav-item" id="navSetupItem">
+                            <button class="btn btn-primary btn-sm ms-2" id="setupBtn" style="cursor: pointer;">
+                                <i class="fas fa-cog me-1"></i> Setup
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="btn btn-secondary btn-sm ms-2" onclick="logout()" style="cursor: pointer;">
+                                <i class="fas fa-sign-out-alt me-1"></i> Logout
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
             </div>
         </nav>
 
@@ -1070,7 +1093,7 @@
     // *************************      
     // DEKLARASI VARIABEL GLOBAL
     // **************************
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwcz8i9vvzS9DcCIaBkOUp2fvnGQI17d6wyKSml7FM04zDpzNNZn73GFroDLuk92JOP/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzyO4quuv3xSlxDdotoyE_gb90u3NZqo33HW2PxzKxOXswl8T2-kMgSxFW-yIRmfe8D/exec";
     let globalData = [];
     let modalInstance;
     let confirmModalInstance;
@@ -1092,7 +1115,7 @@
             
         const fLogin = document.getElementById('formLogin');
         if (fLogin) fLogin.onsubmit = prosesLogin;
-        setupNavbarCollapseListener();
+        /* setupNavbarCollapseListener(); */
         
         const fKeluarga = document.getElementById('formKeluarga');
         if (fKeluarga) fKeluarga.onsubmit = simpanData;
@@ -1121,7 +1144,6 @@
                 updateSetupButtonVisibility();
             });
         }
-        // setupNavbarCollapseListener();
         initializeTooltips();
     });
 
@@ -1243,6 +1265,20 @@
 
     // Fungsi baru untuk update visibilitas tombol Setup (desktop & mobile)
     function updateSetupButtonVisibility() {
+        const setupBtn = document.getElementById('setupBtn');
+        const navSetupItem = document.getElementById('navSetupItem');
+        if (currentUserLevel !== 'admin') {
+            // Sembunyikan tombol Setup secara permanen
+            if (setupBtn) setupBtn.style.display = 'none';
+            if (navSetupItem) navSetupItem.style.display = 'none';
+        } else {
+            // Tampilkan tombol Setup
+            if (setupBtn) setupBtn.style.display = 'inline-block';
+            if (navSetupItem) navSetupItem.style.display = 'list-item';
+        }
+    }
+
+    function BACKUP_updateSetupButtonVisibility() {
         const setupBtnDesktop = document.getElementById('setupBtn');
         
         if (currentUserLevel !== 'admin') {
@@ -1275,7 +1311,7 @@
     }
 
     // Panggil fungsi ini saat navbar collapse terbuka
-    function setupNavbarCollapseListener() {
+    function BACKUP_setupNavbarCollapseListener() {
         const navbarToggler = document.querySelector('.navbar-toggler');
         const navbarCollapse = document.getElementById('navbarNav');
         if (navbarToggler && navbarCollapse) {
@@ -1643,62 +1679,6 @@
         }
     }
 
-    async function submitChangePasswordDefault() {
-        const newPassword = document.getElementById('newPassDefault').value;
-        const confirmPassword = document.getElementById('confirmPassDefault').value;
-        
-        if (newPassword.length < 6 || newPassword.length > 8) {
-            showMessage("Password baru harus 6-8 karakter!", "warning", "changePassMsg");
-            return;
-        }
-        if (newPassword !== confirmPassword) {
-            showMessage("Konfirmasi password tidak cocok!", "warning", "changePassMsg");
-            return;
-        }
-        if (newPassword === "@dm1n123") {
-            showMessage("Password baru tidak boleh sama dengan default!", "warning", "changePassMsg");
-            return;
-        }
-        
-        const btn = event.target;
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-        
-        try {
-            const resp = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: "changePassword",
-                    username: currentUsername,
-                    oldPassword: "@dm1n123",
-                    newPassword: newPassword
-                })
-            });
-            const res = await resp.json();
-            
-            if (res.success) {
-                showMessage("Password berhasil diubah! Silakan login ulang.", "success", "changePassMsg");
-                currentPasswordChanged = true;
-                setTimeout(() => {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
-                    if (modal) modal.hide();
-                    logout();
-                }, 2000);
-            } else {
-                showMessage(res.message, "error", "changePassMsg");
-            }
-        } catch (err) {
-            showMessage("Error: " + err.message, "error", "changePassMsg");
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }
-    }
-
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
@@ -1723,20 +1703,20 @@
     // Reset password user ke default "@dm1n123"
     async function resetUserPassword(username) {
         if (username === currentUsername) {
-            showMessage("Tidak dapat reset password sendiri! Gunakan edit password.", "warning", "tableMessage");
+            showMessage("Tidak dapat reset password sendiri!", "warning", "tableMessage");
             return;
         }
         
         if (!confirm(`Reset password user "${username}" ke default "@dm1n123"?`)) return;
         
-        // Tampilkan loading
         showLoader(true, "Merreset password...");
         
         try {
-            const resp = await fetch(SCRIPT_URL, {
+            const response = await fetch(SCRIPT_URL, {
                 method: 'POST',
+                mode: 'cors',  // Pastikan mode cors
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     action: "updateUserPassword",
@@ -1745,24 +1725,85 @@
                 })
             });
             
-            if (!resp.ok) {
-                throw new Error(`HTTP error! status: ${resp.status}`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
-            const res = await resp.json();
+            const res = await response.json();
             
             if (res.success) {
                 showMessage(`Password "${username}" berhasil direset ke @dm1n123`, "success", "tableMessage");
-                // Refresh tabel user
                 await loadUserTable();
             } else {
                 showMessage(res.message || "Gagal reset password", "error", "tableMessage");
             }
         } catch (err) {
             console.error("Reset password error:", err);
-            showMessage("Error: " + err.message + ". Periksa koneksi internet.", "error", "tableMessage");
+            showMessage("Error: " + err.message + ". Coba refresh halaman.", "error", "tableMessage");
         } finally {
             showLoader(false);
+        }
+    }
+
+    async function submitChangePasswordDefault() {
+        const newPassword = document.getElementById('newPassDefault').value;
+        const confirmPassword = document.getElementById('confirmPassDefault').value;
+        
+        if (newPassword.length < 6 || newPassword.length > 8) {
+            showMessage("Password baru harus 6-8 karakter!", "warning", "changePassMsg");
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            showMessage("Konfirmasi password tidak cocok!", "warning", "changePassMsg");
+            return;
+        }
+        if (newPassword === "@dm1n123") {
+            showMessage("Password baru tidak boleh sama dengan default!", "warning", "changePassMsg");
+            return;
+        }
+        
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: "changePassword",
+                    username: currentUsername,
+                    oldPassword: "@dm1n123",
+                    newPassword: newPassword
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const res = await response.json();
+            
+            if (res.success) {
+                showMessage("Password berhasil diubah! Silakan login ulang.", "success", "changePassMsg");
+                setTimeout(() => {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
+                    if (modal) modal.hide();
+                    logout();
+                }, 2000);
+            } else {
+                showMessage(res.message, "error", "changePassMsg");
+            }
+        } catch (err) {
+            console.error("Change password error:", err);
+            showMessage("Error: " + err.message + ". Coba refresh halaman.", "error", "changePassMsg");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
         }
     }
     
