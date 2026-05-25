@@ -529,14 +529,9 @@
         .navbar-nav li { margin: 0 !important; padding: 0 !important; }
         
         /* Sembunyikan tombol Setup di mobile jika level operator */
-        .setup-item-mobile.hide-on-mobile {
-            display: none !important;
-        }
-        
+        .setup-item-mobile.hide-on-mobile { display: none !important; }
         /* Atau gunakan pendekatan JS, tapi pastikan class ini diterapkan */
-        .btn-setup-hidden {
-            display: none !important;
-        }
+        .btn-setup-hidden { display: none !important; }
 
         /* Header image mobile */
         .hero-header { height: 120px; }
@@ -1075,7 +1070,7 @@
     // *************************      
     // DEKLARASI VARIABEL GLOBAL
     // **************************
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9_Xe_JlUupLsajO3c-_N-uBahqOCgnSOk4xC9AJvy20x8Bthh83UTwdIMfJwgkQ2A/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwcz8i9vvzS9DcCIaBkOUp2fvnGQI17d6wyKSml7FM04zDpzNNZn73GFroDLuk92JOP/exec";
     let globalData = [];
     let modalInstance;
     let confirmModalInstance;
@@ -1088,6 +1083,7 @@
     *********************/
     document.addEventListener('DOMContentLoaded', function() {
         // Daftarkan modal utama
+      
         const elForm = document.getElementById('formModal');
         if (elForm) modalInstance = new bootstrap.Modal(elForm);
         
@@ -1096,7 +1092,8 @@
             
         const fLogin = document.getElementById('formLogin');
         if (fLogin) fLogin.onsubmit = prosesLogin;
-
+        setupNavbarCollapseListener();
+        
         const fKeluarga = document.getElementById('formKeluarga');
         if (fKeluarga) fKeluarga.onsubmit = simpanData;
 
@@ -1124,7 +1121,7 @@
                 updateSetupButtonVisibility();
             });
         }
-        setupNavbarCollapseListener();
+        // setupNavbarCollapseListener();
         initializeTooltips();
     });
 
@@ -1243,6 +1240,7 @@
             modalElement.remove();
         });
     }
+
     // Fungsi baru untuk update visibilitas tombol Setup (desktop & mobile)
     function updateSetupButtonVisibility() {
         const setupBtnDesktop = document.getElementById('setupBtn');
@@ -1280,7 +1278,6 @@
     function setupNavbarCollapseListener() {
         const navbarToggler = document.querySelector('.navbar-toggler');
         const navbarCollapse = document.getElementById('navbarNav');
-        
         if (navbarToggler && navbarCollapse) {
             navbarCollapse.addEventListener('show.bs.collapse', function() {
                 updateSetupButtonVisibility();
@@ -1290,7 +1287,7 @@
             });
         }
     }
-
+    
     async function createNewUser() {
         const username = document.getElementById('setupUsername').value.trim();
         const level = document.getElementById('setupLevel').value;
@@ -1649,6 +1646,7 @@
     async function submitChangePasswordDefault() {
         const newPassword = document.getElementById('newPassDefault').value;
         const confirmPassword = document.getElementById('confirmPassDefault').value;
+        
         if (newPassword.length < 6 || newPassword.length > 8) {
             showMessage("Password baru harus 6-8 karakter!", "warning", "changePassMsg");
             return;
@@ -1661,10 +1659,12 @@
             showMessage("Password baru tidak boleh sama dengan default!", "warning", "changePassMsg");
             return;
         }
+        
         const btn = event.target;
         const originalText = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        
         try {
             const resp = await fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -1765,7 +1765,7 @@
             showLoader(false);
         }
     }
-
+    
     /*****************************************
      * Fungsi untuk menampilkan modal Tentang 
      * **************************************/
