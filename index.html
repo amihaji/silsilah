@@ -1429,7 +1429,63 @@
     }
 
     // Submit ganti password default
-    async function submitChangePasswordDefault() {
+    submitChangePasswordDefault()
+        async function submitChangePasswordDefault() {
+        const newPassword = document.getElementById('newPassDefault').value;
+        const confirmPassword = document.getElementById('confirmPassDefault').value;
+        
+        if (newPassword.length < 6 || newPassword.length > 8) {
+            showMessage("Password baru harus 6-8 karakter!", "warning", "changePassMsg");
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            showMessage("Konfirmasi password tidak cocok!", "warning", "changePassMsg");
+            return;
+        }
+        if (newPassword === "@dm1n123") {
+            showMessage("Password baru tidak boleh sama dengan default!", "warning", "changePassMsg");
+            return;
+        }
+        
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        
+        try {
+            const resp = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "changePassword",
+                    username: currentUsername,
+                    oldPassword: "@dm1n123",
+                    newPassword: newPassword
+                })
+            });
+            const res = await resp.json();
+            
+            console.log("Change password response:", res); // Untuk debugging
+            
+            if (res.success) {
+                showMessage("Password berhasil diubah! Silakan login ulang.", "success", "changePassMsg");
+                setTimeout(() => {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
+                    if (modal) modal.hide();
+                    logout();
+                }, 2000);
+            } else {
+                showMessage(res.message, "error", "changePassMsg");
+            }
+        } catch (err) {
+            console.error("Change password error:", err);
+            showMessage("Error: " + err.message, "error", "changePassMsg");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+    
+    async function BACKUP_submitChangePasswordDefault() {
         const newPassword = document.getElementById('newPassDefault').value;
         const confirmPassword = document.getElementById('confirmPassDefault').value;
         
