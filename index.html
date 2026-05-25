@@ -545,7 +545,11 @@
             border-radius: 8px !important;
         }
         .navbar-nav li { margin: 0 !important; padding: 0 !important; }
-        
+        /* Sembunyikan elemen dengan class .hide-on-mobile */
+        .hide-on-mobile {
+            display: none !important;
+        } 
+
         /* Header image mobile */
         .hero-header { height: 120px; }
         .hero-header h2 { font-size: 1.2rem; }
@@ -742,6 +746,7 @@
                 </button>
                 
                 <!-- Menu yang akan collapse di mobile -->
+                <!--
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
@@ -751,6 +756,27 @@
                         </li>
                         <li class="nav-item">
                             <button  class="btn btn-primary btn-sm ms-2" href="#" id="setupBtn" style="cursor: pointer;">
+                                <i class="fas fa-cog me-1"></i> Setup
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="btn btn-secondary btn-sm ms-2" onclick="logout()" style="cursor: pointer;">
+                                <i class="fas fa-sign-out-alt me-1"></i> Logout
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                -->
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item" id="navAboutItem">
+                            <button class="btn btn-primary btn-sm ms-2" id="aboutBtn" style="cursor: pointer;">
+                                <i class="fas fa-info-circle me-1"></i> About
+                            </button>
+                        </li>
+                        <li class="nav-item" id="navSetupItem">
+                            <button class="btn btn-primary btn-sm ms-2" id="setupBtn" style="cursor: pointer;">
                                 <i class="fas fa-cog me-1"></i> Setup
                             </button>
                         </li>
@@ -1100,6 +1126,17 @@
         const fKeluarga = document.getElementById('formKeluarga');
         if (fKeluarga) fKeluarga.onsubmit = simpanData;
 
+        // Event listener untuk navbar collapse (mobile)
+        const navbarCollapse = document.getElementById('navbarNav');
+        if (navbarCollapse) {
+            navbarCollapse.addEventListener('show.bs.collapse', function() {
+                updateSetupButtonVisibility();
+            });
+            navbarCollapse.addEventListener('shown.bs.collapse', function() {
+                updateSetupButtonVisibility();
+            });
+        }
+
         // Pastikan event listener terpasang setelah halaman selesai dimuat
         const aboutBtn = document.getElementById('aboutBtn');
         if (aboutBtn) {
@@ -1110,6 +1147,7 @@
         }
         initializeTooltips();
     });
+
     function initializeTooltips() {
       const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
       tooltipTriggerList.forEach(el => {
@@ -1286,6 +1324,42 @@
 
     // Update visibility tombol Setup
     function updateSetupButtonVisibility() {
+        const setupBtn = document.getElementById('setupBtn');
+        const navSetupItem = document.getElementById('navSetupItem');
+        
+        if (currentUserLevel !== 'admin') {
+            // Sembunyikan tombol Setup di mana pun
+            if (setupBtn) {
+                setupBtn.style.display = 'none';
+                setupBtn.style.visibility = 'hidden';
+            }
+            if (navSetupItem) {
+                navSetupItem.style.display = 'none';
+            }
+            // Juga cari tombol setup di dalam navbar collapse (untuk mobile)
+            const allSetupBtns = document.querySelectorAll('#setupBtn, .setup-btn, [data-setup-btn]');
+            allSetupBtns.forEach(btn => {
+                btn.style.display = 'none';
+                btn.style.visibility = 'hidden';
+            });
+        } else {
+            // Tampilkan tombol Setup
+            if (setupBtn) {
+                setupBtn.style.display = 'inline-block';
+                setupBtn.style.visibility = 'visible';
+            }
+            if (navSetupItem) {
+                navSetupItem.style.display = 'list-item';
+            }
+            const allSetupBtns = document.querySelectorAll('#setupBtn, .setup-btn, [data-setup-btn]');
+            allSetupBtns.forEach(btn => {
+                btn.style.display = 'inline-block';
+                btn.style.visibility = 'visible';
+            });
+        }
+    }
+
+    function BACKUP_updateSetupButtonVisibility() {
         const setupBtn = document.getElementById('setupBtn');
         if (currentUserLevel !== 'admin') {
             if (setupBtn) setupBtn.style.display = 'none';
@@ -1484,7 +1558,7 @@
             btn.innerHTML = originalText;
         }
     }
-    
+
     async function BACKUP_submitChangePasswordDefault() {
         const newPassword = document.getElementById('newPassDefault').value;
         const confirmPassword = document.getElementById('confirmPassDefault').value;
