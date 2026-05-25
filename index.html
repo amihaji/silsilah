@@ -1132,7 +1132,7 @@
     /******************************
     * Fungsi untuk login aplikasi
     ******************************/
-   async function prosesLogin(e) {
+    async function prosesLogin(e) {
         e.preventDefault();
         const user = document.getElementById('loginUsername').value;
         const pass = document.getElementById('loginPassword').value;
@@ -1226,55 +1226,6 @@
         modalElement.addEventListener('hidden.bs.modal', function() {
             modalElement.remove();
         });
-    }
-
-    async function BACKUP_prosesLogin(e) {
-        e.preventDefault();
-        const user = document.getElementById('loginUsername').value;
-        const pass = document.getElementById('loginPassword').value;
-        const btn = e.target.querySelector('button[type="submit"]');
-        
-        const textAsli = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';
-
-        try {
-            const resp = await fetch(`${SCRIPT_URL}?action=login&u=${user}&p=${pass}`);
-            const res = await resp.json();
-            if (res.success) {
-                currentUserLevel = res.level || 'operator';
-                currentUsername = res.username || user;
-                currentPasswordChanged = res.passwordChanged || false;
-                
-                document.getElementById('loginArea').classList.add('d-none');
-                document.getElementById('appArea').classList.remove('d-none');
-                
-                // Sembunyikan tombol Setup jika level operator
-                const setupBtn = document.getElementById('setupBtn');
-                if (setupBtn) {
-                    if (currentUserLevel !== 'admin') {
-                        setupBtn.style.display = 'none';
-                    } else {
-                        setupBtn.style.display = 'inline-block';
-                    }
-                }
-                
-                loadData();
-                
-                // Cek apakah perlu ganti password default
-                if (!currentPasswordChanged && pass === "@dm1n123") {
-                    const changePassModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
-                    changePassModal.show();
-                }
-            } else {
-                showMessage(res.message, "error", "loginMessage");
-            }
-        } catch (err) {
-            showMessage("Gagal terhubung: " + err.message, "error", "loginMessage");
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = textAsli;
-        }
     }
 
     async function createNewUser() {
@@ -1393,45 +1344,31 @@
     }
 
     // Create user
-    async function createNewUser() {
-        const username = document.getElementById('setupUsername').value.trim();
-        const level = document.getElementById('setupLevel').value;
-        const password = document.getElementById('setupPassword').value;
-        
-        if (username.length < 6 || username.length > 8) {
-            showMessage("Username 6-8 karakter!", "warning", "setupMessage");
-            return;
-        }
-        if (password.length < 6 || password.length > 8) {
-            showMessage("Password 6-8 karakter!", "warning", "setupMessage");
-            return;
+    // Menjadi createNewUser(ss, username, password, level)
+    function createNewUser(ss, username, password, level) {
+        let sheet = ss.getSheetByName(CONFIG.SHEET_USERS);
+        if (!sheet) {
+            sheet = ss.insertSheet(CONFIG.SHEET_USERS);
+            sheet.getRange(1, 1, 1, 4).setValues([['Username', 'Password', 'Level', 'PasswordChanged']]);
         }
         
-        const btn = event.target;
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-        
-        try {
-            const resp = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "createUser", username, password, level })
-            });
-            const res = await resp.json();
-            if (res.success) {
-                showMessage(res.message, "success", "setupMessage");
-                document.getElementById('setupUsername').value = '';
-                document.getElementById('setupPassword').value = '';
-                await loadUserTable();
-            } else {
-                showMessage(res.message, "error", "setupMessage");
+        // Cek apakah username sudah ada
+        const vals = sheet.getDataRange().getValues();
+        for (let i = 1; i < vals.length; i++) {
+            if (vals[i][0] && vals[i][0].toString().trim() === username.trim()) {
+            return { success: false, message: "Username sudah ada!" };
             }
-        } catch(err) {
-            showMessage("Error: " + err.message, "error", "setupMessage");
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
         }
+        
+        // CEK PASSWORD DEFAULT
+        // Jika password adalah "@dm1n123", maka PasswordChanged = false
+        const isDefaultPassword = (password === "@dm1n123");
+        const passwordChanged = (!isDefaultPassword).toString();
+        
+        // Simpan user baru
+        sheet.appendRow([username.trim(), password.trim(), level, passwordChanged]);
+        
+        return { success: true, message: "User berhasil ditambahkan" };
     }
 
     // Reset password
@@ -1533,45 +1470,7 @@
             btn.innerHTML = originalText;
         }
     }
-
-    async function BACKUP_submitChangePasswordDefault() {
-        const newPassword = document.getElementById('newPassDefault').value;
-        const confirmPassword = document.getElementById('confirmPassDefault').value;
-        
-        if (newPassword.length < 6 || newPassword.length > 8) {
-            showMessage("Password 6-8 karakter!", "warning", "changePassMsg");
-            return;
-        }
-        if (newPassword !== confirmPassword) {
-            showMessage("Password tidak cocok!", "warning", "changePassMsg");
-            return;
-        }
-        
-        const btn = event.target;
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-        
-        try {
-            const resp = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "changePassword", username: currentUsername, oldPassword: "@dm1n123", newPassword })
-            });
-            const res = await resp.json();
-            if (res.success) {
-                showMessage("Password berhasil diubah! Login ulang.", "success", "changePassMsg");
-                setTimeout(() => logout(), 2000);
-            } else {
-                showMessage(res.message, "error", "changePassMsg");
-            }
-        } catch(err) {
-            showMessage("Error: " + err.message, "error", "changePassMsg");
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }
-    }
-
+   
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
