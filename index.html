@@ -1093,7 +1093,7 @@
     // *************************      
     // DEKLARASI VARIABEL GLOBAL
     // **************************
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzyO4quuv3xSlxDdotoyE_gb90u3NZqo33HW2PxzKxOXswl8T2-kMgSxFW-yIRmfe8D/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzJ6-QbUhinXqQqTovmUsFAA4LDEqoYl65vGqyqQayfGHe9yTnv_PhyxWIVLYahLCzm/exec";
     let globalData = [];
     let modalInstance;
     let confirmModalInstance;
@@ -1172,7 +1172,58 @@
     /******************************
     * Fungsi untuk login aplikasi
     ******************************/
-    async function prosesLogin(e) {
+   async function prosesLogin(e) {
+        e.preventDefault();
+        const user = document.getElementById('loginUsername').value;
+        const pass = document.getElementById('loginPassword').value;
+        const btn = e.target.querySelector('button[type="submit"]');
+        
+        const textAsli = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';
+
+        try {
+            // Gunakan POST untuk login juga
+            const resp = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: "login",
+                    u: user,
+                    p: pass
+                })
+            });
+            const res = await resp.json();
+            
+            if (res.success) {
+                currentUserLevel = res.level || 'operator';
+                currentUsername = res.username || user;
+                currentPasswordChanged = res.passwordChanged || false;
+                
+                document.getElementById('loginArea').classList.add('d-none');
+                document.getElementById('appArea').classList.remove('d-none');
+                
+                updateSetupButtonVisibility();
+                loadData();
+                
+                if (!currentPasswordChanged && pass === "ak@dm1n") {
+                    showChangePasswordModal();
+                }
+            } else {
+                showMessage(res.message, "error", "loginMessage");
+            }
+        } catch (err) {
+            console.error("Login error:", err);
+            showMessage("Gagal terhubung: " + err.message, "error", "loginMessage");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = textAsli;
+        }
+    }
+
+    async function BACKUP_prosesLogin(e) {
         e.preventDefault();
         const user = document.getElementById('loginUsername').value;
         const pass = document.getElementById('loginPassword').value;
@@ -1504,6 +1555,60 @@
     }
 
     async function loadUserTable() {
+        try {
+            const resp = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ action: "getUsers" })
+            });
+            const res = await resp.json();
+            
+            const tbody = document.getElementById('userTableBody');
+            if (!tbody) return;
+            
+            if (res.success && res.data && res.data.length > 0) {
+                tbody.innerHTML = '';
+                
+                res.data.forEach(user => {
+                    const isAdmin = (user.username === 'admin');
+                    const isCurrentUser = (user.username === currentUsername);
+                    
+                    const resetButton = isCurrentUser
+                        ? `<button class="action-icon reset-icon" disabled title="Tidak bisa reset sendiri"><i class="fas fa-undo-alt"></i></button>`
+                        : `<button class="action-icon reset-icon" onclick="resetUserPassword('${escapeHtml(user.username)}')" title="Reset Password ke @dm1n123"><i class="fas fa-undo-alt"></i></button>`;
+                    
+                    let deleteButton = '';
+                    if (isAdmin) {
+                        deleteButton = `<button class="action-icon delete-icon" disabled title="Admin tidak bisa dihapus"><i class="fas fa-trash"></i></button>`;
+                    } else if (isCurrentUser) {
+                        deleteButton = `<button class="action-icon delete-icon" disabled title="Tidak bisa hapus sendiri"><i class="fas fa-trash"></i></button>`;
+                    } else {
+                        deleteButton = `<button class="action-icon delete-icon" onclick="deleteUserAccount('${escapeHtml(user.username)}')" title="Hapus User"><i class="fas fa-trash"></i></button>`;
+                    }
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${escapeHtml(user.username)}</strong></td>
+                            <td>${user.level === 'admin' ? '<span class="badge bg-primary">Admin</span>' : '<span class="badge bg-secondary">Operator</span>'}</td>
+                            <td><div class="action-icons">${resetButton}${deleteButton}</div></td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">Belum ada user</td></tr>';
+            }
+        } catch (err) {
+            console.error("Load user error:", err);
+            const tbody = document.getElementById('userTableBody');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-danger">Gagal memuat data user</td></tr>';
+            }
+        }
+    }
+    
+    async function BACKUP_loadUserTable() {
         try {
             const resp = await fetch(`${SCRIPT_URL}?action=getUsers`);
             const res = await resp.json();
@@ -2070,6 +2175,45 @@
      * Memuat data keluarga ke dalam tabel
      ***************************************/
     async function loadData() {
+        showLoader(true, "Memuat Data Keluarga...");
+        try {
+            const resp = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ action: "getData" })
+            });
+            const res = await resp.json();
+            
+            if (res && res.data && Array.isArray(res.data)) {
+                globalData = res.data;
+            } else if (Array.isArray(res)) {
+                globalData = res;
+            } else {
+                globalData = [];
+            }
+            
+            globalData.sort((a, b) => {
+                const dateA = a.tglLahir ? new Date(a.tglLahir) : new Date('9999-12-31');
+                const dateB = b.tglLahir ? new Date(b.tglLahir) : new Date('9999-12-31');
+                return dateA - dateB;
+            });
+            
+            renderTable();
+            console.log(`Berhasil merender ${globalData.length} baris data.`);
+        } catch (error) {
+            console.error("Error saat loadData:", error);
+            const tbody = document.getElementById('tableBody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-4"><div class="text-danger">Gagal memuat data: ${error.message}</div></td></tr>`;
+            }
+        } finally {
+            showLoader(false);
+        }
+    }
+    
+    async function BACKUP_loadData() {
         showLoader(true, "Memuat Data Keluarga...");
         try {
             const url = `${SCRIPT_URL}?action=getData`;
