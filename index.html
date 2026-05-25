@@ -1067,7 +1067,7 @@
     // *************************      
     // DEKLARASI VARIABEL GLOBAL
     // **************************
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxYG079SLQ28rG1Fsq8olpHmpMjR714TIjO5LozJWB7AjrJ-fN0L9y9phAB2kIwfM/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyyVR8F7N3TfxiQI0ZrGm1tKGJoMRrVcMMt8AAcjSEmymCOLyDntkL1sHopNv9q3-v1/exec";
     let globalData = [];
     let modalInstance;
     let confirmModalInstance;
@@ -1133,6 +1133,58 @@
     * Fungsi untuk login aplikasi
     ******************************/
     async function prosesLogin(e) {
+        e.preventDefault();
+        const user = document.getElementById('loginUsername').value;
+        const pass = document.getElementById('loginPassword').value;
+        const btn = e.target.querySelector('button[type="submit"]');
+        
+        const textAsli = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';
+
+        try {
+            const resp = await fetch(`${SCRIPT_URL}?action=login&u=${user}&p=${pass}`);
+            const res = await resp.json();
+            
+            console.log("Login response:", res); // Untuk debugging
+            
+            if (res.success) {
+                // Simpan data user yang login
+                currentUserLevel = res.level || 'operator';
+                currentUsername = res.username || user;
+                currentPasswordChanged = res.passwordChanged || false;
+                
+                console.log("currentPasswordChanged:", currentPasswordChanged); // Untuk debugging
+                
+                // Tampilkan area aplikasi
+                document.getElementById('loginArea').classList.add('d-none');
+                document.getElementById('appArea').classList.remove('d-none');
+                
+                // Sembunyikan tombol Setup jika level operator
+                updateSetupButtonVisibility();
+                
+                // Load data keluarga
+                loadData();
+                
+                // CEK: Jika passwordChanged = FALSE (masih password default)
+                // ATAU password yang dimasukkan adalah "@dm1n123"
+                if (!currentPasswordChanged || pass === "@dm1n123") {
+                    console.log("Menampilkan modal ganti password"); // Untuk debugging
+                    showChangePasswordModal();
+                }
+            } else {
+                showMessage(res.message, "error", "loginMessage");
+            }
+        } catch (err) {
+            console.error("Login error:", err);
+            showMessage("Gagal terhubung: " + err.message, "error", "loginMessage");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = textAsli;
+        }
+    }
+
+    async function BACKUP_prosesLogin(e) {
         e.preventDefault();
         const user = document.getElementById('loginUsername').value;
         const pass = document.getElementById('loginPassword').value;
