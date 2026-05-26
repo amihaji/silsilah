@@ -95,7 +95,8 @@
     }
     .table-light th { background-color: #e9ecef !important;}
     .tooltip {
-        --bs-tooltip-bg: var(--dark-blue);
+        /* --bs-tooltip-bg: var(--dark-blue); */
+        --bs-tooltip-bg: #006ae2;
         --bs-tooltip-color: #ffffff;
         --bs-tooltip-opacity: 1;
     }
@@ -1430,7 +1431,7 @@
             showMessage("Tidak bisa reset sendiri!", "warning", "setupMessage");
             return;
         }
-        // if (!confirm(`Reset password "${username}" ke default "@dm1n123"?`)) return;
+        // if (!confirm(`Reset password "${username}" ke default "@dm1n123"?`)) return;  // ALERT DI NONAKTIFKAN
         try {
             const resp = await fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -1452,7 +1453,7 @@
     * Menghapus akun user
     ***********************/
     async function deleteUserAccount(username) {
-        //if (!confirm(`Hapus user "${username}"?`)) return;
+        // if (!confirm(`Hapus user "${username}"?`)) return;    // ALERT DI NONAKTIFKAN
         try {
             const resp = await fetch(SCRIPT_URL, {
                 method: 'POST',
