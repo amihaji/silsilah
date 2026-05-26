@@ -1062,7 +1062,7 @@
                         <div class="user-table-container">
                             <table class="user-table">
                                 <thead>
-                                    <tr><th>Username</th><th>Level</th><th style="width:80px">Aksi</th></tr>
+                                    <tr><th>Username</th><th>Level</th><th style="width:80px; align-items: center;">Aksi</th></tr>
                                 </thead>
                                 <tbody id="userTableBody">
                                     <tr><td colspan="3" class="text-center py-3">Loading...</td></tr>
@@ -1078,6 +1078,7 @@
             </div>
         </div>
     </div>
+
     <!-- MODAL GANTI PASSWORD DEFAULT -->
     <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-sm modal-dialog-centered">
@@ -1426,7 +1427,8 @@
     ***************************/
     async function resetUserPassword(username) {
         if (username === currentUsername) {
-            showMessage("Tidak bisa reset sendiri!", "warning", "tableMessage");
+            // showMessage("Tidak bisa reset sendiri!", "warning", "tableMessage");
+            showMessage("Tidak bisa reset sendiri!", "warning", "setupMessage");
             return;
         }
         if (!confirm(`Reset password "${username}" ke default "@dm1n123"?`)) return;
@@ -1437,13 +1439,15 @@
             });
             const res = await resp.json();
             if (res.success) {
-                showMessage(res.message, "success", "tableMessage");
+                // showMessage(res.message, "success", "tableMessage");
+                showMessage(res.message, "success", "setupMessage");
                 await loadUserTable();
             } else {
-                showMessage(res.message, "error", "tableMessage");
+                // showMessage(res.message, "error", "tableMessage");
+                showMessage(res.message, "error", "setupMessage");
             }
         } catch(err) {
-            showMessage("Error: " + err.message, "error", "tableMessage");
+            showMessage("Error: " + err.message, "error", "setupMessage");
         }
     }
 
@@ -1459,13 +1463,16 @@
             });
             const res = await resp.json();
             if (res.success) {
-                showMessage(res.message, "success", "tableMessage");
+                // showMessage(res.message, "success", "tableMessage");
+                showMessage(res.message, "success", "setupMessage");
                 await loadUserTable();
             } else {
-                showMessage(res.message, "error", "tableMessage");
+                // showMessage(res.message, "error", "tableMessage");
+                showMessage(res.message, "error", "setupMessage");
             }
         } catch(err) {
-            showMessage("Error: " + err.message, "error", "tableMessage");
+            // showMessage("Error: " + err.message, "error", "tableMessage");
+            showMessage("Error: " + err.message, "error", "setupMessage");
         }
     }
 
