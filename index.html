@@ -1427,11 +1427,10 @@
     ***************************/
     async function resetUserPassword(username) {
         if (username === currentUsername) {
-            // showMessage("Tidak bisa reset sendiri!", "warning", "tableMessage");
             showMessage("Tidak bisa reset sendiri!", "warning", "setupMessage");
             return;
         }
-        if (!confirm(`Reset password "${username}" ke default "@dm1n123"?`)) return;
+        // if (!confirm(`Reset password "${username}" ke default "@dm1n123"?`)) return;
         try {
             const resp = await fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -1439,11 +1438,9 @@
             });
             const res = await resp.json();
             if (res.success) {
-                // showMessage(res.message, "success", "tableMessage");
                 showMessage(res.message, "success", "setupMessage");
                 await loadUserTable();
             } else {
-                // showMessage(res.message, "error", "tableMessage");
                 showMessage(res.message, "error", "setupMessage");
             }
         } catch(err) {
@@ -1455,7 +1452,7 @@
     * Menghapus akun user
     ***********************/
     async function deleteUserAccount(username) {
-        if (!confirm(`Hapus user "${username}"?`)) return;
+        //if (!confirm(`Hapus user "${username}"?`)) return;
         try {
             const resp = await fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -1463,15 +1460,12 @@
             });
             const res = await resp.json();
             if (res.success) {
-                // showMessage(res.message, "success", "tableMessage");
                 showMessage(res.message, "success", "setupMessage");
                 await loadUserTable();
             } else {
-                // showMessage(res.message, "error", "tableMessage");
                 showMessage(res.message, "error", "setupMessage");
             }
         } catch(err) {
-            // showMessage("Error: " + err.message, "error", "tableMessage");
             showMessage("Error: " + err.message, "error", "setupMessage");
         }
     }
