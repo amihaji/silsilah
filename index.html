@@ -1209,6 +1209,9 @@
         initializeTooltips();
     });
 
+    /***********************
+     * Tampilan Tips Tools
+     ***********************/
     function initializeTooltips() {
       const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
       tooltipTriggerList.forEach(el => {
@@ -1236,7 +1239,6 @@
         const user = document.getElementById('loginUsername').value;
         const pass = document.getElementById('loginPassword').value;
         const btn = e.target.querySelector('button[type="submit"]');
-        
         const textAsli = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';
@@ -1244,27 +1246,20 @@
         try {
             const resp = await fetch(`${SCRIPT_URL}?action=login&u=${user}&p=${pass}`);
             const res = await resp.json();
-            
             console.log("Login response:", res); // Untuk debugging
-            
             if (res.success) {
                 // Simpan data user yang login
                 currentUserLevel = res.level || 'operator';
                 currentUsername = res.username || user;
                 currentPasswordChanged = res.passwordChanged || false;
-                
                 console.log("currentPasswordChanged:", currentPasswordChanged); // Untuk debugging
-                
                 // Tampilkan area aplikasi
                 document.getElementById('loginArea').classList.add('d-none');
                 document.getElementById('appArea').classList.remove('d-none');
-                
                 // Sembunyikan tombol Setup jika level operator
                 updateSetupButtonVisibility();
-                
                 // Load data keluarga
                 loadData();
-                
                 // CEK: Jika passwordChanged = FALSE (masih password default)
                 // ATAU password yang dimasukkan adalah "@dm1n123"
                 if (!currentPasswordChanged || pass === "@dm1n123") {
@@ -1283,54 +1278,9 @@
         }
     }
 
-    async function BACKUP_prosesLogin(e) {
-        e.preventDefault();
-        const user = document.getElementById('loginUsername').value;
-        const pass = document.getElementById('loginPassword').value;
-        const btn = e.target.querySelector('button[type="submit"]');
-        
-        // Spinner pada tombol
-        const textAsli = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';
-
-        try {
-            const resp = await fetch(`${SCRIPT_URL}?action=login&u=${user}&p=${pass}`);
-            const res = await resp.json();
-            
-            if (res.success) {
-                // Simpan data user yang login
-                currentUserLevel = res.level || 'operator';
-                currentUsername = res.username || user;
-                currentPasswordChanged = res.passwordChanged || false;
-                
-                // Tampilkan area aplikasi
-                document.getElementById('loginArea').classList.add('d-none');
-                document.getElementById('appArea').classList.remove('d-none');
-                
-                // Sembunyikan tombol Setup jika level operator
-                updateSetupButtonVisibility();
-                
-                // Load data keluarga
-                loadData();
-                
-                // CEK: Jika password masih default "ak@dm1n" dan belum pernah diganti
-                if (!currentPasswordChanged && pass === "ak@dm1n") {
-                    // Tampilkan modal ganti password
-                    showChangePasswordModal();
-                }
-            } else {
-                showMessage(res.message, "error", "loginMessage");
-            }
-        } catch (err) {
-            console.error("Login error:", err);
-            showMessage("Gagal terhubung: " + err.message, "error", "loginMessage");
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = textAsli;
-        }
-    }
-
+    /********************************
+     * Tampilkan Form Ganti Password
+     ********************************/
     function showChangePasswordModal() {
         // Hapus modal lama jika ada
         const existingModal = document.getElementById('changePasswordModal');
@@ -1379,11 +1329,11 @@
         });
     }
 
-    /******************************
-    * FUNGSI SETUP USER
-    ******************************/
-
-    // Update visibility tombol Setup
+    /***** FUNGSI SETUP USER *****/
+    
+    /********************************
+    * Update visibility tombol Setup
+    *********************************/
     function updateSetupButtonVisibility() {
         const setupBtn = document.getElementById('setupBtn');
         const navSetupItem = document.getElementById('navSetupItem');
@@ -1420,16 +1370,9 @@
         }
     }
 
-    function BACKUP_updateSetupButtonVisibility() {
-        const setupBtn = document.getElementById('setupBtn');
-        if (currentUserLevel !== 'admin') {
-            if (setupBtn) setupBtn.style.display = 'none';
-        } else {
-            if (setupBtn) setupBtn.style.display = 'inline-block';
-        }
-    }
-
-    // Fungsi ini yang benar di HTML - hanya kirim request ke backend
+    /************************************************
+    * Fungsi Buat User Baru kirim request ke backend
+    *************************************************/
     async function createNewUser() {
         const username = document.getElementById('setupUsername').value.trim();
         const level = document.getElementById('setupLevel').value;
@@ -1443,12 +1386,10 @@
             showMessage("Password 6-8 karakter!", "warning", "setupMessage");
             return;
         }
-        
         const btn = event.target;
         const originalText = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-        
         try {
             const resp = await fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -1472,7 +1413,9 @@
         }
     }
 
-    // Buka modal Setup
+    /*******************  
+    * Buka modal Setup
+    ********************/
     async function openSetupModal() {
         if (currentUserLevel !== 'admin') {
             showMessage("Anda tidak memiliki akses", "error", "tableMessage");
@@ -1483,14 +1426,15 @@
         modal.show();
     }
 
-    // Load tabel user
+    /******************
+    * Load Tabel User
+    *******************/
     async function loadUserTable() {
         try {
             const resp = await fetch(SCRIPT_URL + '?action=getUsers');
             const res = await resp.json();
             const tbody = document.getElementById('userTableBody');
             if (!tbody) return;
-            
             if (res.success && res.data && res.data.length > 0) {
                 tbody.innerHTML = '';
                 res.data.forEach(user => {
@@ -1517,14 +1461,15 @@
         }
     }
     
-    // Reset password
+    /***************************
+    * Reset password ke default
+    ***************************/
     async function resetUserPassword(username) {
         if (username === currentUsername) {
             showMessage("Tidak bisa reset sendiri!", "warning", "tableMessage");
             return;
         }
         if (!confirm(`Reset password "${username}" ke default "@dm1n123"?`)) return;
-        
         try {
             const resp = await fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -1542,10 +1487,11 @@
         }
     }
 
-    // Delete user
+    /********************** 
+    * Menghapus akun user
+    ***********************/
     async function deleteUserAccount(username) {
         if (!confirm(`Hapus user "${username}"?`)) return;
-        
         try {
             const resp = await fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -1563,12 +1509,13 @@
         }
     }
 
-    // Submit ganti password default
+    /********************************
+    * Submit ganti password default
+    *********************************/
     submitChangePasswordDefault()
         async function submitChangePasswordDefault() {
         const newPassword = document.getElementById('newPassDefault').value;
         const confirmPassword = document.getElementById('confirmPassDefault').value;
-        
         if (newPassword.length < 6 || newPassword.length > 8) {
             showMessage("Password baru harus 6-8 karakter!", "warning", "changePassMsg");
             return;
@@ -1581,12 +1528,10 @@
             showMessage("Password baru tidak boleh sama dengan default!", "warning", "changePassMsg");
             return;
         }
-        
         const btn = event.target;
         const originalText = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-        
         try {
             const resp = await fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -1598,11 +1543,9 @@
                 })
             });
             const res = await resp.json();
-            
             console.log("Change password response:", res); // Untuk debugging
-            
             if (res.success) {
-                showMessage("Password berhasil diubah! Silakan login ulang.", "success", "changePassMsg");
+                showMessage("Password berhasil diubah! Silakan login", "success", "changePassMsg");
                 setTimeout(() => {
                     const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
                     if (modal) modal.hide();
@@ -1619,60 +1562,10 @@
             btn.innerHTML = originalText;
         }
     }
-
-    async function BACKUP_submitChangePasswordDefault() {
-        const newPassword = document.getElementById('newPassDefault').value;
-        const confirmPassword = document.getElementById('confirmPassDefault').value;
-        
-        if (newPassword.length < 6 || newPassword.length > 8) {
-            showMessage("Password baru harus 6-8 karakter!", "warning", "changePassMsg");
-            return;
-        }
-        if (newPassword !== confirmPassword) {
-            showMessage("Konfirmasi password tidak cocok!", "warning", "changePassMsg");
-            return;
-        }
-        if (newPassword === "ak@dm1n") {
-            showMessage("Password baru tidak boleh sama dengan default!", "warning", "changePassMsg");
-            return;
-        }
-        
-        const btn = event.target;
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-        
-        try {
-            const resp = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: "changePassword",
-                    username: currentUsername,
-                    oldPassword: "ak@dm1n",
-                    newPassword: newPassword
-                })
-            });
-            const res = await resp.json();
-            
-            if (res.success) {
-                showMessage("Password berhasil diubah! Silakan login ulang.", "success", "changePassMsg");
-                setTimeout(() => {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
-                    if (modal) modal.hide();
-                    logout();
-                }, 2000);
-            } else {
-                showMessage(res.message, "error", "changePassMsg");
-            }
-        } catch (err) {
-            console.error("Change password error:", err);
-            showMessage("Error: " + err.message, "error", "changePassMsg");
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }
-    }
-   
+    
+    /***********************************
+     * Hilangkan simbol di inputan nama
+     ***********************************/
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
@@ -1683,6 +1576,9 @@
         });
     }
     
+    /*******************************
+     * Mengedit user yang terpilih
+     *******************************/
     function onSelectUserForEdit() {
         const select = document.getElementById('editUserSelect');
         const selectedUser = select.value;
@@ -1691,11 +1587,13 @@
         }
     }
     
+    /***************************
+     * Mengupdate Password User
+     ***************************/
     async function updateUserPassword() {
         const username = document.getElementById('editUserSelect').value;
         const newPassword = document.getElementById('editNewPassword').value;
-        
-        if (!username) {
+         if (!username) {
             showMessage("Pilih user terlebih dahulu!", "warning", "editMessage");
             return;
         }
@@ -1703,12 +1601,10 @@
             showMessage("Password baru harus 6-8 karakter!", "warning", "editMessage");
             return;
         }
-        
         const btn = event.target;
         const originalText = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-        
         try {
             const resp = await fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -1741,9 +1637,9 @@
         }
     }
    
-    /*****************************************
-     * Fungsi untuk menampilkan modal Tentang 
-     * **************************************/
+    /****************************************
+    * Fungsi untuk menampilkan modal Tentang 
+    *****************************************/
     function showAbout() {
     console.log("About diklik"); // Untuk debugging, lihat di console browser
     // Hapus modal lama jika sudah ada
@@ -1790,15 +1686,14 @@
     const modalElement = document.getElementById('dynamicAboutModal');
     const modal = new bootstrap.Modal(modalElement);
     modal.show();
-    
     modalElement.addEventListener('hidden.bs.modal', function() {
         modalElement.remove();
     });
     }
     
-    /****************************
+    /***************************
      * Buat Tabel Data Keluarga
-     * **************************/
+     ***************************/
     function renderTable() {
       const tbody = document.getElementById('tableBody');
       if (!tbody) return;
@@ -1993,7 +1888,7 @@
     /********************************************* 
     * Fungsi untuk mendapatkan inisial dari nama
     **********************************************/
-    function getInitials(nama) {
+    function BACKUP_getInitials(nama) {
         if (!nama || nama === '-' || nama === '') return '?';
         const parts = nama.trim().split(' ');
         if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
@@ -2044,18 +1939,14 @@
     function cariData() {
         const keyword = document.getElementById('cariNama').value.toLowerCase().trim();
         const tbody = document.getElementById('tableBody');
-        
         if (!globalData || globalData.length === 0) return;
-
         // Filter data berdasarkan nama
         const filteredData = globalData.filter(item => {
             const nama = (item.nama || '').toLowerCase();
             return nama.includes(keyword);
         });
-
         // Render ulang tabel dengan data yang sudah difilter
         renderTableFiltered(filteredData);
-        
         if (filteredData.length === 0) {
             showMessage("Data tidak ditemukan", "warning", "tableMessage");
         }
@@ -2343,10 +2234,8 @@
     }
     }
     
-    /***************************************
-    * FUNGSI DIAGRAM POHON KELUARGA
-    ***************************************/
-
+    // ***** FUNGSI DIAGRAM POHON KELUARGA ***** //
+    
     /*********************************************
     * Fungsi untuk mendapatkan inisial dari nama
     *********************************************/  
@@ -2357,11 +2246,12 @@
         return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
     }
 
-    // Mendapatkan tahun lahir dan tahun wafat (jika ada)
+    /***************************************** 
+    * Mendapatkan tahun lahir dan tahun wafat 
+    ******************************************/
     function getYearRange(item) {
         let birthYear = '';
         let deathYear = '';
-        
         // Ambil tahun lahir
         if (item.tglLahir) {
             try {
@@ -2371,7 +2261,6 @@
                 birthYear = '';
             }
         }
-        
         // Ambil tahun wafat jika almarhum = 'ya'
         if (item.almarhum === 'ya' && item.tglWafat) {
             try {
@@ -2381,7 +2270,6 @@
                 deathYear = '';
             }
         }
-        
         // Format output
         if (deathYear) {
             return `${birthYear} - ${deathYear}`;
@@ -2391,13 +2279,12 @@
         return '';
     }
 
-    /************************************************************************
-    * Mendapatkan foto atau avatar untuk diagram dengan tahun lahir & wafat
-    *************************************************************************/
+    /*********************************************
+    * Mendapatkan foto atau avatar untuk diagram 
+    **********************************************/
     function getFotoForDiagram(item) {
         const initials = getInitials(item.nama);
         const yearRange = getYearRange(item);
-        
         if (item.foto && item.foto.includes('http')) {
             return `<img src="${item.foto}" class="diagram-foto" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'diagram-avatar\'>${initials}</div><div class=\'diagram-name\'>${item.nama || '-'}</div><div class=\'diagram-year\'>${yearRange}</div>';">`;
         } else {
@@ -2430,7 +2317,6 @@
         if (birthYear) return `${birthYear}`;
         return '';
     };
-    
     // Menampilkan foto atau avatar
     const renderFoto = (person) => {
         const initials = getInitials(person.nama);
@@ -2441,7 +2327,6 @@
             return `<div class="diagram-avatar">${initials}</div>`;
         }
     };
-    
     // Menampilkan suami
     const suamiHtml = `
         <div class="diagram-node">
@@ -2450,7 +2335,6 @@
             <div class="diagram-year">${getYearRangeForNode(node)}</div>
         </div>
     `;
-    
     // Menampilkan istri
     let istriHtml = '';
     if (node.spouse && node.spouse.nama) {
@@ -2465,10 +2349,10 @@
     
     // Tentukan simbol  & warna berdasarkan status kawin
     let connectorSymbol = '&#9472<i class="fas fa-plus-circle">&#9472</i>';   // simbol: -+-
-    let connectorClass = 'connector-kawin'; // Default biru '+'
+    let connectorClass  = 'connector-kawin';                                  // Default biru '+'
     if (node.statusKawin && node.statusKawin.toLowerCase() === 'cerai') {
         connectorSymbol = '&#9472<i class="fas fa-times-circle">&#9472</i>';  // simbol: -x-
-        connectorClass = 'connector-cerai'; // Merah jika cerai 'x'
+        connectorClass  = 'connector-cerai';                                  // Merah jika cerai 'x'
     }
     // Menampilkan pasangan
     const coupleHtml = `
@@ -2477,18 +2361,15 @@
             ${istriHtml ? `<div class="couple-connector ${connectorClass}">${connectorSymbol}</div>${istriHtml}` : ''}
         </div>
     `;
-   
     // Jika tidak punya anak
     if (!node.children || node.children.length === 0) {
         return `<div class="family-node">${coupleHtml}</div>`;
     }
-    
     // Proses anak-anak secara rekursif
     let childrenHtml = '';
     node.children.forEach(child => {
         childrenHtml += renderTreeDiagram(child);
     });
-
     // Bungkus dengan container khusus untuk garis "⊥"
     return `
         <div class="family-node">
@@ -2503,8 +2384,8 @@
     }
         
     /*********************
-     * Buka modal diagram (HTML asli seperti REV-5)
-     *********************/
+    * Buka Modal Diagram 
+    *********************/
     function openDiagram() {
         try {
             // Hapus modal dinamis jika sudah ada sebelumnya
@@ -2512,7 +2393,6 @@
             if (existingModal) {
                 existingModal.remove();
             }
-            
             // Ambil daftar unik Nama Ayah
             const ayahSet = new Set();
             if (globalData && globalData.length > 0) {
@@ -2522,7 +2402,6 @@
                     }
                 });
             }
-            
             const ayahList = Array.from(ayahSet).sort();
             let dropdownOptions = '<option value="">Silahkan pilih nama ayah . . .</option>';
             ayahList.forEach(ayah => {
@@ -2533,7 +2412,6 @@
             if (ayahList.length === 0) {
                 dropdownOptions = '<option value="">-- Tidak ada data ayah --</option>';
             }
-            
             // Modal dengan diagram HTML asli
             const modalHtml = `
                 <div class="modal fade" id="dynamicDiagramModal" tabindex="-1" aria-hidden="true" style="display:block; z-index:9999;">
@@ -2581,15 +2459,12 @@
             `;
             
             document.body.insertAdjacentHTML('beforeend', modalHtml);
-            
             const modalElement = document.getElementById('dynamicDiagramModal');
             const modal = new bootstrap.Modal(modalElement, { backdrop: true, keyboard: true });
             modal.show();
-            
             modalElement.addEventListener('hidden.bs.modal', function() {
                 modalElement.remove();
             });
-            
             // Event listener untuk tombol Tampilkan Silsilah
             const btnBuat = document.getElementById('btnBuatDiagram');
             if (btnBuat) {
@@ -2597,7 +2472,6 @@
                     generateHTMLDiagram();
                 };
             }
-            
             // Event listener untuk tombol Download PDF
             const btnDownload = document.getElementById('btnDownloadPDF');
             if (btnDownload) {
@@ -2612,16 +2486,15 @@
                     downloadExcelByFamily();
                 };
             }
-            
         } catch (e) {
             console.error("Error openDiagram:", e);
             showMessage("Gagal membuka diagram: " + e.message, "error", "tableMessage");
         }
     }
 
-    /************************************************************
-     * GENERATE DIAGRAM HTML (SAMA PERSIS SEPERTI REV-5)
-     ************************************************************/
+    /*************************
+     * Generate Diagram HTML 
+     *************************/
     function generateHTMLDiagram() {
         const selectEl = document.getElementById('pilihNamaDiagram');
         if (!selectEl) return;
@@ -2630,7 +2503,6 @@
             showMessage("Pilih Nama Ayah lebih dulu!", "warning", "formMessageDynamic");
             return;
         }
-        
         showLoader(true, "Membuat diagram...");
         try {
             const rootNode = buildFamilyTreeByAyah(selectedValue);
@@ -2647,7 +2519,6 @@
                 container.style.overflowX = "auto";
                 container.style.overflowY = "auto";
                 container.style.whiteSpace = "nowrap";
-
                 const fullHtml = `
                     <div class="diagram-wrapper" style="display: inline-block; min-width: 100%;">
                         <div class="diagram-header-title" style="text-align: center; margin-bottom: 25px; width: 100%;">
@@ -2665,16 +2536,13 @@
                     </div>
                 `;
                 container.innerHTML = fullHtml;
-                
                 // tampilkan tombol download PDF
                 const btnDownload = document.getElementById('btnDownloadPDF');
                 if (btnDownload) btnDownload.style.display = 'inline-block';
-                
                 // Tampilkan tombol download Excel
                 const btnExcel = document.getElementById('btnDownloadExcel');
                 if (btnExcel) btnExcel.style.display = 'inline-block';
-
-                showMessage(`Silsilah keluarga ${selectedValue} berhasil`, "success", "formMessageDynamic");
+                   showMessage(`Silsilah keluarga ${selectedValue} berhasil`, "success", "formMessageDynamic");
             } else {
                 container.innerHTML = `<div class="text-center text-danger p-5">Tidak dapat membangun diagram pohon untuk keluarga yang dipilih.</div>`;
             }
@@ -2686,9 +2554,9 @@
         }
     }
 
-    /************************************************************
-     * DOWNLOAD PDF - VERSI YANG SUDAH BERHASIL (PC + DIAGRAM KECIL MOBILE)
-     ************************************************************/
+    /*************************************
+     * Fungsi untuk download PDF diagram 
+     *************************************/
     async function downloadDiagramAsPDF() {
         const container = document.getElementById('diagramContainer');
         const treeDiagram = container ? container.querySelector('.tree-diagram') : null;
@@ -2700,9 +2568,7 @@
             showMessage("Buat diagram silsilah lebih dulu", "warning", "formMessageDynamic");
             return;
         }
-
         showLoader(true, "Membuat PDF...");
-
         try {
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             const scaleValue = isMobile ? 2.0 : 2.5;
@@ -2735,9 +2601,7 @@
                 cloneRoot.style.flexWrap = 'nowrap';
                 cloneRoot.style.minWidth = 'max-content';
             }
-            
             await new Promise(resolve => setTimeout(resolve, waitTime));
-            
             const canvas = await html2canvas(cloneContainer, {
                 scale: scaleValue,
                 useCORS: true,
@@ -2748,17 +2612,13 @@
                 windowWidth: cloneContainer.scrollWidth,
                 windowHeight: cloneContainer.scrollHeight
             });
-            
             document.body.removeChild(cloneContainer);
-            
             // Konversi ke PDF
             const { jsPDF } = window.jspdf;
             const imgData = canvas.toDataURL('image/jpeg', 0.95);
-            
             const pxToMm = 25.4 / 96;
             let pdfWidth = canvas.width * pxToMm;
             let pdfHeight = canvas.height * pxToMm;
-            
             const maxMm = 3800;
             if (pdfWidth > maxMm) {
                 const ratio = maxMm / pdfWidth;
@@ -2777,12 +2637,9 @@
                 unit: 'mm',
                 format: [pdfWidth, pdfHeight]
             });
-            
             pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
             pdf.save(safeFileName);
-            
             showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
-            
         } catch (err) {
             console.error("PDF Error:", err);
             showMessage("Gagal membuat PDF: " + err.message, "error", "formMessageDynamic");
@@ -2793,16 +2650,9 @@
         }
     }
 
-    function getInitials(nama) {
-        if (!nama || nama === '-' || nama === '') return '?';
-        const parts = nama.trim().split(' ');
-        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
-    }
-    
-    /************************************************************
-    * METODE HTML2CANVAS (YANG SUDAH BERHASIL UNTUK PC)
-    ************************************************************/
+    /*************************************
+    * Buat PDF dengan metode HTML2Canvas
+    **************************************/
     async function downloadPDFWithHtml2canvas(container, selectedName, safeFileName) {
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const scaleValue = isMobile ? 2.0 : 2.5;
@@ -2820,7 +2670,6 @@
         cloneContainer.style.backgroundColor = '#ffffff';
         cloneContainer.style.padding = '20px';
         document.body.appendChild(cloneContainer);
-        
         // Set style anak
         const cloneTree = cloneContainer.querySelector('.tree-diagram');
         if (cloneTree) {
@@ -2835,10 +2684,8 @@
             cloneRoot.style.flexWrap = 'nowrap';
             cloneRoot.style.minWidth = 'max-content';
         }
-        
         // Tunggu layout stabil
         await new Promise(resolve => setTimeout(resolve, waitTime));
-        
         // Capture
         const canvas = await html2canvas(cloneContainer, {
             scale: scaleValue,
@@ -2848,18 +2695,14 @@
             width: cloneContainer.scrollWidth,
             height: cloneContainer.scrollHeight
         });
-        
         // Hapus clone
         document.body.removeChild(cloneContainer);
-        
         // Konversi ke PDF
         const { jsPDF } = window.jspdf;
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        
         const pxToMm = 25.4 / 96;
         let pdfWidth = canvas.width * pxToMm;
         let pdfHeight = canvas.height * pxToMm;
-        
         const maxMm = 3800;
         if (pdfWidth > maxMm) {
             const ratio = maxMm / pdfWidth;
@@ -2871,17 +2714,14 @@
             pdfHeight = maxMm;
             pdfWidth = pdfWidth * ratio;
         }
-        
         const isLandscape = pdfWidth > pdfHeight;
         const pdf = new jsPDF({
             orientation: isLandscape ? 'landscape' : 'portrait',
             unit: 'mm',
             format: [pdfWidth, pdfHeight]
         });
-        
         pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
         pdf.save(safeFileName);
-        
         showMessage(`PDF ${selectedName} berhasil diunduh`, "success", "formMessageDynamic");
     }    
 
@@ -2928,7 +2768,7 @@
             }
         }
         
-        // FUNGSI REKURSIF UNTUK MENCARI SEMUA KETURUNAN
+        // Fungsi rekursif untuk mencari semua keturunan
         function findDescendants(parentName, visited = new Set()) {
             const descendants = [];
             const parentNorm = normalize(parentName);
@@ -2966,60 +2806,49 @@
         return { ...ayahData, spouse: spouse, children: anakList };
     }
 
-    /************************************************************
+    /***********************************************************
      * DOWNLOAD EXCEL - BERDASARKAN SILSILAH KELUARGA TERPILIH
      * Mengambil semua anggota dari root family tree
-     ************************************************************/
+     ***********************************************************/
     function downloadExcelByFamily() {
         const selectEl = document.getElementById('pilihNamaDiagram');
         if (!selectEl) {
             showMessage("Error: Dropdown tidak ditemukan", "warning", "formMessageDynamic");
             return;
         }
-        
         const selectedAyah = selectEl.value;
         if (!selectedAyah) {
             showMessage("Pilih Nama Ayah lebih dulu!", "warning", "formMessageDynamic");
             return;
         }
-        
         if (!globalData || globalData.length === 0) {
             showMessage("Tidak ada data untuk diekspor", "warning", "formMessageDynamic");
             return;
         }
-        
         showLoader(true, "Menyiapkan Excel untuk keluarga " + selectedAyah + "...");
-        
         try {
             // Bangun family tree berdasarkan ayah terpilih
             const rootNode = buildFamilyTreeByAyah(selectedAyah);
-            
             if (!rootNode) {
                 showMessage("Gagal membangun struktur keluarga  " + selectedAyah, "error", "formMessageDynamic");
                 return;
             }
-            
             // Kumpulkan semua anggota keluarga dari tree (rekursif)
             const familyMembers = [];
-            
             function collectMembers(node, collected = new Set()) {
                 if (!node || !node.id) return;
-                
                 // Hindari duplikasi
                 if (collected.has(node.id)) return;
                 collected.add(node.id);
-                
                 // Tambahkan node utama
                 if (node.nama && node.nama.trim() !== '') {
                     familyMembers.push(node);
                 }
-                
                 // Tambahkan pasangan jika ada
                 if (node.spouse && node.spouse.id && !collected.has(node.spouse.id)) {
                     collected.add(node.spouse.id);
                     familyMembers.push(node.spouse);
                 }
-                
                 // Proses anak-anak
                 if (node.children && node.children.length > 0) {
                     for (let child of node.children) {
@@ -3027,14 +2856,11 @@
                     }
                 }
             }
-            
             collectMembers(rootNode);
-            
             if (familyMembers.length === 0) {
                 showMessage("Tidak ditemukan data untuk " + selectedAyah, "warning", "formMessageDynamic");
                 return;
             }
-            
             // Format data untuk Excel
             const excelData = familyMembers.map(item => ({
                 'ID': item.id || '',
@@ -3051,10 +2877,8 @@
                 'Almarhum': item.almarhum === 'ya' ? 'Ya' : 'Tidak',
                 'Tanggal Wafat': item.tglWafat ? formatDateToID(item.tglWafat) : '-'
             }));
-            
             // Buat worksheet dan workbook
             const ws = XLSX.utils.json_to_sheet(excelData);
-            
             // Atur lebar kolom agar lebih rapi
             ws['!cols'] = [
                 {wch:15}, // ID
@@ -3071,46 +2895,18 @@
                 {wch:10}, // Almarhum
                 {wch:15}  // Tanggal Wafat
             ];
-            
             const wb = XLSX.utils.book_new();
             const sheetName = `Silsilah_${selectedAyah.replace(/[^a-zA-Z0-9]/g, '_')}`;
             XLSX.utils.book_append_sheet(wb, ws, sheetName.substring(0, 31)); // Excel maks 31 karakter
-            
             // Download file
             XLSX.writeFile(wb, `Silsilah_${selectedAyah}.xlsx`);
-            
             showMessage(`Data keluarga ${selectedAyah} (${familyMembers.length} anggota) diunduh`, "success", "formMessageDynamic");
-            
         } catch (error) {
             console.error("Excel Error:", error);
             showMessage("Gagal membuat Excel: " + error.message, "error", "formMessageDynamic");
         } finally {
             showLoader(false);
         }
-    }
-
-    /************************************************************
-     * FORMAT TANGGAL KE FORMAT INDONESIA (DD/MM/YYYY)
-     ************************************************************/
-    function formatDateToID(dateString) {
-        if (!dateString) return '-';
-        try {
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) return dateString;
-            const day = date.getDate().toString().padStart(2, '0');
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
-        } catch (e) {
-            return dateString;
-        }
-    }
-   
-    /***********************************
-    * Fungsi Untuk logout dari aplikasi
-    ************************************/
-    function logout() { 
-      location.reload();
     }
 
     /*****************************************
@@ -3139,10 +2935,8 @@
         const jk = document.getElementById('jk').value;
         const statusKawin = document.getElementById('statusKawin').value;
         const divPasangan = document.getElementById('divPasangan');
-        
         // Cek apakah elemen input namaPasangan sudah ada
         let namaPasanganInput = document.getElementById('namaPasangan');
-        
         // Jika belum ada, buat sekarang
         if (!namaPasanganInput) {
             // Buat struktur input group
@@ -3229,6 +3023,31 @@
         // Sembunyikan otomatis dalam 3 detik
         setTimeout(() => { el.style.display = 'none'; }, 3000);
     }
-   </script>
+
+    /**************************************************
+    * Format Tanggal ke Format Indonesia (DD/MM/YYYY)
+    **************************************************/
+    function formatDateToID(dateString) {
+        if (!dateString) return '-';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString;
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        } catch (e) {
+            return dateString;
+        }
+    }
+
+    /***********************************
+    * Fungsi Untuk logout dari aplikasi
+    ************************************/
+    function logout() { 
+      location.reload();
+    }
+
+ </script>
 </body>
 </html>
