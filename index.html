@@ -1002,14 +1002,14 @@
                     <div class="input-group mt-3">
                         <span class="input-group-text"><i class="fas fa-user-alt" style="font-size:16px"> </i></span>
                         <input type="text" id="setupUsername" class="form-control form-control-sm" 
-                                    placeholder="Username (6-8 karakter)" maxlength="8" 
-                                    oninput="this.value = this.value.toLowerCase().substring(0,8)">
+                                placeholder="Username (6-8 karakter)" maxlength="8" 
+                                oninput="this.value = this.value.toLowerCase().substring(0,8)" required>
                         </input>
                     </div>
                     <!-- Input Level User -->
                     <div class="input-group mt-3">
                         <span class="input-group-text"><i class="fas fa-user-check" style="font-size:16px"></i></span>
-                        <select id="setupLevel" class="form-select form-select-sm">
+                        <select id="setupLevel" class="form-select form-select-sm" required>
                             <option value="">Pilih Level User...</option>
                             <option value="operator">Operator</option>
                             <option value="admin">Admin</option>
@@ -1017,9 +1017,10 @@
                     </div>
                     <!-- Input Password User -->
                     <div class="input-group mt-3 mb-3">
-                        <span class="input-group-text"><i class="fas fa-lock" style="font-size:16px">  </i></span>
+                        <span class="input-group-text"><i class="fas fa-lock" style="font-size:16px"> </i></span>
                         <input type="password" id="setupPassword" class="form-control form-control-sm" 
-                               placeholder="Password (6-8 karakter)" maxlength="8">
+                               placeholder="Password (6-8 karakter)" maxlength="8"
+                               oninput="this.value = this.value.toLowerCase().substring(0,8)" required>
                         </input>       
                     </div>
 
