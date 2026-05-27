@@ -996,35 +996,6 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    
-                    <!-- FORM INPUT USER -->
-                    <!--- 
-                    <div class="mb-4">
-                        <label class="form-label fw-bold small">TAMBAH USER BARU</label>
-                        <div class="row g-2">
-                            <div class="col-md-5">
-                                <input type="text" id="setupUsername" class="form-control form-control-sm" 
-                                    placeholder="Username (6-8 karakter)" maxlength="8" 
-                                    oninput="this.value = this.value.toLowerCase().substring(0,8)">
-                            </div>
-                            <div class="col-md-3">
-                                <select id="setupLevel" class="form-select form-select-sm">
-                                    <option value="operator">Operator</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <input type="password" id="setupPassword" class="form-control form-control-sm" 
-                                    placeholder="Password (6-8 karakter)" maxlength="8">
-                            </div>
-                        </div>
-                        <div id="setupMessage" class="form-msg small mt-2"></div>
-                        <button class="btn btn-primary btn-sm w-100 mt-2" onclick="createNewUser()">
-                            <i class="fas fa-save"></i> Simpan User
-                        </button>
-                    </div>
-                    -->
-
                     <!-- FORM SETUP TAMBAH USER -->
                     <label class="form-label fw-bold small">TAMBAH USER BARU</label>
                     <!-- Input User Baru -->
@@ -1036,7 +1007,7 @@
                     </div>
                     <!-- Input Level User -->
                     <div class="input-group mt-3">
-                        <span class="input-group-text"><i class="fas fa-user-check" style="font-size:16px"></i></span>
+                        <span class="input-group-text"><i class="fas fa-user-check" style="font-size:14px"></i></span>
                         <select id="setupLevel" class="form-select form-select-sm">
                             <option value="">Pilih Level User...</option>
                             <option value="operator">Operator</option>
@@ -1845,16 +1816,6 @@
           btn.disabled = false;
           btn.innerHTML = 'SIMPAN DATA';
       }
-    }
-
-    /********************************************* 
-    * Fungsi untuk mendapatkan inisial dari nama
-    **********************************************/
-    function BACKUP_getInitials(nama) {
-        if (!nama || nama === '-' || nama === '') return '?';
-        const parts = nama.trim().split(' ');
-        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
     }
 
     /****************************************
