@@ -535,14 +535,6 @@
         display: flex;
         flex-direction: column;
     }
-    .pdf-viewer {
-        flex: 1;
-        overflow-y: auto;
-        display: flex;
-        justify-content: center;
-        background: #f0f0f0;
-        padding: 20px;
-    }
     .pdf-toolbar {
         display: flex;
         justify-content: center;
@@ -586,9 +578,22 @@
     .pdf-canvas {
         box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         background: white;
-        max-width: 100%;
-        height: auto;
         border-radius: 4px;
+        /* Meningkatkan kualitas rendering canvas */
+        image-rendering: crisp-edges;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: pixelated;
+    }
+    /* Untuk tampilan zoom yang lebih halus */
+    .pdf-viewer {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        justify-content: center;
+        background: #f0f0f0;
+        padding: 20px;
+        /* Smooth scrolling */
+        scroll-behavior: smooth;
     }
     .loading-pdf {
         display: flex;
@@ -1169,7 +1174,7 @@
         <div class="modal-dialog modal-lg modal-dialog-centered pdf-modal">
             <div class="modal-content">
                 <div class="modal-header" style="background-color: #1A365D; color: white;">
-                    <h5 class="modal-title"><i class="far fa-file-pdf me-2"></i>Panduan Penggunaan Aplikasi</h5>
+                    <h5 class="modal-title">Panduan Aplikasi</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0">
@@ -3112,7 +3117,7 @@
      * FUNGSI PEMBACA PDF PANDUAN
      *******************************/
   
-     // Tampilkan modal panduan
+    // Tampilkan modal panduan
     function showPanduan() {
         const modalElement = document.getElementById('panduanModal');
         const modal = new bootstrap.Modal(modalElement);
@@ -3120,7 +3125,7 @@
         
         // Reset state
         currentPage = 1;
-        currentScale = 1.5; // Skala awal lebih besar
+        currentScale = 2.0;
         
         // Load PDF
         loadPDF();
@@ -3133,7 +3138,6 @@
         const loadingDiv = document.querySelector('.loading-pdf');
         
         try {
-            // Tampilkan loading
             canvas.style.display = 'none';
             if (loadingDiv) {
                 loadingDiv.style.display = 'flex';
@@ -3143,17 +3147,19 @@
                 `;
             }
             
-            // Load PDF document
-            pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
+            // Load PDF document dengan konfigurasi kualitas tinggi
+            pdfDoc = await pdfjsLib.getDocument({
+                url: pdfUrl,
+                cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/cmaps/',
+                cMapPacked: true,
+                standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/standard_fonts/'
+            }).promise;
             
-            // Update page count
             document.getElementById('pageCount').innerText = pdfDoc.numPages;
             
-            // Sembunyikan loading, tampilkan canvas
             if (loadingDiv) loadingDiv.style.display = 'none';
             canvas.style.display = 'block';
             
-            // Render halaman pertama
             await renderPage(currentPage);
             
         } catch (error) {
@@ -3172,7 +3178,7 @@
         }
     }
 
-    // Render halaman tertentu dengan kualitas tinggi
+    // Render halaman dengan kualitas SUPER TINGGI
     async function renderPage(pageNum) {
         if (!pdfDoc) return;
         
@@ -3180,34 +3186,34 @@
         const context = canvas.getContext('2d');
         
         try {
-            // Dapatkan halaman
             const page = await pdfDoc.getPage(pageNum);
             
-            // Hitung viewport dengan skala (kualitas tinggi)
-            const viewport = page.getViewport({ scale: currentScale });
+            // Skala kualitas: 3x dari skala dasar untuk teks super jelas
+            // Ini akan menghasilkan canvas dengan resolusi sangat tinggi
+            const renderScale = currentScale * 3.0;
+            const viewport = page.getViewport({ scale: renderScale });
             
-            // Set ukuran canvas dengan device pixel ratio untuk kualitas lebih baik
-            const pixelRatio = window.devicePixelRatio || 1;
-            canvas.width = viewport.width * pixelRatio;
-            canvas.height = viewport.height * pixelRatio;
-            canvas.style.width = viewport.width + 'px';
-            canvas.style.height = viewport.height + 'px';
+            // Set canvas dengan resolusi tinggi
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
             
-            // Scale context untuk kualitas tinggi
-            context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+            // Tampilan visual di-modal diperkecil agar muat (tapi kualitas tetap tinggi)
+            const displayScale = currentScale;
+            canvas.style.width = (viewport.width / 3) + 'px';
+            canvas.style.height = (viewport.height / 3) + 'px';
             
-            // Render halaman ke canvas dengan kualitas tinggi
+            // Matikan anti-aliasing untuk teks lebih tajam? Tidak, biarkan default
+            
             const renderContext = {
                 canvasContext: context,
                 viewport: viewport,
                 background: 'white',
-                enableWebGL: true,
+                enableWebGL: false,
                 renderInteractiveForms: true
             };
             
             await page.render(renderContext).promise;
             
-            // Update nomor halaman
             document.getElementById('pageNum').innerText = pageNum;
             
         } catch (error) {
@@ -3230,7 +3236,7 @@
         }
     }
 
-    // Zoom dengan kualitas tetap terjaga
+    // Zoom dengan kualitas tetap tinggi
     function zoomIn() {
         if (pdfDoc) {
             currentScale = Math.min(currentScale + 0.25, 3.5);
@@ -3240,16 +3246,15 @@
 
     function zoomOut() {
         if (pdfDoc) {
-            currentScale = Math.max(currentScale - 0.25, 0.8);
+            currentScale = Math.max(currentScale - 0.25, 1.0);
             renderPage(currentPage);
         }
     }
 
-    // Inisialisasi event listener untuk tombol panduan
+    // Inisialisasi event listener
     function initPanduanListener() {
         const panduanBtn = document.getElementById('panduanBtn');
         if (panduanBtn) {
-            // Hapus event listener lama jika ada
             const newBtn = panduanBtn.cloneNode(true);
             panduanBtn.parentNode.replaceChild(newBtn, panduanBtn);
             
@@ -3259,33 +3264,28 @@
             });
         }
         
-        // Event listener untuk tombol navigasi menggunakan event delegation
         document.addEventListener('click', function(e) {
             const target = e.target;
-            const btnPrev = document.getElementById('pdfPrevBtn');
-            const btnNext = document.getElementById('pdfNextBtn');
-            const btnZoomIn = document.getElementById('pdfZoomInBtn');
-            const btnZoomOut = document.getElementById('pdfZoomOutBtn');
             
-            if (target === btnPrev || target.closest('#pdfPrevBtn')) {
+            if (target.id === 'pdfPrevBtn' || target.closest('#pdfPrevBtn')) {
                 e.preventDefault();
                 prevPage();
             }
-            if (target === btnNext || target.closest('#pdfNextBtn')) {
+            if (target.id === 'pdfNextBtn' || target.closest('#pdfNextBtn')) {
                 e.preventDefault();
                 nextPage();
             }
-            if (target === btnZoomIn || target.closest('#pdfZoomInBtn')) {
+            if (target.id === 'pdfZoomInBtn' || target.closest('#pdfZoomInBtn')) {
                 e.preventDefault();
                 zoomIn();
             }
-            if (target === btnZoomOut || target.closest('#pdfZoomOutBtn')) {
+            if (target.id === 'pdfZoomOutBtn' || target.closest('#pdfZoomOutBtn')) {
                 e.preventDefault();
                 zoomOut();
             }
         });
     }
-    
+     
     /***********************************
     * Fungsi Untuk logout dari aplikasi
     ************************************/
